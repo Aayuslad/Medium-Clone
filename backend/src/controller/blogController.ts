@@ -1,11 +1,22 @@
 import { createBlogSchemas, updateBlogSchema } from "@aayushlad/medium-clone-common";
+import { PrismaClient } from "@prisma/client/edge";
+import { withAccelerate } from "@prisma/extension-accelerate";
 import { Topics } from "@prisma/client";
 import { Context } from "hono";
 import { uploadImageCloudinary } from "../utils/cloudinary";
 
+type userType = {
+	id: string;
+	email: string;
+	name: string;
+	password: string;
+} | null;
+
 // get a unique blog by id
 export const getBlog = async function (ctx: Context) {
-	const prisma = ctx.get("prisma");
+	const prisma = new PrismaClient({
+		datasourceUrl: ctx.env?.DATABASE_URL,
+	}).$extends(withAccelerate());
 
 	const id = ctx.req.param("id");
 	try {
@@ -36,8 +47,8 @@ export const getBlog = async function (ctx: Context) {
 		// Transform topics to an array of strings
 		const transformedBlog = {
 			...blog,
-			topics: blog.topics.map((topicObj: { topic: string }) => topicObj.topic),
-			author: blog.author.name,
+			topics: blog?.topics.map((topicObj: { topic: string }) => topicObj.topic),
+			author: blog?.author.name,
 		};
 
 		return ctx.json(transformedBlog);
@@ -50,7 +61,9 @@ export const getBlog = async function (ctx: Context) {
 
 // get all blogs
 export const getAllBlogs = async function (ctx: Context) {
-	const prisma = ctx.get("prisma");
+	const prisma = new PrismaClient({
+		datasourceUrl: ctx.env?.DATABASE_URL,
+	}).$extends(withAccelerate());
 
 	try {
 		const blogs = await prisma.post.findMany({
@@ -92,10 +105,11 @@ export const getAllBlogs = async function (ctx: Context) {
 
 // careate a new blog
 export const createBlog = async function (ctx: Context) {
-	const prisma = ctx.get("prisma");
-	const user = ctx.get("user");
+	const prisma = new PrismaClient({
+		datasourceUrl: ctx.env?.DATABASE_URL,
+	}).$extends(withAccelerate());
 
-	console.log("getting here");
+	const user: userType = ctx.get("user");
 
 	try {
 		// Parse form data
@@ -165,7 +179,7 @@ export const createBlog = async function (ctx: Context) {
 				description: body.description,
 				postedOn: new Date(),
 				published: body.published,
-				authorId: user.id,
+				authorId: user?.id || "",
 				coverImage: secure_url,
 				topics: {
 					connect: topicIdsToAdd.map((id) => ({ id: id })),
@@ -188,8 +202,11 @@ export const createBlog = async function (ctx: Context) {
 
 // update an existing blog
 export const updateBlog = async function (ctx: Context) {
-	const prisma = ctx.get("prisma");
-	const user = ctx.get("user");
+	const prisma = new PrismaClient({
+		datasourceUrl: ctx.env?.DATABASE_URL,
+	}).$extends(withAccelerate());
+
+	const user: userType = ctx.get("user");
 
 	try {
 		// Parse form data
@@ -255,8 +272,9 @@ export const updateBlog = async function (ctx: Context) {
 		});
 
 		// Extract topic IDs of the current topics associated with the post
-		const currentTopicIds: string[] =
-			currentPost?.topics?.length > 0 ? currentPost.topics.map((topic: Topics) => topic.id) : [];
+		const currentTopicIds: string[] = currentPost?.topics?.length
+			? currentPost.topics.map((topic: Topics) => topic.id)
+			: [];
 
 		// Find the topic IDs to disconnect
 		const topicIdsToDisconnect: string[] =
@@ -268,14 +286,14 @@ export const updateBlog = async function (ctx: Context) {
 				id: body.id,
 			},
 		});
-		const currentCoverImage = existingPost.coverImage;
+		const currentCoverImage = existingPost?.coverImage;
 		const secure_url = body.coverImage ? await uploadImageCloudinary(body.coverImage) : currentCoverImage;
 
 		// updating the blog
 		await prisma.post.update({
 			where: {
 				id: body.id,
-				authorId: user.id,
+				authorId: user?.id,
 			},
 			data: {
 				title: body.title,
@@ -304,16 +322,18 @@ export const updateBlog = async function (ctx: Context) {
 
 // delete a blog
 export const deleteBlog = async function (ctx: Context) {
-	const prisma = ctx.get("prisma");
+	const prisma = new PrismaClient({
+		datasourceUrl: ctx.env?.DATABASE_URL,
+	}).$extends(withAccelerate());
 
-	const user = ctx.get("user");
+	const user: userType = ctx.get("user");
 	const id = ctx.req.param("id");
 
 	try {
 		const newBlog = await prisma.post.delete({
 			where: {
 				id: id,
-				authorId: user.id,
+				authorId: user?.id,
 			},
 		});
 

@@ -1,9 +1,9 @@
 import { Hono } from "hono";
+const router = new Hono();
 // middlewares
 import { authMiddleware } from "../middleware/authMiddleware";
 // controllers
 import { createBlog, deleteBlog, getAllBlogs, getBlog, updateBlog } from "../controller/blogController";
-const router = new Hono();
 
 router.get("/bulk", getAllBlogs);
 router.get("/:id", getBlog);

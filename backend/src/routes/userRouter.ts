@@ -1,9 +1,9 @@
 import { Hono } from "hono";
+const router = new Hono();
+// middlewares
+import { authMiddleware } from "../middleware/authMiddleware";
 // controllers
 import { getUser, signin, signup } from "../controller/userController";
-import { authMiddleware } from "../middleware/authMiddleware";
-
-const router = new Hono();
 
 router.post("/signup", signup);
 router.post("/signin", signin);

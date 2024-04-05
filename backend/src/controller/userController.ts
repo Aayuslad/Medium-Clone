@@ -4,17 +4,25 @@ import {
 	signinSchema,
 	signinSchemaType,
 } from "@aayushlad/medium-clone-common";
+import { PrismaClient } from "@prisma/client/edge";
+import { withAccelerate } from "@prisma/extension-accelerate";
 import { Context } from "hono";
 import { setCookie } from "hono/cookie";
 import { sign } from "hono/jwt";
 
+type userType = {
+	id: string;
+	email: string;
+	name: string;
+	password: string;
+} | null;
+
 export const signup = async function (ctx: Context) {
-	const prisma = ctx.get("prisma");
+	const prisma = new PrismaClient({
+		datasourceUrl: ctx.env?.DATABASE_URL,
+	}).$extends(withAccelerate());
 
 	const body: signUpSchemaType = await ctx.req.json();
-
-	console.log(body);
-	
 
 	const { success } = signUpSchema.safeParse(body);
 	if (!success) {
@@ -59,7 +67,9 @@ export const signup = async function (ctx: Context) {
 };
 
 export const signin = async function (ctx: Context) {
-	const prisma = ctx.get("prisma");
+	const prisma = new PrismaClient({
+		datasourceUrl: ctx.env?.DATABASE_URL,
+	}).$extends(withAccelerate());
 
 	const body: signinSchemaType = await ctx.req.json();
 
@@ -112,13 +122,21 @@ export const signin = async function (ctx: Context) {
 
 // get user data
 export const getUser = async function (ctx: Context) {
-	const prisma = ctx.get("prisma");
-	const user = ctx.get("user");
+	const prisma = new PrismaClient({
+		datasourceUrl: ctx.env?.DATABASE_URL,
+	}).$extends(withAccelerate());
+
+	const user: userType = ctx.get("user");
 
 	try {
 		const userData = await prisma.user.findUnique({
 			where: {
-				id: user.id,
+				id: user?.id,
+			},
+			select: {
+				id: true,
+				name: true,
+				email: true,
 			},
 		});
 
@@ -127,10 +145,7 @@ export const getUser = async function (ctx: Context) {
 			return ctx.json({ error: "User not found" });
 		}
 
-		// Remove the password field from the user data
-		const { password, ...userDataWithoutPassword } = userData;
-
-		return ctx.json(userDataWithoutPassword);
+		return ctx.json(userData);
 	} catch (e) {
 		ctx.status(500);
 		return ctx.json({ error: "Error fetching user" });
