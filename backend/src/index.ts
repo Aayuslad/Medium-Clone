@@ -1,11 +1,10 @@
 import { Context, Hono, Next } from "hono";
-// middlewares
-import { authMiddleware } from "./middleware/authMiddleware";
+import { cors } from "hono/cors";
+import { PrismaClient } from "@prisma/client/edge";
+import { withAccelerate } from "@prisma/extension-accelerate";
 // routers
 import userRouter from "./routes/userRouter";
 import blogRouter from "./routes/blogRouter";
-import { PrismaClient } from "@prisma/client/edge";
-import { withAccelerate } from "@prisma/extension-accelerate";
 
 // Create the main Hono app
 const app = new Hono<{
@@ -24,6 +23,15 @@ const app = new Hono<{
 	};
 }>();
 
+app.use(
+	cors({
+		origin: ["http://localhost:5173"],
+		allowMethods: ["GET", "POST", "PUT", "DELETE"],
+		credentials: true,
+	}),
+);
+
+
 app.use("*", async (ctx: Context, next: Next) => {
   const prisma = new PrismaClient({
     datasourceUrl: ctx.env?.DATABASE_URL, 
@@ -32,7 +40,6 @@ app.use("*", async (ctx: Context, next: Next) => {
   await next();
 });
 app.route("/api/v1/user", userRouter);
-app.use("/api/v1/blog/*", authMiddleware);
 app.route("/api/v1/blog", blogRouter);
 
 export default app;

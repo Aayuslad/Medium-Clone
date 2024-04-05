@@ -4,10 +4,13 @@
     "deploy": "wrangler deploy --minify src/index.ts"
   },
   "dependencies": {
-    "@aayushlad/medium-clone-common": "^1.0.0",
+    "@aayushlad/medium-clone-common": "^1.0.10",
     "@prisma/client": "^5.11.0",
     "@prisma/extension-accelerate": "^1.0.0",
+    "cloudinary": "^2.1.0",
+    "formdata-node": "^6.0.3",
     "hono": "^4.1.4",
+    "node-fetch": "^3.3.2",
     "prisma": "^5.11.0"
   },
   "devDependencies": {

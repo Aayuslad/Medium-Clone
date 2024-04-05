@@ -1,16 +1,25 @@
+import {
+	signUpSchema,
+	signUpSchemaType,
+	signinSchema,
+	signinSchemaType,
+} from "@aayushlad/medium-clone-common";
 import { Context } from "hono";
+import { setCookie } from "hono/cookie";
 import { sign } from "hono/jwt";
-import { signUpSchema, signinSchema } from "@aayushlad/medium-clone-common";
 
 export const signup = async function (ctx: Context) {
 	const prisma = ctx.get("prisma");
 
-	const body = await ctx.req.json();
+	const body: signUpSchemaType = await ctx.req.json();
+
+	console.log(body);
+	
 
 	const { success } = signUpSchema.safeParse(body);
 	if (!success) {
 		ctx.status(400);
-		return ctx.json({ error : "Invalid request parameters" });
+		return ctx.json({ error: "Invalid request parameters" });
 	}
 
 	try {
@@ -35,6 +44,12 @@ export const signup = async function (ctx: Context) {
 
 		const jwt = await sign({ id: user.id }, ctx.env.JWT_SECRET);
 
+		setCookie(ctx, "Authorisation", jwt, {
+			httpOnly: true,
+			secure: true,
+			sameSite: "None",
+		});
+
 		return ctx.json({ jwt });
 	} catch (e) {
 		ctx.status(403);
@@ -46,18 +61,26 @@ export const signup = async function (ctx: Context) {
 export const signin = async function (ctx: Context) {
 	const prisma = ctx.get("prisma");
 
-	const body = await ctx.req.json();
+	const body: signinSchemaType = await ctx.req.json();
 
 	const { success } = signinSchema.safeParse(body);
+
 	if (!success) {
 		ctx.status(400);
 		return ctx.json({ error: "Invalid request parameters" });
 	}
 
 	try {
-		const user = await prisma.user.findUnique({
+		const user = await prisma.user.findFirst({
 			where: {
-				email: body.email,
+				OR: [
+					{
+						email: body.emailOrName,
+					},
+					{
+						name: body.emailOrName,
+					},
+				],
 			},
 		});
 
@@ -73,10 +96,43 @@ export const signin = async function (ctx: Context) {
 
 		const jwt = await sign({ id: user.id }, ctx.env.JWT_SECRET);
 
+		setCookie(ctx, "Authorisation", jwt, {
+			httpOnly: true,
+			secure: true,
+			sameSite: "None",
+		});
+
 		return ctx.json({ jwt });
 	} catch (e) {
 		ctx.status(403);
 		console.log(e);
 		return ctx.json({ error: "error while signing in" });
+	}
+};
+
+// get user data
+export const getUser = async function (ctx: Context) {
+	const prisma = ctx.get("prisma");
+	const user = ctx.get("user");
+
+	try {
+		const userData = await prisma.user.findUnique({
+			where: {
+				id: user.id,
+			},
+		});
+
+		if (!userData) {
+			ctx.status(404);
+			return ctx.json({ error: "User not found" });
+		}
+
+		// Remove the password field from the user data
+		const { password, ...userDataWithoutPassword } = userData;
+
+		return ctx.json(userDataWithoutPassword);
+	} catch (e) {
+		ctx.status(500);
+		return ctx.json({ error: "Error fetching user" });
 	}
 };

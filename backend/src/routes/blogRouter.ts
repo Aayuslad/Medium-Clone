@@ -1,12 +1,14 @@
 import { Hono } from "hono";
+// middlewares
+import { authMiddleware } from "../middleware/authMiddleware";
 // controllers
-import { getBlog, getAllBlogs, createBlog, updateBlog, deleteBlog } from "../controller/blogController";
+import { createBlog, deleteBlog, getAllBlogs, getBlog, updateBlog } from "../controller/blogController";
 const router = new Hono();
 
 router.get("/bulk", getAllBlogs);
 router.get("/:id", getBlog);
-router.post("/", createBlog);
-router.put("/", updateBlog);
-router.delete("/:id", deleteBlog);
+router.post("/", authMiddleware, createBlog);
+router.put("/", authMiddleware, updateBlog);
+router.delete("/:id", authMiddleware, deleteBlog);
 
 export default router;
