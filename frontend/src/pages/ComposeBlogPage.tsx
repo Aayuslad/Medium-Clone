@@ -337,7 +337,7 @@ const ComposeBlogPage = () => {
 										<button
 											type="button"
 											className="px-4 py-2 border border-black rounded-3xl"
-											onClick={(e) => {
+											onClick={() => {
 												if (formik.values.topics == undefined)
 													formik.values.topics = [];
 												if (formik.values.topics.length < 5) addTopic();

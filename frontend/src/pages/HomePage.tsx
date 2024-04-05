@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import BlogPreview from "../components/BlogPreview";
 import Header from "../components/Header";
-import { blogStore } from "../stores/blogStore";
 import useScrollDirection from "../hooks/useScrollDirection";
+import { blogStore } from "../stores/blogStore";
 
 const HomePage = () => {
 	const BlogStore = blogStore();
@@ -10,7 +10,7 @@ const HomePage = () => {
 
 	useEffect(() => {
 		BlogStore.getBlogs();
-	}, []);	
+	}, []);
 
 	return (
 		<div className="HomePage " style={{ cursor: BlogStore.cursorLoading ? "wait" : "default" }}>
