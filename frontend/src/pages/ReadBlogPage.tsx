@@ -40,8 +40,8 @@ const ReadBlogPage = () => {
 		<div className="ReadBlogPage">
 			<Header />
 
-			<div className="main-container w-full h-screen max-w-3xl mx-auto pt-10">
-				<p className="title px-2 pt-12 pb-3 text-4xl leading-[3rem] overflow-hidden font-Merriweather font-semibold">
+			<div className="main-container w-full h-screen px-2 max-w-3xl mx-auto pt-10">
+				<p className="title px-2 pt-12 pb-3 overflow-hidden font-Merriweather font-semibold text-2xl leading-[2.2rem] sm:text-4xl sm:leading-[3rem]">
 					{blog?.title}
 				</p>
 
@@ -101,14 +101,14 @@ const ReadBlogPage = () => {
 				</div>
 
 				{blog?.coverImage && (
-					<div className="cover-img block mx-auto my-6 max-w-[80%] max-h-[1000px]">
+					<div className="cover-img block mx-auto my-6 max-w-[80%] max-h-[600px]">
 						<img src={blog?.coverImage as string} alt="cover image" className="w-full" />
 					</div>
 				)}
 
 				<textarea
 					id="content"
-					className="content w-full h-full px-2 pt-4 mb-20 text-xl overflow-hidden text-gray-900 font-Merriweather font-light leading-9 outline-none resize-none text-justify"
+					className="content w-full h-full px-2 pt-4 mb-20 overflow-hidden text-gray-900 font-Merriweather font-light outline-none resize-none text-justify text-[1rem] sm:text-xl sm:leading-9"
 					value={blog?.content}
 				/>
 			</div>
