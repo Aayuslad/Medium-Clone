@@ -11,21 +11,23 @@ export const authMiddleware = async function (ctx: Context, next: Next) {
 
 	const token = getCookie(ctx, "Authorisation");
 	
+	// cheking if user has token or not
 	if (!token) {
 		ctx.status(401);
 		return ctx.json({ message: "signin first" });
 	}
 
 	try {
+		// verifying jwt token
 		const decodedPaylod = await verify(token, ctx.env.JWT_SECRET);
 		const userId = decodedPaylod.id;
 
+		// finding user and attching to context
 		const user = await prisma.user.findUnique({
 			where: {
 				id: userId,
 			},
 		});
-
 		ctx.set("user", user);
 
 		await next();

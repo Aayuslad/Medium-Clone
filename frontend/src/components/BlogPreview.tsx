@@ -1,16 +1,6 @@
 import { useNavigate } from "react-router-dom";
-
-type BlogType = {
-	id?: string;
-	title: string;
-	content?: string;
-	description: string;
-	published?: boolean;
-	postedOn?: string;
-	topics: string[];
-	author?: string;
-	coverImage: string | File;
-};
+import { BlogType } from "@aayushlad/medium-clone-common";
+import defaultProfile from "../assets/defaultProfile.jpg";
 
 const BlogPreview = ({ blog, index }: { blog: BlogType; index: number }) => {
 	const navigate = useNavigate();
@@ -36,17 +26,17 @@ const BlogPreview = ({ blog, index }: { blog: BlogType; index: number }) => {
 		<div
 			key={index}
 			onClick={() => navigate(`/blog/${blog.id}`)}
-			className="blog mt-6 border-b border-slate-5 mx-4 flex flex-col gap-2 lg:mx-10 lg:mr-20 cursor-pointer"
+			className="blog mt-6 border-b border-slate-5 max-w-[700px] mx-auto flex flex-col gap-2 cursor-pointer"
 		>
 			<div className="post-header flex gap-4 py-2">
 				<div className="profile w-7 h-7 p-0 cursor-pointer">
 					<img
-						src="https://miro.medium.com/v2/resize:fill:40:40/0*ks_bPGCSfXq0nrDO"
+						src={(blog.author?.profileImg as string) || defaultProfile}
 						alt=""
 						className="rounded-full"
 					/>
 				</div>
-				<div className="username">{blog.author}</div>
+				<div className="username">{blog.author?.name}</div>
 				<div className="flex-1"></div>
 				<div className="realese-date">{formatDate(blog.postedOn as string)}</div>
 			</div>
@@ -97,8 +87,8 @@ const BlogPreview = ({ blog, index }: { blog: BlogType; index: number }) => {
 						<path
 							d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8.25 12h7.5"
 							stroke="currentColor"
-							stroke-linecap="round"
-							stroke-linejoin="round"
+							strokeLinecap="round"
+							strokeLinejoin="round"
 						></path>
 					</svg>
 				</div>
@@ -106,8 +96,8 @@ const BlogPreview = ({ blog, index }: { blog: BlogType; index: number }) => {
 				<div className="more mx-2">
 					<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
 						<path
-							fill-rule="evenodd"
-							clip-rule="evenodd"
+							fillRule="evenodd"
+							clipRule="evenodd"
 							d="M4.39 12c0 .55.2 1.02.59 1.41.39.4.86.59 1.4.59.56 0 1.03-.2 1.42-.59.4-.39.59-.86.59-1.41 0-.55-.2-1.02-.6-1.41A1.93 1.93 0 0 0 6.4 10c-.55 0-1.02.2-1.41.59-.4.39-.6.86-.6 1.41zM10 12c0 .55.2 1.02.58 1.41.4.4.87.59 1.42.59.54 0 1.02-.2 1.4-.59.4-.39.6-.86.6-1.41 0-.55-.2-1.02-.6-1.41a1.93 1.93 0 0 0-1.4-.59c-.55 0-1.04.2-1.42.59-.4.39-.58.86-.58 1.41zm5.6 0c0 .55.2 1.02.57 1.41.4.4.88.59 1.43.59.57 0 1.04-.2 1.43-.59.39-.39.57-.86.57-1.41 0-.55-.2-1.02-.57-1.41A1.93 1.93 0 0 0 17.6 10c-.55 0-1.04.2-1.43.59-.38.39-.57.86-.57 1.41z"
 							fill="currentColor"
 						></path>

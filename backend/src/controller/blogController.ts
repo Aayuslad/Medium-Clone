@@ -1,16 +1,9 @@
-import { createBlogSchemas, updateBlogSchema } from "@aayushlad/medium-clone-common";
+import { createBlogSchemas, updateBlogSchema, userType } from "@aayushlad/medium-clone-common";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { Topics } from "@prisma/client";
 import { Context } from "hono";
 import { uploadImageCloudinary } from "../utils/cloudinary";
-
-type userType = {
-	id: string;
-	email: string;
-	name: string;
-	password: string;
-} | null;
 
 // get a unique blog by id
 export const getBlog = async function (ctx: Context) {
@@ -20,6 +13,7 @@ export const getBlog = async function (ctx: Context) {
 
 	const id = ctx.req.param("id");
 	try {
+		// finding blog
 		const blog = await prisma.post.findUnique({
 			where: {
 				id: id,
@@ -38,7 +32,11 @@ export const getBlog = async function (ctx: Context) {
 				coverImage: true,
 				author: {
 					select: {
+						id: true,
 						name: true,
+						bio: true,
+						email: true,
+						profileImg: true,
 					},
 				},
 			},
@@ -48,7 +46,6 @@ export const getBlog = async function (ctx: Context) {
 		const transformedBlog = {
 			...blog,
 			topics: blog?.topics.map((topicObj: { topic: string }) => topicObj.topic),
-			author: blog?.author.name,
 		};
 
 		return ctx.json(transformedBlog);
@@ -66,6 +63,7 @@ export const getAllBlogs = async function (ctx: Context) {
 	}).$extends(withAccelerate());
 
 	try {
+		// finding all users
 		const blogs = await prisma.post.findMany({
 			select: {
 				id: true,
@@ -80,18 +78,21 @@ export const getAllBlogs = async function (ctx: Context) {
 				coverImage: true,
 				author: {
 					select: {
+						id: true,
 						name: true,
-					},
+						bio: true,
+						email: true,
+						profileImg: true,
+					}
 				},
 			},
 		});
 
 		// Map over blogs to transform topics to an array of strings
 		const transformedBlogs = blogs.map(
-			(blog: { topics: { topic: string }[]; author: { name: string } }) => ({
+			(blog) => ({
 				...blog,
 				topics: blog.topics.map((topicObj) => topicObj.topic),
-				author: blog.author.name,
 			}),
 		);
 
@@ -115,8 +116,6 @@ export const createBlog = async function (ctx: Context) {
 		// Parse form data
 		const formData = await ctx.req.formData();
 
-		console.log(formData);
-
 		// Parse topics as JSON array
 		const topicsString = formData.get("topics") as string;
 		const topics: string[] = topicsString.split(",");
@@ -130,8 +129,6 @@ export const createBlog = async function (ctx: Context) {
 			topics: topics,
 			coverImage: formData.get("coverImage") as File,
 		};
-
-		console.log(body);
 
 		// Validate the body against the schema
 		const { success } = createBlogSchemas.safeParse(body);
@@ -186,8 +183,6 @@ export const createBlog = async function (ctx: Context) {
 				},
 			},
 		});
-
-		console.log(newBlog);
 
 		// Return successful response
 		ctx.status(201);
@@ -309,7 +304,6 @@ export const updateBlog = async function (ctx: Context) {
 			},
 		});
 
-		// Return successful response
 		ctx.status(201);
 		return ctx.json({ message: "Blog updated successfully" });
 	} catch (error) {
@@ -330,14 +324,13 @@ export const deleteBlog = async function (ctx: Context) {
 	const id = ctx.req.param("id");
 
 	try {
-		const newBlog = await prisma.post.delete({
+		// deleting blog
+		await prisma.post.delete({
 			where: {
 				id: id,
 				authorId: user?.id,
 			},
 		});
-
-		console.log("deleted blog", newBlog);
 
 		ctx.status(201);
 		return ctx.json({ message: "Blog deleted successfully" });

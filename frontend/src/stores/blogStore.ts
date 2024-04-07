@@ -1,18 +1,7 @@
 import axios from "axios";
 import { create } from "zustand";
 import toast from "react-hot-toast";
-
-type BlogType = {
-	id?: string;
-	title: string;
-	content?: string;
-	description: string;
-	published?: boolean;
-	postedOn?: string;
-	topics: string[];
-	author?: string;
-	coverImage: string | File;
-};
+import { BlogType } from "@aayushlad/medium-clone-common"
 
 type BlogStoreType = {
 	loading: boolean;

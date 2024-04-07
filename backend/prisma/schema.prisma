@@ -14,28 +14,41 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
-  email    String @unique
-  name     String @unique
-  password String
-  posts    Post[]
+  id         String @id @default(uuid())
+  email      String @unique
+  name       String @unique
+  password   String
+  bio        String @default("")
+  about      String @default("")
+  profileImg String @default("")
+  posts      Post[] // Establishing a one-to-many relationship
+  likes      Like[] // Establishing a one-to-many relationship with likes
 }
 
 model Post {
-  id           String         @id @default(uuid())
-  title        String?
-  content      String?
-  description  String?
-  coverImage   String?
-  postedOn     DateTime?
-  published    Boolean        @default(false)
-  author       User           @relation(fields: [authorId], references: [id])
-  authorId     String
-  topics       Topics[]
+  id          String   @id @default(uuid())
+  title       String   @default("")
+  content     String   @default("")
+  description String   @default("")
+  coverImage  String   @default("")
+  postedOn    DateTime
+  published   Boolean  @default(false)
+  author      User     @relation(fields: [authorId], references: [id])
+  authorId    String
+  topics      Topics[]
+  likes       Like[] // Establishing a one-to-many relationship with likes
+}
+
+model Like {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String // Foreign key to User
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String // Foreign key to Post
 }
 
 model Topics {
-  id           String         @id @default(uuid())
-  topic        String         @unique
-  posts        Post[]
+  id    String @id @default(uuid())
+  topic String @unique
+  posts Post[]
 }

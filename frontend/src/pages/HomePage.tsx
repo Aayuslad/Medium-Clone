@@ -13,23 +13,25 @@ const HomePage = () => {
 	}, []);
 
 	return (
-		<div className="HomePage " style={{ cursor: BlogStore.cursorLoading ? "wait" : "default" }}>
+		<div className="HomePage" style={{ cursor: BlogStore.cursorLoading ? "wait" : "default" }}>
 			<Header />
 
 			<div className="main-container w-full flex-1 max-w-6xl mx-auto mt-14 flex border border-black">
 				<div className="post-container border flex-1 border-red-600">
 					<div
-						className={`topics border border-green-500 h-10 w-full sticky ${
+						className={`topics z-0 border border-green-500 h-10 w-full sticky ${
 							scrollDirection === "down" ? "top-0" : "top-14"
 						} duration-500 bg-white `}
 					></div>
 
-					{BlogStore.feedBlogs?.map((blog, index) => {
-						return <BlogPreview blog={blog} index={index} />;
-					})}
+					<div className="mx-4 lg:mx-10 lg:mr-20">
+						{BlogStore.feedBlogs?.map((blog, index) => {
+							return <BlogPreview blog={blog} index={index} key={index} />;
+						})}
+					</div>
 				</div>
 
-				<div className="side-container border w-96 border-red-600 hidden overflow-y-scroll lg:block">
+				<div className="side-container border w-96 border-red-600 hidden lg:block h-fit sticky top-0">
 					sidebar Lorem ipsum dolor sit amet consectetur adipisicing elit. Architecto aperiam
 					perferendis doloremque, culpa nulla magnam modi quisquam vitae praesentium atque dolorum
 					asperiores corporis illum maxime. Qui dolor dignissimos inventore nemo sit dolore veniam

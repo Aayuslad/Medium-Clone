@@ -1,23 +1,26 @@
 import { Input } from "../components/Input";
 import { Footer } from "../components/Footer";
-import { BlackButton } from "../components/BlackButton";
+import { BlackButton } from "../components/buttons/BlackButton";
 import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { authStore } from "../stores/authStore";
 import logo from "../assets/logo.svg";
+import { sinInValidation } from "../helper/inputValidation";
+import { signinSchemaType } from "@aayushlad/medium-clone-common";
 
 function signin() {
 	const store = authStore();
 	const navigate = useNavigate();
 
-	const formik = useFormik({
+	const formik = useFormik<signinSchemaType>({
 		initialValues: {
 			password: "",
 			emailOrName: "",
 		},
 		validateOnBlur: false,
 		validateOnChange: false,
-		onSubmit: (values) => {
+		validate: sinInValidation,
+		onSubmit: async (values) => {
 			console.log(values);
 			store.signin(values, navigate);
 		},
@@ -44,18 +47,20 @@ function signin() {
 							onSubmit={formik.handleSubmit}
 						>
 							<div className="formHeader pb-4">
-								<h3 className="font-semibold text-gray-500 text-xl text-center">
+								<h3 className="font-semibold text-gray-500 text-xl px-3 text-center">
 									Enter your information to access your account
 								</h3>
 							</div>
 							<Input
 								label="Username or Email"
 								type="text"
+								required={true}
 								field={formik.getFieldProps("emailOrName")}
 							/>
 							<Input
 								label="Password"
 								type="password"
+								required={true}
 								field={formik.getFieldProps("password")}
 							/>
 							<BlackButton type={"submit"}>Sign in</BlackButton>

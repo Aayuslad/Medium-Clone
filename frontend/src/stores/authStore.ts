@@ -1,22 +1,19 @@
 import { create } from "zustand";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { signUpSchemaType, signinSchemaType } from "@aayushlad/medium-clone-common";
+import { signUpSchemaType, signinSchemaType, userType } from "@aayushlad/medium-clone-common";
 import { NavigateFunction } from "react-router-dom";
-
-type User = {
-	id: string;
-	email: string;
-	name: string;
-};
 
 type authStoreType = {
 	loading: boolean;
 	isLoggedIn: boolean;
-	user: User | undefined;
+	user: userType | undefined;
 	signup: (values: signUpSchemaType, navigate: NavigateFunction) => void;
 	signin: (values: signinSchemaType, navigate: NavigateFunction) => void;
+	signOut: () => void;
 	getUser: () => void;
+	getAnotherUser: (values: { id: string }) => Promise<userType>;
+	updateUser: (values: FormData) => Promise<void>;
 };
 
 export const authStore = create<authStoreType>((set) => ({
@@ -25,27 +22,56 @@ export const authStore = create<authStoreType>((set) => ({
 	user: undefined,
 
 	signup: async function (values, navigate) {
+		let toastId: string | undefined;
+		const { getUser } = authStore.getState();
+		
 		try {
-			await toast.promise(axios.post("/api/v1/user/signup", values), {
-				loading: "Signing up...",
-				success: "Signed up!",
-				error: "Error signing up!",
-			});
+			toastId = toast.loading("Signing up...");
+			await axios.post("/api/v1/user/signup", values);
+			toast.dismiss(toastId);
+			toast.success("Signed up!");
 			set({ isLoggedIn: true });
+			getUser();
 			setTimeout(() => navigate("/"), 1000);
-		} catch (error) {}
+		} catch (error: any) {
+			if (toastId) {
+				toast.dismiss(toastId);
+			}			
+			toast.error(error.response.data.error || "Error while signing up!");
+		}
 	},
 
 	signin: async function (values, navigate) {
+		let toastId: string | undefined;
+		const { getUser } = authStore.getState();
+
 		try {
-			await toast.promise(axios.post("/api/v1/user/signin", values), {
-				loading: "Signing in...",
-				success: "Signed in!",
-				error: "Error signing in!",
-			});
+			toastId = toast.loading("Signing in...");
+			await axios.post("/api/v1/user/signin", values);
+			toast.dismiss(toastId);
+			toast.success("Signed in!");
 			set({ isLoggedIn: true });
+			getUser();
 			setTimeout(() => navigate("/"), 1000);
-		} catch (error) {}
+		} catch (error: any) {
+			if (toastId) {
+				toast.dismiss(toastId);
+			}
+			toast.error(error.response.data.error || "Error while signing in!");
+		}
+	},
+
+	signOut: async function () {
+		try {
+			await toast.promise(axios.post("/api/v1/user/signOut"), {
+				loading: "Signing out...",
+				success: "Signed out!",
+				error: "Error signing out!",
+			});
+			set({ isLoggedIn: false });
+		} catch (error) {
+			console.log("Error signing out");
+		}
 	},
 
 	getUser: async function () {
@@ -60,6 +86,34 @@ export const authStore = create<authStoreType>((set) => ({
 			set({ loading: false });
 		}
 	},
+
+	getAnotherUser: async function (values) {
+		try {
+			const response = await axios.get(`/api/v1/user/userProfile/${values.id}`);
+			return response.data;			
+		} catch (error) {
+			console.error(error);
+		}
+	},
+
+	updateUser: async function (values) {
+		let toastId: string | undefined;
+
+		try {
+			toastId = toast.loading("Updating...");
+			await axios.put("/api/v1/user", values);
+			toast.dismiss(toastId);
+			toast.success("Updated!");
+		} catch (error: any) {
+			if (toastId) {
+				toast.dismiss(toastId);
+			}
+			toast.error(error.response.data.error || "Error while updating!");
+		} finally {
+			return;
+		}
+		
+	}
 }));
 
 export default authStore;

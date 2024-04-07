@@ -5,6 +5,7 @@ import LoadingPage from "./pages/LoadingPage";
 import HomePage from "./pages/HomePage";
 import ComposeBlogPage from "./pages/ComposeBlogPage";
 import ReadBlogPage from "./pages/ReadBlogPage";
+import ProfilePage from "./pages/ProfilePage";
 import authStore from "./stores/authStore";
 import { useEffect } from "react";
 
@@ -23,6 +24,7 @@ export default function App() {
 				<Route path="/signin" element={<SigninPage />} />
 				<Route path="/compose/:id" element={store.loading ? <LoadingPage /> : <ComposeBlogPage />} />
 				<Route path="/blog/:id" element={<ReadBlogPage />} />
+				<Route path="/user/:id" element={<ProfilePage />} />
 			</Routes>
 		</BrowserRouter>
 	);

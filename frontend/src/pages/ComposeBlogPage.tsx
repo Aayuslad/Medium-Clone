@@ -1,22 +1,12 @@
 import { useFormik } from "formik";
-import logo from "../assets/logo.svg";
 import { useEffect, useState } from "react";
-import { blogStore } from "../stores/blogStore";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
+import logo from "../assets/logo.svg";
 import authStore from "../stores/authStore";
-
-type BlogType = {
-	id?: string;
-	title: string;
-	content?: string;
-	description: string;
-	published?: boolean;
-	postedOn?: string;
-	topics: string[];
-	author?: string;
-	coverImage: string | File;
-};
+import { blogStore } from "../stores/blogStore";
+import { BlogType } from "@aayushlad/medium-clone-common";
+import defaultProfile from "../assets/defaultProfile.jpg";
 
 function valueToFormData(values: BlogType): FormData {
 	const formData = new FormData();
@@ -220,8 +210,8 @@ const ComposeBlogPage = () => {
 
 							<div className="profile mx-1 w-8 h-8 p-0 cursor-pointer sm:mx-4 sm:w-9 sm:h-9">
 								<img
-									src="https://miro.medium.com/v2/resize:fill:40:40/0*ks_bPGCSfXq0nrDO"
-									alt=""
+									src={(AuthStore.user?.profileImg as string) || defaultProfile}
+									alt="profile image"
 									className="rounded-full"
 								/>
 							</div>

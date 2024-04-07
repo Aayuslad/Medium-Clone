@@ -1,19 +1,45 @@
 import zod from "zod";
-export type UserType = {
+export declare const fileSchema: zod.ZodUnion<[zod.ZodString, zod.ZodObject<{
+    lastModified: zod.ZodNumber;
+    name: zod.ZodString;
+    type: zod.ZodString;
+    size: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    type: string;
+    lastModified: number;
+    name: string;
+    size: number;
+}, {
+    type: string;
+    lastModified: number;
+    name: string;
+    size: number;
+}>]>;
+export type userType = {
     id: string;
     email: string;
     name: string;
     password?: string;
+    bio?: string;
+    about?: string;
+    posts?: BlogType[];
+    profileImg?: string | File;
 };
 export type BlogType = {
-    id: string;
-    title?: string;
+    id?: string;
+    title: string;
     content?: string;
-    description?: string;
-    coverImage?: string;
-    published: boolean;
-    authorId?: string;
-    topics?: string[];
+    description: string;
+    published?: boolean;
+    postedOn?: string;
+    topics: string[];
+    author?: {
+        id: string;
+        name: string;
+        bio: string;
+        profileImg: string;
+    };
+    coverImage: string | File;
 };
 export declare const signUpSchema: zod.ZodObject<{
     name: zod.ZodString;
@@ -46,18 +72,56 @@ export declare const createBlogSchemas: zod.ZodObject<{
     description: zod.ZodString;
     published: zod.ZodBoolean;
     topics: zod.ZodArray<zod.ZodString, "many">;
+    coverImage: zod.ZodUnion<[zod.ZodString, zod.ZodObject<{
+        lastModified: zod.ZodNumber;
+        name: zod.ZodString;
+        type: zod.ZodString;
+        size: zod.ZodNumber;
+    }, "strip", zod.ZodTypeAny, {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    }, {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    }>]>;
 }, "strip", zod.ZodTypeAny, {
     title: string;
     content: string;
     description: string;
     published: boolean;
     topics: string[];
+    coverImage: (string | {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    }) & (string | {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    } | undefined);
 }, {
     title: string;
     content: string;
     description: string;
     published: boolean;
     topics: string[];
+    coverImage: (string | {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    }) & (string | {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    } | undefined);
 }>;
 export type createBlogSchemaType = zod.infer<typeof createBlogSchemas>;
 export declare const updateBlogSchema: zod.ZodObject<{
@@ -67,12 +131,39 @@ export declare const updateBlogSchema: zod.ZodObject<{
     description: zod.ZodString;
     published: zod.ZodBoolean;
     topics: zod.ZodArray<zod.ZodString, "many">;
+    coverImage: zod.ZodUnion<[zod.ZodString, zod.ZodObject<{
+        lastModified: zod.ZodNumber;
+        name: zod.ZodString;
+        type: zod.ZodString;
+        size: zod.ZodNumber;
+    }, "strip", zod.ZodTypeAny, {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    }, {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    }>]>;
 }, "strip", zod.ZodTypeAny, {
     title: string;
     content: string;
     description: string;
     published: boolean;
     topics: string[];
+    coverImage: (string | {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    }) & (string | {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    } | undefined);
     id: string;
 }, {
     title: string;
@@ -80,6 +171,65 @@ export declare const updateBlogSchema: zod.ZodObject<{
     description: string;
     published: boolean;
     topics: string[];
+    coverImage: (string | {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    }) & (string | {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    } | undefined);
     id: string;
 }>;
 export type updateBlogSchemaType = zod.infer<typeof updateBlogSchema>;
+export declare const updateUserType: zod.ZodObject<{
+    name: zod.ZodString;
+    bio: zod.ZodString;
+    profileImg: zod.ZodUnion<[zod.ZodString, zod.ZodObject<{
+        lastModified: zod.ZodNumber;
+        name: zod.ZodString;
+        type: zod.ZodString;
+        size: zod.ZodNumber;
+    }, "strip", zod.ZodTypeAny, {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    }, {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    }>]>;
+}, "strip", zod.ZodTypeAny, {
+    name: string;
+    bio: string;
+    profileImg: (string | {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    }) & (string | {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    } | undefined);
+}, {
+    name: string;
+    bio: string;
+    profileImg: (string | {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    }) & (string | {
+        type: string;
+        lastModified: number;
+        name: string;
+        size: number;
+    } | undefined);
+}>;

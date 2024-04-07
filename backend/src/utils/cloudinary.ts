@@ -1,8 +1,4 @@
-/**
- * Uploads an image to Cloudinary.
- * @param image The image file to upload.
- * @returns The secure URL of the uploaded image.
- */
+
 export const uploadImageCloudinary = async function (image: File) {
 	// Create a FormData object and append the image and upload preset
 	const formData = new FormData();

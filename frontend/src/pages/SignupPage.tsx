@@ -1,11 +1,12 @@
 import { Input } from "../components/Input";
 import { Footer } from "../components/Footer";
-import { BlackButton } from "../components/BlackButton";
+import { BlackButton } from "../components/buttons/BlackButton";
 import { Link, useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { signUpSchemaType } from "@aayushlad/medium-clone-common";
 import { authStore } from "../stores/authStore";
 import logo from "../assets/logo.svg";
+import { sinUpValidation } from "../helper/inputValidation";
 
 function signup() {
 	const navigate = useNavigate();
@@ -19,6 +20,7 @@ function signup() {
 		},
 		validateOnBlur: false,
 		validateOnChange: false,
+		validate: sinUpValidation,
 		onSubmit: async (values) => {
 			console.log(values);
 			store.signup(values, navigate);
@@ -46,15 +48,26 @@ function signup() {
 							onSubmit={formik.handleSubmit}
 						>
 							<div className="formHeader pb-4">
-								<h3 className="font-semibold text-gray-500 text-xl text-center">
+								<h3 className="font-semibold text-gray-500 px-3 text-xl text-center">
 									Enter your information to create an account
 								</h3>
 							</div>
-							<Input label="Username" type="text" field={formik.getFieldProps("name")} />
-							<Input label="Email" type="email" field={formik.getFieldProps("email")} />
+							<Input
+								label="Username"
+								type="text"
+								required={true}
+								field={formik.getFieldProps("name")}
+							/>
+							<Input
+								label="Email"
+								type="email"
+								required={true}
+								field={formik.getFieldProps("email")}
+							/>
 							<Input
 								label="Password"
 								type="password"
+								required={true}
 								field={formik.getFieldProps("password")}
 							/>
 							<BlackButton type={"submit"}>Sign up</BlackButton>
