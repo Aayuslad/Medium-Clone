@@ -17,7 +17,7 @@ export const Input = ({ label, type, field, required = false }: Props) => {
 				className="border border-neutral-300 rounded-md w-11/12 px-3 py-2 outline-none focus:ring-2 ring-offset-2 ring-zinc-300"
 				type={type}
 				{...field}
-				required={true}
+				required={required}
 			/>
 		</div>
 	);
