@@ -1,9 +1,10 @@
-import { createBlogSchemas, updateBlogSchema, userType } from "@aayushlad/medium-clone-common";
+import { clapBlogSchema, clapBlogSchemaType, createBlogSchemas, updateBlogSchema, userType } from "@aayushlad/medium-clone-common";
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { Topics } from "@prisma/client";
 import { Context } from "hono";
 import { uploadImageCloudinary } from "../utils/cloudinary";
+import zod from "zod";
 
 // get a unique blog by id
 export const getBlog = async function (ctx: Context) {
@@ -12,6 +13,7 @@ export const getBlog = async function (ctx: Context) {
 	}).$extends(withAccelerate());
 
 	const id = ctx.req.param("id");
+
 	try {
 		// finding blog
 		const blog = await prisma.post.findUnique({
@@ -24,6 +26,11 @@ export const getBlog = async function (ctx: Context) {
 				content: true,
 				description: true,
 				postedOn: true,
+				claps: {
+					select: {
+						userId: true,
+					},
+				},
 				topics: {
 					select: {
 						topic: true,
@@ -42,16 +49,37 @@ export const getBlog = async function (ctx: Context) {
 			},
 		});
 
+		// function that fetches user data
+		async function fetchUser(id: string) {
+			const res = await prisma.user.findUnique({
+				where: {
+					id: id,
+				},
+				select: {
+					id: true,
+					profileImg: true,
+					name: true,
+					bio: true,
+				},
+			});
+
+			return res;
+		}
+
 		// Transform topics to an array of strings
 		const transformedBlog = {
 			...blog,
 			topics: blog?.topics.map((topicObj: { topic: string }) => topicObj.topic),
+			claps:
+				blog?.claps &&
+				(await Promise.all(blog?.claps.map(async (clap) => await fetchUser(clap.userId)))),
+			totalClaps: blog?.claps?.reduce((totalClaps) => totalClaps + 1, 0) ?? 0,
 		};
 
 		return ctx.json(transformedBlog);
 	} catch (error) {
 		ctx.status(400);
-		console.log("error fetching blog", error);
+		console.log("Error fetching blog", error);
 		return ctx.json({ error: "Error fetching blog" });
 	}
 };
@@ -65,11 +93,15 @@ export const getAllBlogs = async function (ctx: Context) {
 	try {
 		// finding all users
 		const blogs = await prisma.post.findMany({
+			where: {
+				published: true,
+			},
 			select: {
 				id: true,
 				title: true,
 				description: true,
 				postedOn: true,
+				published: true,
 				topics: {
 					select: {
 						topic: true,
@@ -83,18 +115,16 @@ export const getAllBlogs = async function (ctx: Context) {
 						bio: true,
 						email: true,
 						profileImg: true,
-					}
+					},
 				},
 			},
 		});
 
 		// Map over blogs to transform topics to an array of strings
-		const transformedBlogs = blogs.map(
-			(blog) => ({
-				...blog,
-				topics: blog.topics.map((topicObj) => topicObj.topic),
-			}),
-		);
+		const transformedBlogs = blogs.map((blog) => ({
+			...blog,
+			topics: blog.topics.map((topicObj) => topicObj.topic),
+		}));
 
 		return ctx.json(transformedBlogs);
 	} catch (error) {
@@ -338,5 +368,55 @@ export const deleteBlog = async function (ctx: Context) {
 		ctx.status(400);
 		console.log("error deleting blog", error);
 		return ctx.json({ error: "Error deleting blog" });
+	}
+};
+
+// clap a blog
+export const clapBlog = async function (ctx: Context) {
+	const prisma = new PrismaClient({
+		datasourceUrl: ctx.env?.DATABASE_URL,
+	}).$extends(withAccelerate());
+
+	const user: userType = ctx.get("user");
+	const body: clapBlogSchemaType = await ctx.req.json();
+
+	try {
+		// parsing body
+		const { success } = clapBlogSchema.safeParse(body);
+		if (!success) {
+			ctx.status(400);
+			return ctx.json({ error: "Invalid request parameters" });
+		}
+
+		// If the user has already clapped, delete the existing clap record
+		const existingClap = await prisma.clap.findFirst({
+			where: {
+				userId: user.id,
+				postId: body.postId,
+			},
+		});
+		if (existingClap) {
+			await prisma.clap.delete({
+				where: {
+					id: existingClap.id,
+				},
+			});
+
+			return ctx.json({ message: "Clap removed." });
+		}
+
+		// creating new like record
+		await prisma.clap.create({
+			data: {
+				userId: user.id,
+				postId: body.postId,
+			},
+		});
+
+		return ctx.json({ message: "Post liked." });
+	} catch (error) {
+		ctx.status(400);
+		console.log("error liking blog", error);
+		return ctx.json({ error: "Error liking blog" });
 	}
 };

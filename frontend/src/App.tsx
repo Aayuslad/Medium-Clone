@@ -6,25 +6,28 @@ import HomePage from "./pages/HomePage";
 import ComposeBlogPage from "./pages/ComposeBlogPage";
 import ReadBlogPage from "./pages/ReadBlogPage";
 import ProfilePage from "./pages/ProfilePage";
-import authStore from "./stores/authStore";
+import { AuthStore } from "./stores/authStore";
 import { useEffect } from "react";
 
 export default function App() {
-	const store = authStore();
+	const authStore = AuthStore();
 
 	useEffect(() => {
-		store.getUser();
+		authStore.getUser();
 	}, [])
 	
 	return (
 		<BrowserRouter>
 			<Routes>
-				<Route path="/" element={store.loading ? <LoadingPage /> : <HomePage />} />
+				<Route path="/" element={authStore.loading ? <LoadingPage /> : <HomePage />} />
 				<Route path="/signup" element={<SignupPage />} />
 				<Route path="/signin" element={<SigninPage />} />
-				<Route path="/compose/:id" element={store.loading ? <LoadingPage /> : <ComposeBlogPage />} />
-				<Route path="/blog/:id" element={<ReadBlogPage />} />
-				<Route path="/user/:id" element={<ProfilePage />} />
+				<Route
+					path="/compose/:id"
+					element={authStore.loading ? <LoadingPage /> : <ComposeBlogPage />}
+				/>
+				<Route path="/blog/:id" element={authStore.loading ? <LoadingPage /> : <ReadBlogPage />} />
+				<Route path="/user/:id" element={authStore.loading ? <LoadingPage /> : <ProfilePage />} />
 			</Routes>
 		</BrowserRouter>
 	);

@@ -2,18 +2,19 @@ import { useEffect } from "react";
 import BlogPreview from "../components/BlogPreview";
 import Header from "../components/Header";
 import useScrollDirection from "../hooks/useScrollDirection";
-import { blogStore } from "../stores/blogStore";
+import { BlogStore } from "../stores/blogStore";
+import BlogsSkelitons from "../components/skelitons/BlogSkeletons";
 
 const HomePage = () => {
-	const BlogStore = blogStore();
+	const blogStore = BlogStore();
 	const scrollDirection = useScrollDirection();
 
 	useEffect(() => {
-		BlogStore.getBlogs();
+		blogStore.getBlogs();
 	}, []);
 
 	return (
-		<div className="HomePage" style={{ cursor: BlogStore.cursorLoading ? "wait" : "default" }}>
+		<div className="HomePage" style={{ cursor: blogStore.cursorLoading ? "wait" : "default" }}>
 			<Header />
 
 			<div className="main-container w-full flex-1 max-w-6xl mx-auto mt-14 flex border border-black">
@@ -25,9 +26,12 @@ const HomePage = () => {
 					></div>
 
 					<div className="mx-4 lg:mx-10 lg:mr-20">
-						{BlogStore.feedBlogs?.map((blog, index) => {
-							return <BlogPreview blog={blog} index={index} key={index} />;
-						})}
+						{!blogStore.skelitonLoading &&
+							blogStore.feedBlogs?.map((blog, index) => {
+								return <BlogPreview blog={blog} index={index} key={index} />;
+							})}
+
+						{blogStore.skelitonLoading && <BlogsSkelitons />}
 					</div>
 				</div>
 

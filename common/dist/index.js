@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUserType = exports.updateBlogSchema = exports.createBlogSchemas = exports.signinSchema = exports.signUpSchema = exports.fileSchema = void 0;
+exports.clapBlogSchema = exports.updateUserAboutSchema = exports.updateUserSchema = exports.updateBlogSchema = exports.createBlogSchemas = exports.signinSchema = exports.signUpSchema = exports.fileSchema = void 0;
 const zod_1 = __importDefault(require("zod"));
 exports.fileSchema = zod_1.default.union([
     zod_1.default.string(),
@@ -40,8 +40,14 @@ exports.updateBlogSchema = zod_1.default.object({
     topics: zod_1.default.array(zod_1.default.string()),
     coverImage: exports.fileSchema,
 });
-exports.updateUserType = zod_1.default.object({
+exports.updateUserSchema = zod_1.default.object({
     name: zod_1.default.string(),
     bio: zod_1.default.string(),
     profileImg: exports.fileSchema,
+});
+exports.updateUserAboutSchema = zod_1.default.object({
+    about: zod_1.default.string(),
+});
+exports.clapBlogSchema = zod_1.default.object({
+    postId: zod_1.default.string(),
 });

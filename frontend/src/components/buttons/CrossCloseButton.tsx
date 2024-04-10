@@ -1,10 +1,9 @@
-const CrossCloseButton = ({
-	type,
-	onClick,
-}: {
+type propsType = {
 	type: "submit" | "button" | "reset" | undefined;
-	onClick: () => void;
-}) => {
+	onClick?: () => void;
+};
+
+const CrossCloseButton = ({ type, onClick }: propsType) => {
 	return (
 		<button onClick={onClick} type={type}>
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="dv dq dx dw">

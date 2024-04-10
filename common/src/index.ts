@@ -28,6 +28,7 @@ export type BlogType = {
 	description: string;
 	published?: boolean;
 	postedOn?: string;
+	totalClaps?: number;
 	topics: string[];
 	author?: {
 		id: string;
@@ -35,6 +36,12 @@ export type BlogType = {
 		bio: string;
 		profileImg: string;
 	};
+	claps?: {
+		id: string;
+		profileImg: string;
+		name: string;
+		bio: string;
+	}[];
 	coverImage: string | File;
 };
 
@@ -76,8 +83,22 @@ export const updateBlogSchema = zod.object({
 
 export type updateBlogSchemaType = zod.infer<typeof updateBlogSchema>;
 
-export const updateUserType = zod.object({
+export const updateUserSchema = zod.object({
 	name: zod.string(),
 	bio: zod.string(),
 	profileImg: fileSchema,
 });
+
+export type updateUserSchemaType = zod.infer<typeof updateUserSchema>;
+
+export const updateUserAboutSchema = zod.object({
+	about: zod.string(),
+});
+
+export type updateUserAboutSchemaType = zod.infer<typeof updateUserAboutSchema>;
+
+export const clapBlogSchema = zod.object({
+	postId: zod.string(),
+});
+
+export type clapBlogSchemaType = zod.infer<typeof clapBlogSchema>;

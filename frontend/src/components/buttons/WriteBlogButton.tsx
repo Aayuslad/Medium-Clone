@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { blogStore } from "../../stores/blogStore";
+import { BlogStore } from "../../stores/blogStore";
 
 const WriteBlogButton = () => {
-	const BlogStore = blogStore();
+	const blogStore = BlogStore();
 	const navigate = useNavigate();
 
 	async function handleWrite() {
@@ -13,7 +13,7 @@ const WriteBlogButton = () => {
 		formData.append("published", "false");
 		formData.append("topics", "");
 		formData.append("coverImage", "");
-		const id = await BlogStore.postBlog(formData);
+		const id = await blogStore.postBlog(formData);
 		console.log(id);
 		if (id) {
 			navigate(`/compose/${id}`);
@@ -24,7 +24,7 @@ const WriteBlogButton = () => {
 		<div
 			className="write gap-2 mx-5 cursor-pointer flex"
 			onClick={handleWrite}
-			style={{ cursor: BlogStore.cursorLoading ? "wait" : "pointer" }}
+			style={{ cursor: blogStore.cursorLoading ? "wait" : "pointer" }}
 		>
 			<div className="icon">
 				<svg width="24" height="24" viewBox="0 0 24 24" fill="none">

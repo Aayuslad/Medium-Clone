@@ -1,7 +1,8 @@
 
 const SearchBox = () => {
+
 	return (
-		<form className="serchBox itmes-center  gap-2 relative hidden md:flex">
+		<form className="searchBox items-center gap-2 relative hidden md:flex">
 			<div className="icon absolute h-full flex items-center left-3">
 				<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
 					<path
@@ -15,7 +16,7 @@ const SearchBox = () => {
 			<input
 				type="text"
 				placeholder="Search"
-				className="bg-slate-100 px-4 py-2 pl-12 rounded-full w-70 outline-none"
+				className="bg-stone-100 px-4 py-2 pl-12 rounded-full w-70 outline-none"
 			/>
 		</form>
 	);

@@ -1,23 +1,16 @@
+import { BlogType } from "@aayushlad/medium-clone-common";
 import { useFormik } from "formik";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
-import logo from "../assets/logo.svg";
-import authStore from "../stores/authStore";
-import { blogStore } from "../stores/blogStore";
-import { BlogType } from "@aayushlad/medium-clone-common";
 import defaultProfile from "../assets/defaultProfile.jpg";
-
-function valueToFormData(values: BlogType): FormData {
-	const formData = new FormData();
-	formData.append("id", values.id as string);
-	formData.append("title", values.title);
-	formData.append("content", values.content || "");
-	formData.append("description", values.description);
-	formData.append("topics", values.topics?.join(",") || "");
-	formData.append("coverImage", values.coverImage || "");
-	return formData;
-}
+import logo from "../assets/logo.svg";
+import CrossCloseButton from "../components/buttons/CrossCloseButton";
+import MoreOptions from "../components/buttons/MoreOptionsButton";
+import NotificationButton from "../components/buttons/NotificationButton";
+import RegularButton from "../components/buttons/RegularButton";
+import { AuthStore } from "../stores/authStore";
+import { BlogStore } from "../stores/blogStore";
 
 const ComposeBlogPage = () => {
 	const [debounceTimeout, setDebounceTimeout] = useState<number | undefined>(undefined);
@@ -26,8 +19,8 @@ const ComposeBlogPage = () => {
 	const [coverImageLocal, setCoverImageLocal] = useState<string>("");
 	const { id } = useParams<{ id: string }>();
 	const navigate = useNavigate();
-	const store = blogStore();
-	const AuthStore = authStore();
+	const blogStore = BlogStore();
+	const authStore = AuthStore();
 
 	const formik = useFormik<BlogType>({
 		initialValues: {
@@ -43,10 +36,9 @@ const ComposeBlogPage = () => {
 		validateOnBlur: false,
 		validateOnChange: false,
 		onSubmit: async (values) => {
-			values.published = true;
-			console.log(values);
 			const formData = valueToFormData(values);
-			const flag = await toast.promise(store.putBlog(formData), {
+			formData.append("published", "true");
+			const flag = await toast.promise(blogStore.putBlog(formData), {
 				loading: "Posting...",
 				success: "New Blog Posted",
 				error: "Error Posting Blog!",
@@ -58,7 +50,7 @@ const ComposeBlogPage = () => {
 	});
 
 	useEffect(() => {
-		if (!AuthStore.isLoggedIn) {
+		if (!authStore.isLoggedIn) {
 			toast.error("Sign in first!");
 			navigate("/signin");
 		} else {
@@ -67,7 +59,7 @@ const ComposeBlogPage = () => {
 
 		async function get() {
 			if (id) {
-				const blog = await store.getBlog({ id });
+				const blog = await blogStore.getBlog({ id });
 				if (blog) formik.setValues(blog);
 			}
 		}
@@ -97,7 +89,7 @@ const ComposeBlogPage = () => {
 			async function post() {
 				const formData = valueToFormData(formik.values);
 				console.log(formik.values);
-				await store.putBlog(formData);
+				await blogStore.putBlog(formData);
 			}
 
 			post();
@@ -137,6 +129,7 @@ const ComposeBlogPage = () => {
 		}
 	};
 
+	// adjusting height of input components according to its constent
 	useEffect(() => {
 		const title = document.getElementById("title") as HTMLTextAreaElement;
 		const content = document.getElementById("content") as HTMLTextAreaElement;
@@ -151,21 +144,15 @@ const ComposeBlogPage = () => {
 			<form className="min-h-full w-full flex flex-col items-center" onSubmit={formik.handleSubmit}>
 				{!preview ? (
 					<>
-						<div
-							className="header h-14 px-2  w-full max-w-6xl flex items-center fixed sm:px-5"
-							style={{
-								backgroundColor: "rgba(255, 255, 255, 0.8)",
-								backdropFilter: "blur(1px)",
-							}}
-						>
+						<div className="header h-14 px-2  w-full max-w-6xl flex items-center fixed sm:px-5 backdrop-blur-[2px] bg-white bg-opacity-80">
 							<div className="logo cursor-pointer hidden sm:block">
 								<img src={logo} className="App-logo w-10 h-10" alt="logo" />
 							</div>
 
 							<div className="flex gap-6">
-								<span className="hidden sm:block">Draft in {AuthStore.user?.name}</span>
-								{store.updatingPost !== undefined &&
-									(store.updatingPost ? (
+								<span className="hidden sm:block">Draft in {authStore.user?.name}</span>
+								{blogStore.savingPostLoading !== undefined &&
+									(blogStore.savingPostLoading ? (
 										<div className="saving text-gray-600">Saving...</div>
 									) : (
 										<div className="saving text-gray-600">Saved</div>
@@ -174,43 +161,22 @@ const ComposeBlogPage = () => {
 
 							<div className="flex-1"></div>
 
-							<button
+							{/* Publish button */}
+							<RegularButton
+								text="Publish"
+								bgColor="green"
+								color="white"
 								type="button"
-								className="bg-green-600 px-3 py-2 mx-1 rounded-2xl text-sm leading-4 text-white sm:mx-4 sm:px-4 sm:py-2"
 								onClick={() => setPriview(true)}
-							>
-								publish
-							</button>
+							/>
 
-							<div className="dots mx-1 sm:mx-4">
-								<svg className="svgIcon-use" width="25" height="25">
-									<path
-										d="M5 12.5c0 .552.195 1.023.586 1.414.39.39.862.586 1.414.586.552 0 1.023-.195 1.414-.586.39-.39.586-.862.586-1.414 0-.552-.195-1.023-.586-1.414A1.927 1.927 0 007 10.5c-.552 0-1.023.195-1.414.586-.39.39-.586.862-.586 1.414zm5.617 0c0 .552.196 1.023.586 1.414.391.39.863.586 1.414.586.552 0 1.023-.195 1.414-.586.39-.39.586-.862.586-1.414 0-.552-.195-1.023-.586-1.414a1.927 1.927 0 00-1.414-.586c-.551 0-1.023.195-1.414.586-.39.39-.586.862-.586 1.414zm5.6 0c0 .552.195 1.023.586 1.414.39.39.868.586 1.432.586.551 0 1.023-.195 1.413-.586.391-.39.587-.862.587-1.414 0-.552-.196-1.023-.587-1.414a1.927 1.927 0 00-1.413-.586c-.565 0-1.042.195-1.432.586-.39.39-.586.862-.587 1.414z"
-										fillRule="evenodd"
-									></path>
-								</svg>
-							</div>
+							<MoreOptions />
 
-							<div className="bell mx-4 cursor-pointer hidden sm:block">
-								<div className="icon">
-									<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-										<path
-											d="M15 18.5a3 3 0 1 1-6 0"
-											stroke="currentColor"
-											strokeLinecap="round"
-										></path>
-										<path
-											d="M5.5 10.53V9a6.5 6.5 0 0 1 13 0v1.53c0 1.42.56 2.78 1.57 3.79l.03.03c.26.26.4.6.4.97v2.93c0 .14-.11.25-.25.25H3.75a.25.25 0 0 1-.25-.25v-2.93c0-.37.14-.71.4-.97l.03-.03c1-1 1.57-2.37 1.57-3.79z"
-											stroke="currentColor"
-											strokeLinejoin="round"
-										></path>
-									</svg>
-								</div>
-							</div>
+							<NotificationButton />
 
 							<div className="profile mx-1 w-8 h-8 p-0 cursor-pointer sm:mx-4 sm:w-9 sm:h-9">
 								<img
-									src={(AuthStore.user?.profileImg as string) || defaultProfile}
+									src={(authStore.user?.profileImg as string) || defaultProfile}
 									alt="profile image"
 									className="rounded-full"
 								/>
@@ -228,11 +194,12 @@ const ComposeBlogPage = () => {
 								className="resize-none outline-none px-2 pt-10 pb-3 text-4xl leading-[3rem] border-b border-slate-200 overflow-hidden font-Merriweather font-semibold"
 								{...formik.getFieldProps("title")}
 							></textarea>
+
 							<textarea
 								id="content"
 								rows={1}
 								placeholder="content"
-								className="resize-none outline-none px-2 py-3 mb-20 text-xl overflow-hidden text-gray-900 font-Merriweather font-light leading-9"
+								className="resize-none outline-none px-2 py-3 pt-8 mb-20 text-xl overflow-hidden text-gray-900 font-Merriweather font-light leading-9"
 								{...formik.getFieldProps("content")}
 							></textarea>
 						</div>
@@ -240,24 +207,17 @@ const ComposeBlogPage = () => {
 				) : (
 					<div className="preview w-screen h-screen flex justify-center pt-20">
 						<div className="main-container w-full h-fit max-w-5xl flex flex-col md:flex-row relative">
-							<button
-								type="button"
-								className="cross absolute top-[-40px] right-4"
-								onClick={() => setPriview(false)}
-							>
-								<svg className="svgIcon-use" width="29" height="29">
-									<path
-										d="M20.13 8.11l-5.61 5.61-5.609-5.61-.801.801 5.61 5.61-5.61 5.61.801.8 5.61-5.609 5.61 5.61.8-.801-5.609-5.61 5.61-5.61"
-										fill-rule="evenodd"
-									></path>
-								</svg>
-							</button>
+							{/* close button */}
+							<div className="cross absolute top-[-40px] right-4">
+								<CrossCloseButton type="button" onClick={() => setPriview(false)} />
+							</div>
 
 							<div
 								className="preview h-full flex-1 flex flex-col  gap-2 px-4 mb-20 md:mb-0 md:px-10"
 								onChange={handleDebounce}
 							>
 								<h2 className="font-semibold">Story Preview</h2>
+
 								<label htmlFor="coverImg" className="h-[200px] w-full mx-auto ">
 									{formik.values.coverImage === "" && coverImageLocal === "" ? (
 										<div className="w-full h-full bg-slate-100 rounded-sm flex items-center justify-center text-gray-500 text-sm text-center px-10">
@@ -278,7 +238,9 @@ const ComposeBlogPage = () => {
 										</div>
 									)}
 								</label>
+
 								<input type="file" id="coverImg" className="hidden" onChange={onImgUpload} />
+
 								<textarea
 									id="title"
 									rows={2}
@@ -286,6 +248,7 @@ const ComposeBlogPage = () => {
 									{...formik.getFieldProps("title")}
 									className="outline-none resize-none text-xl py-2 font-semibold border-b-2 border-neutral-200 font-Merriweather"
 								/>
+
 								<textarea
 									id="description"
 									maxLength={140}
@@ -294,6 +257,7 @@ const ComposeBlogPage = () => {
 									{...formik.getFieldProps("description")}
 									className="outline-none py-1 resize-none font-Merriweather"
 								></textarea>
+
 								<div className="note border-t-2 border-neutral-200 pt-1 text-gray-500">
 									<span className="font-semibold">Note: </span>Changes here will affect how
 									your story appears in public places like Medium’s homepage and in
@@ -304,7 +268,7 @@ const ComposeBlogPage = () => {
 							<div className="add-topics h-fit flex-1 px-4 flex flex-col gap-4 mb-20 md:mb-0 md:px-10">
 								<div>
 									Publishing To:{" "}
-									<span className="font-semibold">{AuthStore.user?.name}</span>
+									<span className="font-semibold">{authStore.user?.name}</span>
 								</div>
 
 								<div className="font-sm">
@@ -324,9 +288,11 @@ const ComposeBlogPage = () => {
 											onKeyDown={handleTopicKeyDown}
 										/>
 
-										<button
-											type="button"
-											className="px-4 py-2 border border-black rounded-3xl"
+										<RegularButton
+											text="Add"
+											bgColor="white"
+											color="black"
+											borderColor="black"
 											onClick={() => {
 												if (formik.values.topics == undefined)
 													formik.values.topics = [];
@@ -334,41 +300,34 @@ const ComposeBlogPage = () => {
 												handleDebounce();
 												setTopic("");
 											}}
-										>
-											Add
-										</button>
+										/>
 									</form>
+
 									<div className="topics flex flex-col gap-1 pt-4 px-6">
 										{formik.values.topics?.map((topic, index) => {
 											return (
-												<div
-													className="flex justify-between"
-													key={index}
-													onClick={() => {
-														deleteTopic(index);
-														handleDebounce();
-													}}
-												>
+												<div className="flex justify-between" key={index}>
 													<div>{topic}</div>
 
-													<svg className="svgIcon-use" width="20" height="20">
-														<path
-															d="M20.13 8.11l-5.61 5.61-5.609-5.61-.801.801 5.61 5.61-5.61 5.61.801.8 5.61-5.609 5.61 5.61.8-.801-5.609-5.61 5.61-5.61"
-															fill-rule="evenodd"
-														></path>
-													</svg>
+													<CrossCloseButton
+														type="button"
+														onClick={() => {
+															deleteTopic(index);
+															handleDebounce();
+														}}
+													/>
 												</div>
 											);
 										})}
 									</div>
 								</div>
 
-								<button
+								<RegularButton
+									text="Publish Now"
 									type="submit"
-									className="bg-green-600 px-4 py-2 mx-10 mt-5 rounded-2xl text-sm leading-4 text-white md:w-fit md:mx-0"
-								>
-									Publish Now
-								</button>
+									bgColor="green"
+									color="white"
+								/>
 							</div>
 						</div>
 					</div>
@@ -379,3 +338,14 @@ const ComposeBlogPage = () => {
 };
 
 export default ComposeBlogPage;
+
+function valueToFormData(values: BlogType): FormData {
+	const formData = new FormData();
+	formData.append("id", values.id as string);
+	formData.append("title", values.title);
+	formData.append("content", values.content || "");
+	formData.append("description", values.description);
+	formData.append("topics", values.topics?.join(",") || "");
+	formData.append("coverImage", values.coverImage || "");
+	return formData;
+}

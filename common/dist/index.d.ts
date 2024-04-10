@@ -32,6 +32,7 @@ export type BlogType = {
     description: string;
     published?: boolean;
     postedOn?: string;
+    totalClaps?: number;
     topics: string[];
     author?: {
         id: string;
@@ -39,6 +40,12 @@ export type BlogType = {
         bio: string;
         profileImg: string;
     };
+    claps?: {
+        id: string;
+        profileImg: string;
+        name: string;
+        bio: string;
+    }[];
     coverImage: string | File;
 };
 export declare const signUpSchema: zod.ZodObject<{
@@ -185,7 +192,7 @@ export declare const updateBlogSchema: zod.ZodObject<{
     id: string;
 }>;
 export type updateBlogSchemaType = zod.infer<typeof updateBlogSchema>;
-export declare const updateUserType: zod.ZodObject<{
+export declare const updateUserSchema: zod.ZodObject<{
     name: zod.ZodString;
     bio: zod.ZodString;
     profileImg: zod.ZodUnion<[zod.ZodString, zod.ZodObject<{
@@ -233,3 +240,20 @@ export declare const updateUserType: zod.ZodObject<{
         size: number;
     } | undefined);
 }>;
+export type updateUserSchemaType = zod.infer<typeof updateUserSchema>;
+export declare const updateUserAboutSchema: zod.ZodObject<{
+    about: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    about: string;
+}, {
+    about: string;
+}>;
+export type updateUserAboutSchemaType = zod.infer<typeof updateUserAboutSchema>;
+export declare const clapBlogSchema: zod.ZodObject<{
+    postId: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    postId: string;
+}, {
+    postId: string;
+}>;
+export type clapBlogSchemaType = zod.infer<typeof clapBlogSchema>;

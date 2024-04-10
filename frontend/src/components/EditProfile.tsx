@@ -1,9 +1,10 @@
-import RegularButton from "./buttons/RegularButton";
-import defaultProfile from "../assets/defaultProfile.jpg";
-import CrossCloseButton from "./buttons/CrossCloseButton";
 import { useFormik } from "formik";
 import { useEffect, useState } from "react";
-import authStore from "../stores/authStore";
+import defaultProfile from "../assets/defaultProfile.jpg";
+import { AuthStore } from "../stores/authStore";
+import { UsersStore } from "../stores/usersStore";
+import CrossCloseButton from "./buttons/CrossCloseButton";
+import RegularButton from "./buttons/RegularButton";
 
 type editProfileType = {
 	profileImg: string | File;
@@ -13,7 +14,8 @@ type editProfileType = {
 
 const EditProfile = ({ onCloseClick }: { onCloseClick: () => void }) => {
 	const [profileImgLocal, setProfileImgLocal] = useState<string>("");
-	const AuthStore = authStore();
+	const authStore = AuthStore();
+	const usersStore = UsersStore();
 
 	const formik = useFormik<editProfileType>({
 		initialValues: {
@@ -29,20 +31,20 @@ const EditProfile = ({ onCloseClick }: { onCloseClick: () => void }) => {
 			formData.append("name", values.name);
 			formData.append("bio", values.bio);
 			formData.append("profileImg", values.profileImg);
-			await AuthStore.updateUser(formData);
+			await usersStore.updateUser(formData);
 			onCloseClick();
 		},
 	});
 
 	useEffect(() => {
-		if (AuthStore.user) {
+		if (authStore.user) {
 			formik.setValues({
-				profileImg: AuthStore.user.profileImg || "",
-				name: AuthStore.user.name,
-				bio: AuthStore.user.bio || "",
+				profileImg: authStore.user.profileImg || "",
+				name: authStore.user.name,
+				bio: authStore.user.bio || "",
 			});
 		}
-	}, [AuthStore.user]);
+	}, [authStore.user]);
 
 	// image upload logic
 	const onImgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -142,6 +144,7 @@ const EditProfile = ({ onCloseClick }: { onCloseClick: () => void }) => {
 						onClick={onCloseClick}
 						color={"green"}
 						bgColor={"white"}
+						borderColor="green"
 					/>
 					<RegularButton text={"Save"} type={"submit"} onClick={() => console.log("")} />
 				</div>

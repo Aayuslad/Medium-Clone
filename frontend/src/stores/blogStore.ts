@@ -1,88 +1,106 @@
 import axios from "axios";
 import { create } from "zustand";
 import toast from "react-hot-toast";
-import { BlogType } from "@aayushlad/medium-clone-common"
+import { BlogType } from "@aayushlad/medium-clone-common";
 
 type BlogStoreType = {
-	loading: boolean;
 	cursorLoading: boolean;
-	updatingPost: Boolean | undefined;
+	skelitonLoading: boolean;
+	savingPostLoading: Boolean | undefined;
 	feedBlogs: BlogType[] | [];
 	postBlog: (value: FormData) => Promise<string>;
 	putBlog: (value: FormData) => Promise<Boolean>;
 	getBlog: (value: { id: string }) => Promise<BlogType | undefined>;
 	getBlogs: () => void;
 	deleteBlog: (value: { id: string }) => void;
+	clapBlog: (value: { postId: string }) => void;
 };
 
-export const blogStore = create<BlogStoreType>((set) => ({
-	loading: false,
+export const BlogStore = create<BlogStoreType>((set) => ({
 	cursorLoading: false,
-	updatingPost: undefined,
+	skelitonLoading: false,
+	savingPostLoading: undefined,
 	feedBlogs: [],
 
-	postBlog: async (value) => {
+	postBlog: async (values) => {
 		let id: string = "";
 
 		try {
 			set({ cursorLoading: true });
-			const res = await axios.post("/api/v1/blog", value);
+			const res = await axios.post("/api/v1/blog", values);
 			console.log(res);
 
 			id = res.data.newBlog.id;
 		} catch (error) {
-			toast.error("Errow while creating Blog!");
+			toast.error("Error while creating Blog!");
 		} finally {
 			set({ cursorLoading: false });
 			return id;
 		}
 	},
 
-	putBlog: async (value) => {
+	putBlog: async (values) => {
 		let flag: Boolean = false;
 
 		try {
-			set({ updatingPost: true });
-			await axios.put("/api/v1/blog", value);
+			set({ savingPostLoading: true });
+			await axios.put("/api/v1/blog", values);
 			flag = true;
 		} catch (error) {
+			toast.error("Error while updating Blog!");
 		} finally {
-			set({ updatingPost: false });
+			set({ savingPostLoading: false });
 			return flag;
 		}
 	},
 
-	getBlog: async (value) => {
+	getBlog: async (values) => {
 		let blog: BlogType | undefined = undefined;
 
 		try {
-			const res = await toast.promise(axios.get(`/api/v1/blog/${value.id}`), {
-				loading: "",
-				success: "",
-				error: "",
-			});			
+			set({ skelitonLoading: true });
+			const res = await axios.get(`/api/v1/blog/${values.id}`);
 			blog = res.data;
 		} catch (error) {
+			toast.error("Error while fetching Blog!");
 		} finally {
+			set({ skelitonLoading: false });
 			return blog;
 		}
 	},
 
 	getBlogs: async () => {
 		try {
-			const res = await axios.get(`/api/v1/blog/bulk`);			
+			set({ skelitonLoading: true });
+			const res = await axios.get(`/api/v1/blog/bulk`);
 			set({ feedBlogs: res.data });
 		} catch (error) {
+			toast.error("Error while fetching Blog!");
 		} finally {
+			set({ skelitonLoading: false });
 		}
 	},
 
-	deleteBlog: async (value) => {
+	deleteBlog: async (values) => {
 		try {
-			await axios.delete(`/api/v1/blog/${value.id}`);
+			await axios.delete(`/api/v1/blog/${values.id}`);
 		} catch (error) {
 		} finally {
 			return;
+		}
+	},
+
+	clapBlog: async (values) => {
+		try {
+			set({ savingPostLoading: true })
+			await axios.post(`/api/v1/blog/clap`, values);
+		} catch (error: any) {
+			console.log(error);
+			if (error.response.status == 401) {
+				toast.error("Signin To clap")
+			} 
+		} finally {
+			set({ savingPostLoading: false })
 		}
 	},
 }));

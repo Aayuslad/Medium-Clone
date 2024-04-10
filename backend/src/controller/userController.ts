@@ -3,6 +3,10 @@ import {
 	signUpSchemaType,
 	signinSchema,
 	signinSchemaType,
+	updateUserSchema,
+	updateUserSchemaType,
+	updateUserAboutSchema,
+	updateUserAboutSchemaType,
 	userType,
 } from "@aayushlad/medium-clone-common";
 import { PrismaClient } from "@prisma/client/edge";
@@ -93,7 +97,7 @@ export const signin = async function (ctx: Context) {
 	}
 
 	try {
-		// find user 
+		// find user
 		const user = await prisma.user.findFirst({
 			where: {
 				OR: [
@@ -270,11 +274,18 @@ export const updateUser = async (ctx: Context) => {
 		// Parse form data
 		const formData = await ctx.req.formData();
 
-		const body = {
+		const body: updateUserSchemaType = {
 			name: formData.get("name") as string,
 			bio: formData.get("bio") as string,
 			profileImg: formData.get("profileImg") as File,
 		};
+
+		// parse body
+		const { success } = updateUserSchema.safeParse(body);
+		if (!success) {
+			ctx.status(400);
+			return ctx.json({ error: "Invalid request parameters" });
+		}
 
 		// Check if the name has been changed and if, Check for new name already exists in the database
 		if (body.name !== user.name) {
@@ -299,7 +310,7 @@ export const updateUser = async (ctx: Context) => {
 			},
 		});
 		const currentProfileImg = existingPost?.profileImg;
-		const secure_url = body.profileImg ? await uploadImageCloudinary(body.profileImg) : currentProfileImg;
+		const secure_url = body.profileImg ? await uploadImageCloudinary(body.profileImg as File) : currentProfileImg;
 
 		// update post
 		await prisma.user.update({
@@ -316,6 +327,43 @@ export const updateUser = async (ctx: Context) => {
 		return ctx.json({ message: "User updated successfully" });
 	} catch (err) {
 		ctx.status(500);
+		return ctx.json({ error: "Error updating user" });
+	}
+};
+
+// update user's about sectionq
+export const updateUserAbout = async (ctx: Context) => {
+	const prisma = new PrismaClient({
+		datasourceUrl: ctx.env?.DATABASE_URL,
+	}).$extends(withAccelerate());
+
+	console.log("run");
+
+	const user: userType = ctx.get("user");
+	const body: updateUserAboutSchemaType = await ctx.req.json();
+
+	try {
+		// parse body
+		const { success } = updateUserAboutSchema.safeParse(body);
+		if (!success) {
+			ctx.status(400);
+			return ctx.json({ error: "Invalid request parameters" });
+		}
+
+		// update post
+		await prisma.user.update({
+			where: {
+				id: user.id,
+			},
+			data: {
+				about: body.about,
+			},
+		});
+
+		return ctx.json({ message: "User updated successfully" });
+	} catch (err) {
+		ctx.status(500);
+		console.log(err);
 		return ctx.json({ error: "Error updating user" });
 	}
 };

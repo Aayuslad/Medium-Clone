@@ -1,19 +1,19 @@
-import SearchBox from "./SearchBox";
-import MobileSearchButton from "./buttons/MobileSearchButton";
-import RegularButton from "./buttons/RegularButton";
-import WriteBlogButton from "./buttons/WriteBlogButton";
-import authStore from "../stores/authStore";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.svg";
 import useScrollDirection from "../hooks/useScrollDirection";
-import NotificationButton from "./buttons/NotificationButton";
+import { AuthStore } from "../stores/authStore";
 import ProfileIcon from "./ProfileIcon";
+import SearchBox from "./SearchBox";
 import SideBar from "./SideBar";
-import { useEffect, useState } from "react";
+import MobileSearchButton from "./buttons/MobileSearchButton";
+import NotificationButton from "./buttons/NotificationButton";
+import RegularButton from "./buttons/RegularButton";
+import WriteBlogButton from "./buttons/WriteBlogButton";
 
 const Header = () => {
 	const [sideBarState, setSideBarState] = useState<boolean>(false);
-	const AuthStore = authStore();
+	const authStore = AuthStore();
 	const navigate = useNavigate();
 	const scrollDirection = useScrollDirection();
 
@@ -23,7 +23,7 @@ const Header = () => {
 
 	return (
 		<div
-			className={`Header z-10 w-full h-14 px-5 fixed flex items-center gap-1 border-b-2 border-neutral-300 bg-white backdrop-blur-20 duration-500 ${
+			className={`Header z-10 w-full max-w-[100vw] h-14 px-5 fixed flex items-center gap-1 border-b-2 border-neutral-300 bg-white backdrop-blur-20 duration-500 ${
 				scrollDirection === "down" ? "-top-24" : "top-0"
 			}`}
 		>
@@ -41,10 +41,10 @@ const Header = () => {
 			<MobileSearchButton />
 
 			{/* Sign up button */}
-			{!AuthStore.isLoggedIn && <RegularButton text={"Sign up"} onClick={() => navigate("/signup")} />}
+			{!authStore.isLoggedIn && <RegularButton text={"Sign up"} onClick={() => navigate("/signup")} />}
 
 			{/* Sign in button */}
-			{!AuthStore.isLoggedIn && (
+			{!authStore.isLoggedIn && (
 				<RegularButton
 					text={"Sign in"}
 					onClick={() => navigate("/signin")}
@@ -54,18 +54,19 @@ const Header = () => {
 			)}
 
 			{/* Write button */}
-			{AuthStore.isLoggedIn && (
+			{authStore.isLoggedIn && (
 				<div className="hidden md:flex">
 					<WriteBlogButton />
 				</div>
 			)}
 
 			{/* Notification button */}
-			{AuthStore.isLoggedIn && <NotificationButton />}
+			{authStore.isLoggedIn && <NotificationButton />}
 
 			{/* Profile Icon */}
-			{AuthStore.isLoggedIn && <ProfileIcon onClick={() => setSideBarState(state => !state)}/>}
+			{authStore.isLoggedIn && <ProfileIcon onClick={() => setSideBarState((state) => !state)} />}
 
+			{/* side bar component*/}
 			{sideBarState && <SideBar />}
 		</div>
 	);
