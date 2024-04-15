@@ -1,15 +1,15 @@
 import { AuthStore } from "../stores/authStore";
-import defaultProfile from "../assets/defaultProfile.jpg"
+import defaultProfile from "../assets/defaultProfile.jpg";
 
-const ProfileIcon = ({ onClick }: { onClick?: () => void }) => {
+const ProfileIcon = ({ onClick, profileImg }: { onClick?: () => void; profileImg?: string }) => {
 	const authStore = AuthStore();
 
 	return (
-		<div className="profile mx-4 w-9 h-9 p-0 cursor-pointer" onClick={onClick}>
+		<div className="profile mx-4 w-9 h-9 p-0 aspect-square cursor-pointer" onClick={onClick}>
 			<img
-				src={(authStore.user?.profileImg as string) || defaultProfile}
+				src={(profileImg ? profileImg : (authStore.user?.profileImg as string)) || defaultProfile}
 				alt="user profile"
-				className="rounded-full"
+				className="rounded-full w-full h-full"
 			/>
 		</div>
 	);

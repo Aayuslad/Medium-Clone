@@ -1,4 +1,4 @@
-import { signUpSchemaType } from "@aayushlad/medium-clone-common";
+import { signUpUserSchemaType } from "@aayushlad/medium-clone-common";
 import { useFormik } from "formik";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.svg";
@@ -12,9 +12,9 @@ function signup() {
 	const navigate = useNavigate();
 	const authStore = AuthStore();
 
-	const formik = useFormik<signUpSchemaType>({
+	const formik = useFormik<signUpUserSchemaType>({
 		initialValues: {
-			name: "",
+			userName: "",
 			email: "",
 			password: "",
 		},
@@ -58,7 +58,7 @@ function signup() {
 								label="Username"
 								type="text"
 								required={true}
-								field={formik.getFieldProps("name")}
+								field={formik.getFieldProps("userName")}
 							/>
 
 							<Input

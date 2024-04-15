@@ -1,4 +1,4 @@
-import { signUpSchemaType, signinSchemaType, userType } from "@aayushlad/medium-clone-common";
+import { signUpUserSchemaType, signinUserSchemaType, userType } from "@aayushlad/medium-clone-common";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { NavigateFunction } from "react-router-dom";
@@ -8,8 +8,8 @@ type authStoreType = {
 	loading: boolean;
 	isLoggedIn: boolean;
 	user: userType | undefined;
-	signup: (values: signUpSchemaType, navigate: NavigateFunction) => void;
-	signin: (values: signinSchemaType, navigate: NavigateFunction) => void;
+	signup: (values: signUpUserSchemaType, navigate: NavigateFunction) => void;
+	signin: (values: signinUserSchemaType, navigate: NavigateFunction) => void;
 	signOut: () => void;
 	getUser: () => void;
 };
@@ -35,7 +35,7 @@ export const AuthStore = create<authStoreType>((set) => ({
 			if (toastId) {
 				toast.dismiss(toastId);
 			}
-			toast.error(error.response.data.error || "Error while signing up!");
+			toast.error(error.response.data.message || "Error while signing up!");
 		}
 	},
 
@@ -55,7 +55,7 @@ export const AuthStore = create<authStoreType>((set) => ({
 			if (toastId) {
 				toast.dismiss(toastId);
 			}
-			toast.error(error.response.data.error || "Error while signing in!");
+			toast.error(error.response.data.message || "Error while signing in!");
 		}
 	},
 
@@ -79,7 +79,7 @@ export const AuthStore = create<authStoreType>((set) => ({
 			console.log("user", response.data);
 			set({ user: response.data, isLoggedIn: true });
 		} catch (error) {
-			console.error(error);
+			console.log(error);
 		} finally {
 			set({ loading: false });
 		}

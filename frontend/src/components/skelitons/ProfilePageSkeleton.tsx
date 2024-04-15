@@ -1,4 +1,4 @@
-import BlogsSkeliton from "./BlogsSkeleton";
+import BlogsSkeliton from "./StorySkeleton";
 
 const ProfilePageSkeleton = () => {
 	return (
@@ -20,10 +20,10 @@ const ProfilePageSkeleton = () => {
 				</div>
 			</div>
 
-			<div className="small-container w-96 px-12 hidden lg:block h-screen sticky top-0">
+			<div className="small-container w-[350px] px-8 hidden lg:block h-screen sticky top-0">
 				<div className="profile">
 					<svg
-						className="w-20 h-20 mt-4 mb-3 me-3 text-gray-200 dark:text-gray-300"
+						className="w-20 h-20 mt-4 mb-3 text-gray-200 dark:text-gray-300"
 						aria-hidden="true"
 						xmlns="http://www.w3.org/2000/svg"
 						fill="currentColor"

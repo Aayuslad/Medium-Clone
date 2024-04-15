@@ -9,7 +9,7 @@ import SideBar from "./SideBar";
 import MobileSearchButton from "./buttons/MobileSearchButton";
 import NotificationButton from "./buttons/NotificationButton";
 import RegularButton from "./buttons/RegularButton";
-import WriteBlogButton from "./buttons/WriteBlogButton";
+import WriteStoryButton from "./buttons/WriteStoryButton";
 
 const Header = () => {
 	const [sideBarState, setSideBarState] = useState<boolean>(false);
@@ -56,7 +56,7 @@ const Header = () => {
 			{/* Write button */}
 			{authStore.isLoggedIn && (
 				<div className="hidden md:flex">
-					<WriteBlogButton />
+					<WriteStoryButton />
 				</div>
 			)}
 

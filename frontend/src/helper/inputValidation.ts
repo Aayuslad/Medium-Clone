@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 
 interface FormValues {
 	email?: string;
-	name?: string;
+	userName?: string;
 	emailOrName?: string;
 	password?: string;
 }
@@ -10,7 +10,7 @@ interface FormValues {
 // validating registration form
 export async function sinUpValidation(values: FormValues) {
 	const error: Partial<FormValues> = usernameVerify({}, values);
-	if (error.name) return error;
+	if (error.userName) return error;
 	emailVerify(error, values);
 	if (error.email) return error;
 	passwordVerify(error, values);
@@ -59,8 +59,8 @@ function passwordVerify(error: Partial<FormValues> = {}, values: FormValues) {
 
 // validate username
 function usernameVerify(error: Partial<FormValues> = {}, values: FormValues) {
-	if (values.name?.includes(" ")) {
-		error.name = toast.error("Invalid username");
+	if (values.userName?.includes(" ")) {
+		error.userName = toast.error("Invalid username");
 	}
 
 	return error;

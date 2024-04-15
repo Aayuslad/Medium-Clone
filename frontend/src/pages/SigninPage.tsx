@@ -1,18 +1,18 @@
-import { Input } from "../components/Input";
-import { Footer } from "../components/Footer";
-import { BlackButton } from "../components/buttons/BlackButton";
-import { Link, useNavigate } from "react-router-dom";
+import { signinUserSchemaType } from "@aayushlad/medium-clone-common";
 import { useFormik } from "formik";
-import { AuthStore } from "../stores/authStore";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.svg";
+import { Footer } from "../components/Footer";
+import { Input } from "../components/Input";
+import { BlackButton } from "../components/buttons/BlackButton";
 import { sinInValidation } from "../helper/inputValidation";
-import { signinSchemaType } from "@aayushlad/medium-clone-common";
+import { AuthStore } from "../stores/authStore";
 
 function signin() {
 	const authStore = AuthStore();
 	const navigate = useNavigate();
 
-	const formik = useFormik<signinSchemaType>({
+	const formik = useFormik<signinUserSchemaType>({
 		initialValues: {
 			password: "",
 			emailOrName: "",
@@ -34,7 +34,7 @@ function signin() {
 					</div>
 					<h2 className="text-3xl font-semibold">Welcome to Medium</h2>
 				</div>
-				
+
 				<div className="Content w-screen h-screen flex border">
 					<div className="left h-full flex-1 bg-slate-100 hidden md:flex items-center justify-center">
 						<h3 className="text-5xl px-16 font-bold">

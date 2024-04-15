@@ -3,51 +3,45 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clapBlogSchema = exports.updateUserAboutSchema = exports.updateUserSchema = exports.updateBlogSchema = exports.createBlogSchemas = exports.signinSchema = exports.signUpSchema = exports.fileSchema = void 0;
+exports.clapStorySchema = exports.updateStorySchema = exports.createStorySchema = exports.followUserSchema = exports.updateUserAboutSectionSchema = exports.updateUserSchema = exports.signinUserSchema = exports.signUpUserSchema = void 0;
 const zod_1 = __importDefault(require("zod"));
-exports.fileSchema = zod_1.default.union([
-    zod_1.default.string(),
-    zod_1.default.object({
-        lastModified: zod_1.default.number(),
-        name: zod_1.default.string(),
-        type: zod_1.default.string(),
-        size: zod_1.default.number(),
-    }),
-]);
-exports.signUpSchema = zod_1.default.object({
-    name: zod_1.default.string().regex(/^\S*$/), // cheking for space
+//
+exports.signUpUserSchema = zod_1.default.object({
+    userName: zod_1.default.string().regex(/^\S*$/),
     email: zod_1.default.string().email(),
     password: zod_1.default.string().min(6),
 });
-exports.signinSchema = zod_1.default.object({
+//
+exports.signinUserSchema = zod_1.default.object({
     emailOrName: zod_1.default.string(),
     password: zod_1.default.string().min(6),
 });
-exports.createBlogSchemas = zod_1.default.object({
-    title: zod_1.default.string(),
-    content: zod_1.default.string(),
-    description: zod_1.default.string(),
-    published: zod_1.default.boolean(),
-    topics: zod_1.default.array(zod_1.default.string()),
-    coverImage: exports.fileSchema,
-});
-exports.updateBlogSchema = zod_1.default.object({
-    id: zod_1.default.string(),
-    title: zod_1.default.string(),
-    content: zod_1.default.string(),
-    description: zod_1.default.string(),
-    published: zod_1.default.boolean(),
-    topics: zod_1.default.array(zod_1.default.string()),
-    coverImage: exports.fileSchema,
-});
+//
 exports.updateUserSchema = zod_1.default.object({
-    name: zod_1.default.string(),
+    userName: zod_1.default.string().regex(/^\S*$/),
     bio: zod_1.default.string(),
-    profileImg: exports.fileSchema,
 });
-exports.updateUserAboutSchema = zod_1.default.object({
+//
+exports.updateUserAboutSectionSchema = zod_1.default.object({
     about: zod_1.default.string(),
 });
-exports.clapBlogSchema = zod_1.default.object({
-    postId: zod_1.default.string(),
+//
+exports.followUserSchema = zod_1.default.object({
+    userIdToFollow: zod_1.default.string(),
+});
+//
+exports.createStorySchema = zod_1.default.object({
+    title: zod_1.default.string(),
+    content: zod_1.default.string(),
+    description: zod_1.default.string(),
+    published: zod_1.default.boolean(),
+    topics: zod_1.default.array(zod_1.default.string()),
+});
+//
+exports.updateStorySchema = exports.createStorySchema.merge(zod_1.default.object({
+    id: zod_1.default.string(),
+}));
+//
+exports.clapStorySchema = zod_1.default.object({
+    storyId: zod_1.default.string(),
 });

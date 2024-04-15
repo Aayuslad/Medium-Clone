@@ -1,4 +1,4 @@
-import { BlogType } from "@aayushlad/medium-clone-common";
+import { updateStorySchemaType } from "@aayushlad/medium-clone-common";
 import { useFormik } from "formik";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -9,36 +9,35 @@ import CrossCloseButton from "../components/buttons/CrossCloseButton";
 import MoreOptions from "../components/buttons/MoreOptionsButton";
 import NotificationButton from "../components/buttons/NotificationButton";
 import RegularButton from "../components/buttons/RegularButton";
+import useDebounce from "../hooks/useDebounce";
 import { AuthStore } from "../stores/authStore";
-import { BlogStore } from "../stores/blogStore";
+import { StoryStore } from "../stores/storyStore";
 
 const ComposeBlogPage = () => {
-	const [debounceTimeout, setDebounceTimeout] = useState<number | undefined>(undefined);
 	const [preview, setPriview] = useState<boolean>(false);
 	const [topic, setTopic] = useState<string>("");
 	const [coverImageLocal, setCoverImageLocal] = useState<string>("");
 	const { id } = useParams<{ id: string }>();
 	const navigate = useNavigate();
-	const blogStore = BlogStore();
+	const storyStore = StoryStore();
 	const authStore = AuthStore();
 
-	const formik = useFormik<BlogType>({
+	const formik = useFormik<updateStorySchemaType>({
 		initialValues: {
 			id: id || "",
 			title: "",
 			content: "",
 			description: "",
 			published: false,
-			postedOn: "",
 			topics: [""],
-			coverImage: "",
+			coverImg: "",
 		},
 		validateOnBlur: false,
 		validateOnChange: false,
 		onSubmit: async (values) => {
 			const formData = valueToFormData(values);
 			formData.append("published", "true");
-			const flag = await toast.promise(blogStore.putBlog(formData), {
+			const flag = await toast.promise(storyStore.putStory(formData), {
 				loading: "Posting...",
 				success: "New Blog Posted",
 				error: "Error Posting Blog!",
@@ -59,8 +58,8 @@ const ComposeBlogPage = () => {
 
 		async function get() {
 			if (id) {
-				const blog = await blogStore.getBlog({ id });
-				if (blog) formik.setValues(blog);
+				const story = await storyStore.getStory({ id });
+				if (story) formik.setValues(story as updateStorySchemaType);
 			}
 		}
 
@@ -73,34 +72,23 @@ const ComposeBlogPage = () => {
 		// };
 	}, []);
 
-	// decbounce effect
+	// Debounce effect 
+	const debouncedValues = useDebounce(formik.values, 5000);
 	useEffect(() => {
-		return () => {
-			if (debounceTimeout) clearTimeout(debounceTimeout); // Clear timeout on component unmount
-		};
-	}, [debounceTimeout]);
+		async function submitDebouncedValues() {
+			const formData = valueToFormData(debouncedValues as updateStorySchemaType);
+			formData.append("published", "false");
+			await storyStore.putStory(formData);
+		}
 
-	const handleDebounce = async () => {
-		if (debounceTimeout) clearTimeout(debounceTimeout);
-
-		console.log("Handle debounce");
-
-		const timeout = setTimeout(() => {
-			async function post() {
-				const formData = valueToFormData(formik.values);
-				console.log(formik.values);
-				await blogStore.putBlog(formData);
-			}
-
-			post();
-		}, 2000);
-
-		setDebounceTimeout(timeout);
-	};
+		if (debouncedValues) {
+			submitDebouncedValues();
+		}
+	}, [debouncedValues]);
 
 	// image upload logic
 	const onImgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-		formik.setValues({ ...formik.values, coverImage: e.target.files ? e.target.files[0] : "" });
+		formik.setValues({ ...formik.values, coverImg: e.target.files ? e.target.files[0] : undefined });
 		setCoverImageLocal(e.target.files ? URL.createObjectURL(e.target.files[0]) : "");
 	};
 
@@ -133,11 +121,13 @@ const ComposeBlogPage = () => {
 	useEffect(() => {
 		const title = document.getElementById("title") as HTMLTextAreaElement;
 		const content = document.getElementById("content") as HTMLTextAreaElement;
-		title.style.height = "auto"; // Reset height to auto to recalculate scrollHeight
-		title.style.height = `${title.scrollHeight}px`; // Set height to scrollHeight
-		content.style.height = "auto"; // Reset height to auto to recalculate scrollHeight
-		content.style.height = `${content.scrollHeight}px`; // Set height to scrollHeight
-	}, [formik.values.title, formik.values.content]);
+		if (title && content) {
+			title.style.height = "auto"; // Reset height to auto to recalculate scrollHeight
+			title.style.height = `${title.scrollHeight}px`; // Set height to scrollHeight
+			content.style.height = "auto"; // Reset height to auto to recalculate scrollHeight
+			content.style.height = `${content.scrollHeight}px`; // Set height to scrollHeight
+		}
+	}, [formik.values.title, formik.values.content, preview]);
 
 	return (
 		<div className="ComposeBlogPage h-full w-full">
@@ -150,9 +140,9 @@ const ComposeBlogPage = () => {
 							</div>
 
 							<div className="flex gap-6">
-								<span className="hidden sm:block">Draft in {authStore.user?.name}</span>
-								{blogStore.savingPostLoading !== undefined &&
-									(blogStore.savingPostLoading ? (
+								<span className="hidden sm:block">Draft in {authStore.user?.userName}</span>
+								{storyStore.putStoryLoading !== undefined &&
+									(storyStore.putStoryLoading ? (
 										<div className="saving text-gray-600">Saving...</div>
 									) : (
 										<div className="saving text-gray-600">Saved</div>
@@ -183,10 +173,7 @@ const ComposeBlogPage = () => {
 							</div>
 						</div>
 
-						<div
-							className="main-container min-h-screen h-auto w-full max-w-3xl flex flex-col pt-14"
-							onChange={handleDebounce}
-						>
+						<div className="main-container min-h-screen h-auto px-2 w-full max-w-3xl flex flex-col pt-14">
 							<textarea
 								id="title"
 								rows={1}
@@ -212,14 +199,11 @@ const ComposeBlogPage = () => {
 								<CrossCloseButton type="button" onClick={() => setPriview(false)} />
 							</div>
 
-							<div
-								className="preview h-full flex-1 flex flex-col  gap-2 px-4 mb-20 md:mb-0 md:px-10"
-								onChange={handleDebounce}
-							>
+							<div className="preview h-full flex-1 flex flex-col  gap-2 px-4 mb-20 md:mb-0 md:px-10">
 								<h2 className="font-semibold">Story Preview</h2>
 
 								<label htmlFor="coverImg" className="h-[200px] w-full mx-auto ">
-									{formik.values.coverImage === "" && coverImageLocal === "" ? (
+									{formik.values.coverImg === "" && coverImageLocal === "" ? (
 										<div className="w-full h-full bg-slate-100 rounded-sm flex items-center justify-center text-gray-500 text-sm text-center px-10">
 											Include a high-quality image in your story to make it more
 											inviting to readers.
@@ -229,7 +213,7 @@ const ComposeBlogPage = () => {
 											<img
 												src={
 													coverImageLocal === ""
-														? (formik.values.coverImage as string)
+														? (formik.values.coverImg as string)
 														: coverImageLocal
 												}
 												alt="cover image"
@@ -268,7 +252,7 @@ const ComposeBlogPage = () => {
 							<div className="add-topics h-fit flex-1 px-4 flex flex-col gap-4 mb-20 md:mb-0 md:px-10">
 								<div>
 									Publishing To:{" "}
-									<span className="font-semibold">{authStore.user?.name}</span>
+									<span className="font-semibold">{authStore.user?.userName}</span>
 								</div>
 
 								<div className="font-sm">
@@ -297,7 +281,6 @@ const ComposeBlogPage = () => {
 												if (formik.values.topics == undefined)
 													formik.values.topics = [];
 												if (formik.values.topics.length < 5) addTopic();
-												handleDebounce();
 												setTopic("");
 											}}
 										/>
@@ -313,7 +296,6 @@ const ComposeBlogPage = () => {
 														type="button"
 														onClick={() => {
 															deleteTopic(index);
-															handleDebounce();
 														}}
 													/>
 												</div>
@@ -339,13 +321,13 @@ const ComposeBlogPage = () => {
 
 export default ComposeBlogPage;
 
-function valueToFormData(values: BlogType): FormData {
+function valueToFormData(values: updateStorySchemaType): FormData {
 	const formData = new FormData();
 	formData.append("id", values.id as string);
 	formData.append("title", values.title);
 	formData.append("content", values.content || "");
 	formData.append("description", values.description);
 	formData.append("topics", values.topics?.join(",") || "");
-	formData.append("coverImage", values.coverImage || "");
+	formData.append("coverImg", values.coverImg || "");
 	return formData;
 }

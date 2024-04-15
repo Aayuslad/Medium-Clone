@@ -1,4 +1,4 @@
-import { userType } from "@aayushlad/medium-clone-common";
+import { updateUserAboutSectionSchemaType, userType } from "@aayushlad/medium-clone-common";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { create } from "zustand";
@@ -7,8 +7,9 @@ type authStoreType = {
 	skelitonLoading: boolean;
 	buttonLoading: boolean;
 	getAnotherUser: (values: { id: string }) => Promise<userType>;
-	updateUser: (values: FormData) => Promise<void>;
-	updateUserAboutSection: (values: { about: string }) => Promise<boolean>;
+	updateUser: (values: FormData, getUser: () => void) => Promise<void>;
+	updateUserAboutSection: (values: updateUserAboutSectionSchemaType) => Promise<boolean>;
+	followUser: (values: { userIdToFollow: string }) => void;
 };
 
 export const UsersStore = create<authStoreType>((set) => ({
@@ -27,22 +28,23 @@ export const UsersStore = create<authStoreType>((set) => ({
 		}
 	},
 
-	updateUser: async function (values) {
+	updateUser: async function (values, getUser) {
 		let toastId: string | undefined;
 
 		try {
-            set({ buttonLoading: true });
+			set({ buttonLoading: true });
 			toastId = toast.loading("Updating...");
 			await axios.put("/api/v1/user", values);
 			toast.dismiss(toastId);
 			toast.success("Updated!");
+			getUser();
 		} catch (error: any) {
 			if (toastId) {
 				toast.dismiss(toastId);
 			}
 			toast.error(error.response.data.error || "Error while updating!");
 		} finally {
-            set({ buttonLoading: false })
+			set({ buttonLoading: false });
 			return;
 		}
 	},
@@ -51,7 +53,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 		let toastId: string | undefined;
 
 		try {
-            set({ buttonLoading: true });
+			set({ buttonLoading: true });
 			toastId = toast.loading("Updating...");
 			await axios.put("/api/v1/user/aboutSection", values);
 			toast.dismiss(toastId);
@@ -64,7 +66,17 @@ export const UsersStore = create<authStoreType>((set) => ({
 			toast.error(error.response.data.error || "Error while updating!");
 			return false;
 		} finally {
-            set({ buttonLoading: false });
-        }
+			set({ buttonLoading: false });
+		}
+	},
+
+	followUser: async (values) => {
+		try {
+			set({ buttonLoading: true });
+			await axios.post("api/v1/user/followUser", values);
+		} catch (error) {
+		} finally {
+			set({ buttonLoading: false });
+		}
 	},
 }));

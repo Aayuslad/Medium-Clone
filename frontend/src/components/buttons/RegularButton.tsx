@@ -4,10 +4,11 @@ type propsType = {
 	bgColor?: string;
 	color?: string;
 	borderColor?: string;
+	disabled?: boolean;
 	onClick?: () => void;
 };
 
-const RegularButton = ({ type, text, onClick, bgColor, color, borderColor }: propsType) => {
+const RegularButton = ({ type, text, onClick, bgColor, color, borderColor, disabled }: propsType) => {
 	return (
 		<button
 			type={type || "button"}
@@ -15,9 +16,10 @@ const RegularButton = ({ type, text, onClick, bgColor, color, borderColor }: pro
 			style={{
 				backgroundColor: bgColor ? bgColor : "",
 				color: color ? color : "",
-				border: borderColor ?  `1px solid ${borderColor}` : "",
+				border: borderColor ? `1px solid ${borderColor}` : "",
 			}}
 			onClick={onClick}
+			disabled={disabled != undefined ? disabled : false}
 		>
 			{text}
 		</button>

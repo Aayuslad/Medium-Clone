@@ -1,68 +1,56 @@
 import zod from "zod";
-export declare const fileSchema: zod.ZodUnion<[zod.ZodString, zod.ZodObject<{
-    lastModified: zod.ZodNumber;
-    name: zod.ZodString;
-    type: zod.ZodString;
-    size: zod.ZodNumber;
-}, "strip", zod.ZodTypeAny, {
-    type: string;
-    lastModified: number;
-    name: string;
-    size: number;
-}, {
-    type: string;
-    lastModified: number;
-    name: string;
-    size: number;
-}>]>;
 export type userType = {
     id: string;
+    userName: string;
     email: string;
-    name: string;
-    password?: string;
-    bio?: string;
-    about?: string;
-    posts?: BlogType[];
-    profileImg?: string | File;
+    bio: string;
+    about: string;
+    profileImg: string;
+    followersCount?: number;
+    followingCount?: number;
+    savedStories?: string[];
+    claps?: string[];
+    following?: string[];
+    topFiveFollowing?: {
+        id: string;
+        profileImg: string;
+        userName: string;
+        bio: string;
+    }[];
+    stories?: storyType[];
 };
-export type BlogType = {
-    id?: string;
+export type storyType = {
+    id: string;
     title: string;
     content?: string;
     description: string;
+    postedOn: string;
     published?: boolean;
-    postedOn?: string;
-    totalClaps?: number;
+    clapsCount?: number;
+    coverImg: string;
     topics: string[];
-    author?: {
+    author: {
         id: string;
-        name: string;
-        bio: string;
+        userName: string;
+        bio?: string;
         profileImg: string;
     };
-    claps?: {
-        id: string;
-        profileImg: string;
-        name: string;
-        bio: string;
-    }[];
-    coverImage: string | File;
 };
-export declare const signUpSchema: zod.ZodObject<{
-    name: zod.ZodString;
+export declare const signUpUserSchema: zod.ZodObject<{
+    userName: zod.ZodString;
     email: zod.ZodString;
     password: zod.ZodString;
 }, "strip", zod.ZodTypeAny, {
-    name: string;
+    userName: string;
     email: string;
     password: string;
 }, {
-    name: string;
+    userName: string;
     email: string;
     password: string;
 }>;
-export type signUpSchemaType = zod.infer<typeof signUpSchema>;
-export declare const signinSchema: zod.ZodObject<{
+export type signUpUserSchemaType = zod.infer<typeof signUpUserSchema>;
+export declare const signinUserSchema: zod.ZodObject<{
     emailOrName: zod.ZodString;
     password: zod.ZodString;
 }, "strip", zod.ZodTypeAny, {
@@ -72,188 +60,92 @@ export declare const signinSchema: zod.ZodObject<{
     password: string;
     emailOrName: string;
 }>;
-export type signinSchemaType = zod.infer<typeof signinSchema>;
-export declare const createBlogSchemas: zod.ZodObject<{
-    title: zod.ZodString;
-    content: zod.ZodString;
-    description: zod.ZodString;
-    published: zod.ZodBoolean;
-    topics: zod.ZodArray<zod.ZodString, "many">;
-    coverImage: zod.ZodUnion<[zod.ZodString, zod.ZodObject<{
-        lastModified: zod.ZodNumber;
-        name: zod.ZodString;
-        type: zod.ZodString;
-        size: zod.ZodNumber;
-    }, "strip", zod.ZodTypeAny, {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    }, {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    }>]>;
-}, "strip", zod.ZodTypeAny, {
-    title: string;
-    content: string;
-    description: string;
-    published: boolean;
-    topics: string[];
-    coverImage: (string | {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    }) & (string | {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    } | undefined);
-}, {
-    title: string;
-    content: string;
-    description: string;
-    published: boolean;
-    topics: string[];
-    coverImage: (string | {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    }) & (string | {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    } | undefined);
-}>;
-export type createBlogSchemaType = zod.infer<typeof createBlogSchemas>;
-export declare const updateBlogSchema: zod.ZodObject<{
-    id: zod.ZodString;
-    title: zod.ZodString;
-    content: zod.ZodString;
-    description: zod.ZodString;
-    published: zod.ZodBoolean;
-    topics: zod.ZodArray<zod.ZodString, "many">;
-    coverImage: zod.ZodUnion<[zod.ZodString, zod.ZodObject<{
-        lastModified: zod.ZodNumber;
-        name: zod.ZodString;
-        type: zod.ZodString;
-        size: zod.ZodNumber;
-    }, "strip", zod.ZodTypeAny, {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    }, {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    }>]>;
-}, "strip", zod.ZodTypeAny, {
-    title: string;
-    content: string;
-    description: string;
-    published: boolean;
-    topics: string[];
-    coverImage: (string | {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    }) & (string | {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    } | undefined);
-    id: string;
-}, {
-    title: string;
-    content: string;
-    description: string;
-    published: boolean;
-    topics: string[];
-    coverImage: (string | {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    }) & (string | {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    } | undefined);
-    id: string;
-}>;
-export type updateBlogSchemaType = zod.infer<typeof updateBlogSchema>;
+export type signinUserSchemaType = zod.infer<typeof signinUserSchema>;
 export declare const updateUserSchema: zod.ZodObject<{
-    name: zod.ZodString;
+    userName: zod.ZodString;
     bio: zod.ZodString;
-    profileImg: zod.ZodUnion<[zod.ZodString, zod.ZodObject<{
-        lastModified: zod.ZodNumber;
-        name: zod.ZodString;
-        type: zod.ZodString;
-        size: zod.ZodNumber;
-    }, "strip", zod.ZodTypeAny, {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    }, {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    }>]>;
 }, "strip", zod.ZodTypeAny, {
-    name: string;
+    userName: string;
     bio: string;
-    profileImg: (string | {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    }) & (string | {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    } | undefined);
 }, {
-    name: string;
+    userName: string;
     bio: string;
-    profileImg: (string | {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    }) & (string | {
-        type: string;
-        lastModified: number;
-        name: string;
-        size: number;
-    } | undefined);
 }>;
-export type updateUserSchemaType = zod.infer<typeof updateUserSchema>;
-export declare const updateUserAboutSchema: zod.ZodObject<{
+type updateUserSchemaIntermidiateType = zod.infer<typeof updateUserSchema>;
+export type updateUserSchemaType = updateUserSchemaIntermidiateType & {
+    profileImg?: File | string;
+};
+export declare const updateUserAboutSectionSchema: zod.ZodObject<{
     about: zod.ZodString;
 }, "strip", zod.ZodTypeAny, {
     about: string;
 }, {
     about: string;
 }>;
-export type updateUserAboutSchemaType = zod.infer<typeof updateUserAboutSchema>;
-export declare const clapBlogSchema: zod.ZodObject<{
-    postId: zod.ZodString;
+export type updateUserAboutSectionSchemaType = zod.infer<typeof updateUserAboutSectionSchema>;
+export declare const followUserSchema: zod.ZodObject<{
+    userIdToFollow: zod.ZodString;
 }, "strip", zod.ZodTypeAny, {
-    postId: string;
+    userIdToFollow: string;
 }, {
-    postId: string;
+    userIdToFollow: string;
 }>;
-export type clapBlogSchemaType = zod.infer<typeof clapBlogSchema>;
+export type followUserSchemaType = zod.infer<typeof followUserSchema>;
+export declare const createStorySchema: zod.ZodObject<{
+    title: zod.ZodString;
+    content: zod.ZodString;
+    description: zod.ZodString;
+    published: zod.ZodBoolean;
+    topics: zod.ZodArray<zod.ZodString, "many">;
+}, "strip", zod.ZodTypeAny, {
+    title: string;
+    content: string;
+    description: string;
+    published: boolean;
+    topics: string[];
+}, {
+    title: string;
+    content: string;
+    description: string;
+    published: boolean;
+    topics: string[];
+}>;
+type createStorySchemaIntermidiateType = zod.infer<typeof createStorySchema>;
+export type createStorySchemaType = createStorySchemaIntermidiateType & {
+    coverImg?: File;
+};
+export declare const updateStorySchema: zod.ZodObject<{
+    title: zod.ZodString;
+    content: zod.ZodString;
+    description: zod.ZodString;
+    published: zod.ZodBoolean;
+    topics: zod.ZodArray<zod.ZodString, "many">;
+    id: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    title: string;
+    content: string;
+    description: string;
+    published: boolean;
+    topics: string[];
+    id: string;
+}, {
+    title: string;
+    content: string;
+    description: string;
+    published: boolean;
+    topics: string[];
+    id: string;
+}>;
+type updateStorySchemaIntermidiateType = zod.infer<typeof updateStorySchema>;
+export type updateStorySchemaType = updateStorySchemaIntermidiateType & {
+    coverImg?: File | string;
+};
+export declare const clapStorySchema: zod.ZodObject<{
+    storyId: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    storyId: string;
+}, {
+    storyId: string;
+}>;
+export type clapStorySchemaType = zod.infer<typeof clapStorySchema>;
+export {};

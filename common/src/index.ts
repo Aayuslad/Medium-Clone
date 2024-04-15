@@ -1,104 +1,115 @@
 import zod from "zod";
 
-export const fileSchema = zod.union([
-	zod.string(),
-	zod.object({
-		lastModified: zod.number(),
-		name: zod.string(),
-		type: zod.string(),
-		size: zod.number(),
-	}),
-]);
-
 export type userType = {
 	id: string;
+	userName: string;
 	email: string;
-	name: string;
-	password?: string;
-	bio?: string;
-	about?: string;
-	posts?: BlogType[];
-	profileImg?: string | File;
+	bio: string;
+	about: string;
+	profileImg: string;
+	followersCount?: number;
+	followingCount?: number;
+	savedStories?: string[];
+	claps?: string[];
+	following?: string[];
+	topFiveFollowing?: {
+		id: string;
+		profileImg: string;
+		userName: string;
+		bio: string;
+	}[];
+	stories?: storyType[];
 };
 
-export type BlogType = {
-	id?: string;
+export type storyType = {
+	id: string;
 	title: string;
 	content?: string;
 	description: string;
+	postedOn: string;
 	published?: boolean;
-	postedOn?: string;
-	totalClaps?: number;
+	clapsCount?: number;
+	coverImg: string;
 	topics: string[];
-	author?: {
+	author: {
 		id: string;
-		name: string;
-		bio: string;
+		userName: string;
+		bio?: string;
 		profileImg: string;
 	};
-	claps?: {
-		id: string;
-		profileImg: string;
-		name: string;
-		bio: string;
-	}[];
-	coverImage: string | File;
 };
 
-export const signUpSchema = zod.object({
-	name: zod.string().regex(/^\S*$/), // cheking for space
+//
+export const signUpUserSchema = zod.object({
+	userName: zod.string().regex(/^\S*$/),
 	email: zod.string().email(),
 	password: zod.string().min(6),
 });
 
-export type signUpSchemaType = zod.infer<typeof signUpSchema>;
+export type signUpUserSchemaType = zod.infer<typeof signUpUserSchema>;
 
-export const signinSchema = zod.object({
+//
+export const signinUserSchema = zod.object({
 	emailOrName: zod.string(),
 	password: zod.string().min(6),
 });
 
-export type signinSchemaType = zod.infer<typeof signinSchema>;
+export type signinUserSchemaType = zod.infer<typeof signinUserSchema>;
 
-export const createBlogSchemas = zod.object({
-	title: zod.string(),
-	content: zod.string(),
-	description: zod.string(),
-	published: zod.boolean(),
-	topics: zod.array(zod.string()),
-	coverImage: fileSchema,
-});
-
-export type createBlogSchemaType = zod.infer<typeof createBlogSchemas>;
-
-export const updateBlogSchema = zod.object({
-	id: zod.string(),
-	title: zod.string(),
-	content: zod.string(),
-	description: zod.string(),
-	published: zod.boolean(),
-	topics: zod.array(zod.string()),
-	coverImage: fileSchema,
-});
-
-export type updateBlogSchemaType = zod.infer<typeof updateBlogSchema>;
-
+//
 export const updateUserSchema = zod.object({
-	name: zod.string(),
+	userName: zod.string().regex(/^\S*$/),
 	bio: zod.string(),
-	profileImg: fileSchema,
 });
 
-export type updateUserSchemaType = zod.infer<typeof updateUserSchema>;
+type updateUserSchemaIntermidiateType = zod.infer<typeof updateUserSchema>;
+export type updateUserSchemaType = updateUserSchemaIntermidiateType & {
+	profileImg?: File | string;
+};
 
-export const updateUserAboutSchema = zod.object({
+//
+export const updateUserAboutSectionSchema = zod.object({
 	about: zod.string(),
 });
 
-export type updateUserAboutSchemaType = zod.infer<typeof updateUserAboutSchema>;
+export type updateUserAboutSectionSchemaType = zod.infer<typeof updateUserAboutSectionSchema>;
 
-export const clapBlogSchema = zod.object({
-	postId: zod.string(),
+//
+export const followUserSchema = zod.object({
+	userIdToFollow: zod.string(),
 });
 
-export type clapBlogSchemaType = zod.infer<typeof clapBlogSchema>;
+export type followUserSchemaType = zod.infer<typeof followUserSchema>;
+
+//
+export const createStorySchema = zod.object({
+	title: zod.string(),
+	content: zod.string(),
+	description: zod.string(),
+	published: zod.boolean(),
+	topics: zod.array(zod.string()),
+});
+
+type createStorySchemaIntermidiateType = zod.infer<typeof createStorySchema>;
+export type createStorySchemaType = createStorySchemaIntermidiateType & {
+	coverImg?: File;
+};
+
+//
+export const updateStorySchema = createStorySchema.merge(
+	zod.object({
+		id: zod.string(),
+	}),
+);
+
+type updateStorySchemaIntermidiateType = zod.infer<typeof updateStorySchema>;
+export type updateStorySchemaType = updateStorySchemaIntermidiateType & {
+	coverImg?: File | string;
+};
+//
+
+export const clapStorySchema = zod.object({
+	storyId: zod.string(),
+});
+
+export type clapStorySchemaType = zod.infer<typeof clapStorySchema>;

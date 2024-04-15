@@ -1,24 +1,29 @@
 import { useEffect } from "react";
-import BlogPreview from "../components/BlogPreview";
+import StoryPreview from "../components/StoryPreview";
 import Header from "../components/Header";
+import StorySkeletons from "../components/skelitons/StorySkeletons";
 import useScrollDirection from "../hooks/useScrollDirection";
-import { BlogStore } from "../stores/blogStore";
-import BlogsSkelitons from "../components/skelitons/BlogSkeletons";
+import { StoryStore } from "../stores/storyStore";
+// import MainConntainer from "../components/MainContainer";
 
 const HomePage = () => {
-	const blogStore = BlogStore();
+	const storyStore = StoryStore();
 	const scrollDirection = useScrollDirection();
 
 	useEffect(() => {
-		blogStore.getBlogs();
+		storyStore.getStories();
 	}, []);
 
 	return (
-		<div className="HomePage" style={{ cursor: blogStore.cursorLoading ? "wait" : "default" }}>
+		<div className="HomePage" style={{ cursor: storyStore.cursorLoading ? "wait" : "default" }}>
 			<Header />
+{/* 
+			<MainConntainer>
+				
+			</MainConntainer> */}
 
 			<div className="main-container w-full flex-1 max-w-6xl mx-auto mt-14 flex border border-black">
-				<div className="post-container border flex-1 border-red-600">
+				<div className="story-container border flex-1 border-red-600">
 					<div
 						className={`topics z-0 border border-green-500 h-10 w-full sticky ${
 							scrollDirection === "down" ? "top-0" : "top-14"
@@ -26,16 +31,16 @@ const HomePage = () => {
 					></div>
 
 					<div className="mx-4 lg:mx-10 lg:mr-20">
-						{!blogStore.skelitonLoading &&
-							blogStore.feedBlogs?.map((blog, index) => {
-								return <BlogPreview blog={blog} index={index} key={index} />;
+						{!storyStore.skelitonLoading &&
+							storyStore.feedStories?.map((story, index) => {
+								return <StoryPreview story={story} index={index} key={index} />;
 							})}
 
-						{blogStore.skelitonLoading && <BlogsSkelitons />}
+						{storyStore.skelitonLoading && <StorySkeletons />}
 					</div>
 				</div>
 
-				<div className="side-container border w-96 border-red-600 hidden lg:block h-fit sticky top-0">
+				<div className="side-container border w-[350px] border-red-600 hidden lg:block h-fit sticky top-0">
 					sidebar Lorem ipsum dolor sit amet consectetur adipisicing elit. Architecto aperiam
 					perferendis doloremque, culpa nulla magnam modi quisquam vitae praesentium atque dolorum
 					asperiores corporis illum maxime. Qui dolor dignissimos inventore nemo sit dolore veniam

@@ -5,22 +5,17 @@ import { AuthStore } from "../stores/authStore";
 import { UsersStore } from "../stores/usersStore";
 import CrossCloseButton from "./buttons/CrossCloseButton";
 import RegularButton from "./buttons/RegularButton";
-
-type editProfileType = {
-	profileImg: string | File;
-	name: string;
-	bio: string;
-};
+import { updateUserSchemaType } from "@aayushlad/medium-clone-common";
 
 const EditProfile = ({ onCloseClick }: { onCloseClick: () => void }) => {
 	const [profileImgLocal, setProfileImgLocal] = useState<string>("");
 	const authStore = AuthStore();
 	const usersStore = UsersStore();
 
-	const formik = useFormik<editProfileType>({
+	const formik = useFormik<updateUserSchemaType>({
 		initialValues: {
 			profileImg: "",
-			name: "",
+			userName: "",
 			bio: "",
 		},
 		validateOnBlur: false,
@@ -28,10 +23,10 @@ const EditProfile = ({ onCloseClick }: { onCloseClick: () => void }) => {
 		onSubmit: async (values) => {
 			console.log(values);
 			const formData = new FormData();
-			formData.append("name", values.name);
+			formData.append("userName", values.userName);
 			formData.append("bio", values.bio);
-			formData.append("profileImg", values.profileImg);
-			await usersStore.updateUser(formData);
+			formData.append("profileImg", values.profileImg as File);
+			await usersStore.updateUser(formData, authStore.getUser);
 			onCloseClick();
 		},
 	});
@@ -40,7 +35,7 @@ const EditProfile = ({ onCloseClick }: { onCloseClick: () => void }) => {
 		if (authStore.user) {
 			formik.setValues({
 				profileImg: authStore.user.profileImg || "",
-				name: authStore.user.name,
+				userName: authStore.user.userName,
 				bio: authStore.user.bio || "",
 			});
 		}
@@ -117,7 +112,7 @@ const EditProfile = ({ onCloseClick }: { onCloseClick: () => void }) => {
 					<input
 						type="text"
 						id="name"
-						{...formik.getFieldProps("name")}
+						{...formik.getFieldProps("userName")}
 						className="outline-none w-full border-b border-gray-500 mt-4 text-xl text-black"
 					/>
 					<div>Appears on your Profile page, as your byline, and in your responses.</div>

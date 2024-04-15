@@ -1,27 +1,22 @@
 import { useEffect, useState } from "react";
-import { BlogStore } from "../../stores/blogStore";
+import { StoryStore } from "../../stores/storyStore";
 import { AuthStore } from "../../stores/authStore";
 
 type props = {
-	postId: string;
+	storyId: string;
 	totalClaps: number;
-	claps?: {
-		id: string;
-		profileImg: string;
-		name: string;
-		bio: string;
-	}[];
 };
 
-const ClapsButton = ({ postId, claps, totalClaps }: props) => {
-	const blogStore = BlogStore();
+const ClapsButton = ({ storyId, totalClaps }: props) => {
+	const storyStore = StoryStore();
 	const authStore = AuthStore();
 	const [clapsCount, setClapsCount] = useState<number>(totalClaps);
 	const [alredyClaped, setAlredyClaped] = useState<boolean>(false);
 
 	useEffect(() => {
-		if (claps && authStore.user) setAlredyClaped(claps.some((clap) => clap.id === authStore.user?.id));
-	}, [authStore.user, claps]);
+		if (authStore.user?.claps && storyId)
+			setAlredyClaped(authStore.user.claps.some((id) => id === storyId));
+	}, [authStore.user, storyId]);
 
 	useEffect(() => {
 		setClapsCount(totalClaps);
@@ -32,11 +27,11 @@ const ClapsButton = ({ postId, claps, totalClaps }: props) => {
 			type="button"
 			className="flex py-2 px-2 gap-2 text-gray-500"
 			onClick={() => {
-				if (blogStore.savingPostLoading) {
+				if (storyStore.putStoryLoading) {
 					return;
 				}
 
-				blogStore.clapBlog({ postId });
+				storyStore.clapStory({ storyId });
 
 				if (!authStore.user) {
 					return;
@@ -47,7 +42,7 @@ const ClapsButton = ({ postId, claps, totalClaps }: props) => {
 				} else {
 					setClapsCount((state) => state + 1);
 				}
-				
+
 				setAlredyClaped((state) => !state);
 			}}
 		>
