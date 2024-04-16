@@ -1,21 +1,22 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import SignupPage from "./pages/SignupPage";
-import SigninPage from "./pages/SigninPage";
-import LoadingPage from "./pages/LoadingPage";
-import HomePage from "./pages/HomePage";
-import ComposeBlogPage from "./pages/ComposeBlogPage";
-import ReadBlogPage from "./pages/ReadStoryPage";
-import ProfilePage from "./pages/ProfilePage";
-import { AuthStore } from "./stores/authStore";
 import { useEffect } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import ComposeBlogPage from "./pages/ComposeBlogPage";
+import HomePage from "./pages/HomePage";
+import LibraryPage from "./pages/LibraryPage";
+import LoadingPage from "./pages/LoadingPage";
+import ProfilePage from "./pages/ProfilePage";
+import ReadBlogPage from "./pages/ReadStoryPage";
+import SigninPage from "./pages/SigninPage";
+import SignupPage from "./pages/SignupPage";
+import { AuthStore } from "./stores/authStore";
 
 export default function App() {
 	const authStore = AuthStore();
 
 	useEffect(() => {
 		authStore.getUser();
-	}, [])
-	
+	}, []);
+
 	return (
 		<BrowserRouter>
 			<Routes>
@@ -28,6 +29,7 @@ export default function App() {
 				/>
 				<Route path="/story/:id" element={authStore.loading ? <LoadingPage /> : <ReadBlogPage />} />
 				<Route path="/user/:id" element={authStore.loading ? <LoadingPage /> : <ProfilePage />} />
+				<Route path="/libray" element={authStore.loading ? <LoadingPage /> : <LibraryPage />} />
 			</Routes>
 		</BrowserRouter>
 	);

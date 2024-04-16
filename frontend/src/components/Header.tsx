@@ -5,7 +5,7 @@ import useScrollDirection from "../hooks/useScrollDirection";
 import { AuthStore } from "../stores/authStore";
 import ProfileIcon from "./ProfileIcon";
 import SearchBox from "./SearchBox";
-import SideBar from "./SideBar";
+import SideBar from "./navbars/SideBar";
 import MobileSearchButton from "./buttons/MobileSearchButton";
 import NotificationButton from "./buttons/NotificationButton";
 import RegularButton from "./buttons/RegularButton";
@@ -23,7 +23,7 @@ const Header = () => {
 
 	return (
 		<div
-			className={`Header z-10 w-full max-w-[100vw] h-14 px-5 fixed flex items-center gap-1 border-b-2 border-neutral-300 bg-white backdrop-blur-20 duration-500 ${
+			className={`Header z-10 w-full max-w-[100vw] h-14 px-5 fixed flex items-center gap-1 border-b-2 border-neutral-300 bg-white backdrop-blur-20 duration-200 ${
 				scrollDirection === "down" ? "-top-24" : "top-0"
 			}`}
 		>

@@ -29,7 +29,7 @@ const StoryPreview = ({ story, index }: { story: storyType; index: number }) => 
 		<div
 			key={index}
 			onClick={() => navigate(`/story/${story.id}`)}
-			className="story mt-6 border-b border-slate-5 max-w-[700px] mx-auto flex flex-col gap-2 cursor-pointer"
+			className="story mt-6 border-b border-slate-5 max-w-[680px] sm:mx-auto lg:mx-0 lg:mr-auto flex flex-col gap-2 cursor-pointer"
 		>
 			<div className="story-header flex gap-4 py-2">
 				<div

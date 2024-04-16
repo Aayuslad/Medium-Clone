@@ -1,8 +1,8 @@
-import LibraryPageNavButton from "./buttons/LibraryPageNavButton";
-import ProfilePageNavButton from "./buttons/ProfilePageNavButton";
-import SignOutBtnWithEmail from "./buttons/SignOutBtnWithEmail";
-import StoriesPageNavButton from "./buttons/StoriesPageNavButton";
-import WriteStoryButton from "./buttons/WriteStoryButton";
+import LibraryPageNavButton from "../buttons/LibraryPageNavButton";
+import ProfilePageNavButton from "../buttons/ProfilePageNavButton";
+import SignOutBtnWithEmail from "../buttons/SignOutBtnWithEmail";
+import StoriesPageNavButton from "../buttons/StoriesPageNavButton";
+import WriteStoryButton from "../buttons/WriteStoryButton";
 
 const SideBar = () => {
 	

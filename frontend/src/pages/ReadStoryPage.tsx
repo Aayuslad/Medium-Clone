@@ -61,7 +61,10 @@ const ReadStoryPage = () => {
 					</p>
 
 					<div className="profile py-4 flex items-center text-sm">
-						<ProfileIcon profileImg={story?.author.profileImg} onClick={() => navigate(`/user/${story?.author.id}`)}/>
+						<ProfileIcon
+							profileImg={story?.author.profileImg}
+							onClick={() => navigate(`/user/${story?.author.id}`)}
+						/>
 
 						<div className="info flex flex-col">
 							<div className="user-name font-semibold flex gap-3">
@@ -73,11 +76,7 @@ const ReadStoryPage = () => {
 					</div>
 
 					<div className="button-bar border-y border-slate-300 flex items-center gap-4 py-1 px-4 my-4">
-						<ClapsButton
-							storyId={story?.id as string}
-							claps={story?.claps}
-							totalClaps={story?.clapsCount || 0}
-						/>
+						<ClapsButton storyId={story?.id as string} totalClaps={story?.clapsCount || 0} />
 
 						<CommentsButton />
 

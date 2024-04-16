@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { StoryStore } from "../../stores/storyStore";
-import { createStorySchemaType } from "@aayushlad/medium-clone-common";
 
 const WriteStoryButton = () => {
 	const storyStore = StoryStore();

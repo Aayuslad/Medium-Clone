@@ -11,6 +11,10 @@ import RegularButton from "../components/buttons/RegularButton";
 import ProfilePgaeSkeliton from "../components/skelitons/ProfilePageSkeleton";
 import { AuthStore } from "../stores/authStore";
 import { UsersStore } from "../stores/usersStore";
+import MainConntainer from "../components/wrapperComponents/MainContainer";
+import LeftContainer from "../components/wrapperComponents/LeftContainer";
+import RightContainer from "../components/wrapperComponents/RightContainer";
+import RegularLeftContainerNavbar from "../components/navbars/RegularLeftContainerNavbar";
 
 const ProfilePage = () => {
 	const { id } = useParams<{ id: string }>();
@@ -21,7 +25,7 @@ const ProfilePage = () => {
 	const [user, setUser] = useState<userType>();
 	const [profileEdit, setProfileEdit] = useState<boolean>(false);
 	const [aboutFormState, setAboutFormState] = useState<boolean>(true);
-	const [currentNav, setCurrentNav] = useState<"home" | "about">("home");
+	const [currentNav, setCurrentNav] = useState<string>("Home");
 
 	const formik = useFormik({
 		initialValues: {
@@ -71,8 +75,8 @@ const ProfilePage = () => {
 			<Header />
 
 			{!usersStore.skelitonLoading && (
-				<div className="main-container w-full max-w-6xl mx-auto mt-14 flex">
-					<div className="big-container flex-1 px-4 border-r-2 border-neutral-300">
+				<MainConntainer>
+					<LeftContainer>
 						{/* Profile */}
 						<div className="profile lg:hidden flex items-center gap-6 pt-8 pb-4 px-1">
 							<div className="profile-img w-14">
@@ -117,28 +121,15 @@ const ProfilePage = () => {
 						</h2>
 
 						{/* Navbar */}
-						<div className="nav flex gap-6 border-b border-slate-200 px-4 lg:mr-20">
-							<div
-								onClick={() => setCurrentNav("home")}
-								className={`cursor-pointer py-4 border-black ${
-									currentNav === "home" ? "border-b" : ""
-								} border-black`}
-							>
-								Home
-							</div>
-							<div
-								onClick={() => setCurrentNav("about")}
-								className={`cursor-pointer py-4 border-black ${
-									currentNav === "about" ? "border-b" : ""
-								} border-black`}
-							>
-								About
-							</div>
-						</div>
+						<RegularLeftContainerNavbar
+							navs={["Home", "About"]}
+							currentNav={currentNav}
+							setCurrentNav={setCurrentNav}
+						/>
 
 						{/* User stories */}
-						{currentNav === "home" && (
-							<div className="stories lg:mr-24">
+						{currentNav === "Home" && (
+							<div className="stories">
 								{user?.stories?.map((story, index) => (
 									<StoryPreview story={story} index={index} key={index} />
 								))}
@@ -146,7 +137,7 @@ const ProfilePage = () => {
 						)}
 
 						{/* About section */}
-						{currentNav === "about" && user?.id === authStore.user?.id && (
+						{currentNav === "About" && user?.id === authStore.user?.id && (
 							<form
 								className="about py-6 text-lg text-justify lg:mr-24 border-b border-slate-200"
 								onSubmit={formik.handleSubmit}
@@ -207,16 +198,17 @@ const ProfilePage = () => {
 							</form>
 						)}
 
-						{currentNav === "about" && user?.id !== authStore.user?.id && user?.about && (
+						{currentNav === "About" && user?.id !== authStore.user?.id && user?.about && (
 							<div className="border-b-2 border-slate-200 lg:mr-24">
 								<pre className="about h-full w-full lg:max-w-[670px] text-wrap py-6 sm:mx-4 sm:pr-6  font-sans text-lg text-justify lg:mr-24">
 									{user?.about}
 								</pre>
 							</div>
 						)}
-					</div>
+					</LeftContainer>
 
-					<div className="small-container w-[350px] hidden lg:block px-10 h-screen sticky top-0">
+					<RightContainer>
+						{/* <div className="small-container w-[350px] hidden lg:block px-10 h-screen sticky top-0"> */}
 						{/* Profile */}
 						<div className="Profile flex items-center justify-between">
 							<div className="profile-img w-20 pt-10 pb-3">
@@ -282,8 +274,9 @@ const ProfilePage = () => {
 								</div>
 							</div>
 						)}
-					</div>
-				</div>
+						{/* </div> */}
+					</RightContainer>
+				</MainConntainer>
 			)}
 
 			{usersStore.skelitonLoading && <ProfilePgaeSkeliton />}
