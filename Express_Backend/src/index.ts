@@ -18,7 +18,7 @@ const app = express();
 
 app.use(
 	cors({
-		origin: ["http://localhost:5173", "https://medium-clone-two-psi.vercel.app"],
+		origin: ["http://localhost:5173", "https://medium-clone-jz8b.vercel.app"],
 		methods: ["GET", "POST", "PUT", "DELETE"],
 		credentials: true,
 	}),

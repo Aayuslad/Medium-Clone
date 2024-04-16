@@ -3,7 +3,12 @@
 	"builds": [
 		{
 			"src": "src/**/*.ts",
-			"use": "@vercel/node"
+			"use": "@vercel/node",
+			"config": {
+				"prisma": {
+					"generate": true
+				}
+			}
 		}
 	],
 	"routes": [
