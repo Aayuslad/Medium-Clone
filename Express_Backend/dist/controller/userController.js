@@ -14,25 +14,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.followUser = exports.updateUserAboutSection = exports.updateUser = exports.getUserProfile = exports.getUser = exports.signOutUser = exports.signInUser = exports.signUpUser = void 0;
 const medium_clone_common_1 = require("@aayushlad/medium-clone-common");
-const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const zod_1 = __importDefault(require("zod"));
-// import { CustomRequest } from "../middleware/authMiddleware";
+const prismaClient_1 = require("../db/prismaClient");
 const cloudinary_1 = require("../utils/cloudinary");
-const prisma = new client_1.PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
+// const signUpUserSchema = zod.object({
+// 	userName: zod.string().regex(/^\S*$/),
+// 	email: zod.string().email(),
+// 	password: zod.string().min(6),
+// });
+// type signUpUserSchemaType = zod.infer<typeof signUpUserSchema>;
 const signUpUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const body = req.body;
     try {
         // parsing request body
-        const { success } = medium_clone_common_1.signUpSchema.safeParse(body);
+        const { success } = medium_clone_common_1.signUpUserSchema.safeParse(body);
         if (!success) {
             res.status(400);
             return res.json({ message: "Invalid request parameters" });
         }
-        // cheking for reapiting email
-        const repeatEmail = yield prisma.user.findUnique({
+        // check for repitative email
+        const repeatEmail = yield prismaClient_1.prisma.user.findUnique({
             where: {
                 email: body.email,
             },
@@ -45,14 +48,14 @@ const signUpUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const salt = yield bcrypt_1.default.genSalt(10);
         const hash = yield bcrypt_1.default.hash(body.password, salt);
         // creating user
-        const user = yield prisma.user.create({
+        const user = yield prismaClient_1.prisma.user.create({
             data: {
                 email: body.email,
                 password: hash,
-                userName: body.name,
+                userName: body.userName,
             },
         });
-        // sign jwt token and setting in cookies
+        // signing jwt token and setting in cookies
         const token = jsonwebtoken_1.default.sign({ id: user.id }, String(JWT_SECRET));
         res.cookie("Authorization", token, {
             httpOnly: true,
@@ -72,13 +75,13 @@ const signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     const body = req.body;
     try {
         // parsing request body
-        const { success } = medium_clone_common_1.signinSchema.safeParse(body);
+        const { success } = medium_clone_common_1.signinUserSchema.safeParse(body);
         if (!success) {
             res.status(400);
             return res.json({ message: "Invalid request parameters" });
         }
         // find user
-        const user = yield prisma.user.findFirst({
+        const user = yield prismaClient_1.prisma.user.findFirst({
             where: {
                 OR: [
                     {
@@ -94,7 +97,7 @@ const signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             res.status(400);
             return res.json({ message: "User does not exist" });
         }
-        // cheking for password
+        // cheking password
         const result = yield bcrypt_1.default.compare(body.password, user.password);
         if (!result) {
             res.status(401);
@@ -134,11 +137,10 @@ const signOutUser = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.signOutUser = signOutUser;
 const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    //@ts-ignore
     const user = req.user;
     try {
         // find user
-        const userData = yield prisma.user.findUnique({
+        const userData = yield prismaClient_1.prisma.user.findUnique({
             where: {
                 id: user === null || user === void 0 ? void 0 : user.id,
             },
@@ -149,13 +151,29 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 bio: true,
                 about: true,
                 profileImg: true,
+                savedStories: {
+                    select: {
+                        storyId: true,
+                    },
+                },
+                claps: {
+                    select: {
+                        storyId: true,
+                    }
+                },
+                following: {
+                    select: {
+                        followingId: true,
+                    }
+                }
             },
         });
         if (!userData) {
             res.status(404);
             return res.json({ message: "User not found" });
         }
-        return res.json(userData);
+        const transformedUser = Object.assign(Object.assign({}, userData), { savedStories: userData === null || userData === void 0 ? void 0 : userData.savedStories.map((story) => story.storyId), claps: userData.claps.map(clap => clap.storyId), following: userData.following.map(user => user.followingId) });
+        return res.json(transformedUser);
     }
     catch (error) {
         console.log(error);
@@ -167,7 +185,7 @@ exports.getUser = getUser;
 const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
     try {
-        const user = yield prisma.user.findUnique({
+        const user = yield prismaClient_1.prisma.user.findUnique({
             where: {
                 id: id,
             },
@@ -178,8 +196,14 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 bio: true,
                 about: true,
                 profileImg: true,
-                followers: true, // improvement here
-                following: true, // improvement here
+                followersCount: true,
+                followingCount: true,
+                following: {
+                    select: {
+                        followingId: true,
+                    },
+                    take: 5,
+                },
                 stories: {
                     select: {
                         id: true,
@@ -191,7 +215,7 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
                                 topic: true,
                             },
                         },
-                        coverImage: true,
+                        coverImg: true,
                         author: {
                             select: {
                                 id: true,
@@ -209,7 +233,25 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
             res.status(404);
             return res.json({ error: "User do not exist!" });
         }
-        const transformedUser = Object.assign(Object.assign({}, user), { posts: user === null || user === void 0 ? void 0 : user.stories.map((story) => (Object.assign(Object.assign({}, story), { topics: story.topics.map((topic) => topic.topic) }))) });
+        // function that fetches user data
+        function fetchUser(id) {
+            return __awaiter(this, void 0, void 0, function* () {
+                console.log(id);
+                const res = yield prismaClient_1.prisma.user.findUnique({
+                    where: {
+                        id: id,
+                    },
+                    select: {
+                        id: true,
+                        profileImg: true,
+                        userName: true,
+                        bio: true,
+                    },
+                });
+                return res;
+            });
+        }
+        const transformedUser = Object.assign(Object.assign({}, user), { stories: user === null || user === void 0 ? void 0 : user.stories.map((story) => (Object.assign(Object.assign({}, story), { topics: story.topics.map((topic) => topic.topic) }))), topFiveFollowing: yield Promise.all(user.following.map((following) => __awaiter(void 0, void 0, void 0, function* () { return yield fetchUser(following.followingId); }))), following: "" });
         return res.json(transformedUser);
     }
     catch (error) {
@@ -219,12 +261,16 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.getUserProfile = getUserProfile;
-// multer work remaining
+// const updateUserSchema = zod.object({
+// 	userName: zod.string().regex(/^\S*$/),
+// 	bio: zod.string(),
+// });
+// type updateUserSchemaType = zod.infer<typeof updateUserSchema>;
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    //@ts-ignore
     const user = req.user;
     const body = req.body;
     const profileImg = req.file;
+    console.log(body);
     try {
         const { success } = medium_clone_common_1.updateUserSchema.safeParse(body);
         if (!success) {
@@ -232,10 +278,10 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             return res.json({ error: "Invalid request parameters" });
         }
         // Check if the name has been changed and if, Check for new name already exists in the database
-        if (body.name !== (user === null || user === void 0 ? void 0 : user.userName)) {
-            const existingUser = yield prisma.user.findUnique({
+        if (body.userName !== (user === null || user === void 0 ? void 0 : user.userName)) {
+            const existingUser = yield prismaClient_1.prisma.user.findUnique({
                 where: {
-                    userName: body.name,
+                    userName: body.userName,
                 },
             });
             if (existingUser) {
@@ -243,7 +289,7 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             }
         }
         // add new image link if added else set old url
-        const existingPost = yield prisma.user.findUnique({
+        const oldProfile = yield prismaClient_1.prisma.user.findUnique({
             where: {
                 id: user === null || user === void 0 ? void 0 : user.id,
             },
@@ -251,16 +297,17 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 profileImg: true,
             },
         });
-        const currentProfileImg = existingPost === null || existingPost === void 0 ? void 0 : existingPost.profileImg;
-        //@ts-ignore
-        const secure_url = profileImg ? yield (0, cloudinary_1.uploadImageCloudinary)(profileImg) : currentProfileImg;
-        // update post
-        yield prisma.user.update({
+        const currentProfileImg = oldProfile === null || oldProfile === void 0 ? void 0 : oldProfile.profileImg;
+        const secure_url = profileImg
+            ? yield (0, cloudinary_1.uploadImageCloudinary)(profileImg, currentProfileImg)
+            : currentProfileImg;
+        // update story
+        yield prismaClient_1.prisma.user.update({
             where: {
                 id: user === null || user === void 0 ? void 0 : user.id,
             },
             data: {
-                userName: body.name,
+                userName: body.userName,
                 bio: body.bio,
                 profileImg: secure_url,
             },
@@ -275,18 +322,17 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 });
 exports.updateUser = updateUser;
 const updateUserAboutSection = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    //@ts-ignore
     const user = req.user;
     const body = req.body;
     try {
         // parse body
-        const { success } = medium_clone_common_1.updateUserAboutSchema.safeParse(body);
+        const { success } = medium_clone_common_1.updateUserAboutSectionSchema.safeParse(body);
         if (!success) {
             res.status(400);
             return res.json({ error: "Invalid request parameters" });
         }
         // update post
-        yield prisma.user.update({
+        yield prismaClient_1.prisma.user.update({
             where: {
                 id: user === null || user === void 0 ? void 0 : user.id,
             },
@@ -303,24 +349,24 @@ const updateUserAboutSection = (req, res) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.updateUserAboutSection = updateUserAboutSection;
-const followUserSchema = zod_1.default.object({
-    userToFollow: zod_1.default.string(),
-});
+// const followUserSchema = zod.object({
+// 	userIdToFollow: zod.string(),
+// });
+// type followUserSchemaType = zod.infer<typeof followUserSchema>;
 const followUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    //@ts-ignore
     const user = req.user;
     const body = req.body;
     try {
         // parse body
-        const { success } = followUserSchema.safeParse(body);
+        const { success } = medium_clone_common_1.followUserSchema.safeParse(body);
         if (!success) {
             res.status(400);
             return res.json({ error: "Invalid request parameters" });
         }
         // Retrieve the user to follow
-        const userToFollow = yield prisma.user.findFirst({
+        const userToFollow = yield prismaClient_1.prisma.user.findFirst({
             where: {
-                id: body.userToFollow,
+                id: body.userIdToFollow,
             },
         });
         if (!userToFollow) {
@@ -328,45 +374,45 @@ const followUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             return res.json({ error: "user does not exist" });
         }
         // Check if the user is already following the specified user
-        const existingFollow = yield prisma.follow.findFirst({
+        const existingFollow = yield prismaClient_1.prisma.follow.findFirst({
             where: {
                 followerId: user === null || user === void 0 ? void 0 : user.id,
-                followingId: body.userToFollow,
+                followingId: body.userIdToFollow,
             },
         });
         // If already following, unfollow the user
         if (existingFollow) {
-            yield prisma.follow.delete({
+            yield prismaClient_1.prisma.follow.delete({
                 where: {
                     id: existingFollow.id,
                 },
             });
             // Decrement the follower count for the user being unfollowed
-            yield prisma.user.update({
-                where: { id: body.userToFollow },
+            yield prismaClient_1.prisma.user.update({
+                where: { id: body.userIdToFollow },
                 data: { followersCount: { decrement: 1 } },
             });
             // Decrement the following count for the current user
-            yield prisma.user.update({
+            yield prismaClient_1.prisma.user.update({
                 where: { id: user === null || user === void 0 ? void 0 : user.id },
                 data: { followingCount: { decrement: 1 } },
             });
             return res.json({ message: "User unfollowed successfully" });
         }
         // If not already following, create a new follow relationship
-        yield prisma.follow.create({
+        yield prismaClient_1.prisma.follow.create({
             data: {
                 followerId: user === null || user === void 0 ? void 0 : user.id,
-                followingId: body.userToFollow,
+                followingId: body.userIdToFollow,
             },
         });
         // Increment the follower count for the user being followed
-        yield prisma.user.update({
-            where: { id: body.userToFollow },
+        yield prismaClient_1.prisma.user.update({
+            where: { id: body.userIdToFollow },
             data: { followersCount: { increment: 1 } },
         });
         // Increment the following count for the current user
-        yield prisma.user.update({
+        yield prismaClient_1.prisma.user.update({
             where: { id: user === null || user === void 0 ? void 0 : user.id },
             data: { followingCount: { increment: 1 } },
         });

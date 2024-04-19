@@ -9,136 +9,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.saveStory = exports.clapStory = exports.deleteStory = exports.upadateStory = exports.createStory = exports.getAllStories = exports.getStory = void 0;
-const client_1 = require("@prisma/client");
-// import { CustomRequest } from "../middleware/authMiddleware";
-const cloudinary_1 = require("../utils/cloudinary");
+exports.deleteStory = exports.saveStory = exports.clapStory = exports.getAllStories = exports.getStory = exports.upadateStory = exports.createStory = void 0;
 const medium_clone_common_1 = require("@aayushlad/medium-clone-common");
-const prisma = new client_1.PrismaClient();
-const getStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const id = req.params.id;
-    try {
-        // finding story
-        const story = yield prisma.story.findUnique({
-            where: {
-                id: id,
-            },
-            select: {
-                id: true,
-                title: true,
-                content: true,
-                description: true,
-                postedOn: true,
-                clapsCount: true,
-                savedBy: {
-                    select: {
-                        userId: true,
-                    },
-                },
-                claps: {
-                    select: {
-                        userId: true,
-                    },
-                },
-                topics: {
-                    select: {
-                        topic: true,
-                    },
-                },
-                coverImage: true,
-                author: {
-                    select: {
-                        id: true,
-                        userName: true,
-                        bio: true,
-                        email: true,
-                        profileImg: true,
-                    },
-                },
-            },
-        });
-        // function that fetches user data
-        function fetchUser(id) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const res = yield prisma.user.findUnique({
-                    where: {
-                        id: id,
-                    },
-                    select: {
-                        id: true,
-                        profileImg: true,
-                        userName: true,
-                        bio: true,
-                    },
-                });
-                return res;
-            });
-        }
-        const transformedStory = Object.assign(Object.assign({}, story), { topics: story === null || story === void 0 ? void 0 : story.topics.map((topicObj) => topicObj.topic), claps: (story === null || story === void 0 ? void 0 : story.claps) &&
-                (yield Promise.all(story === null || story === void 0 ? void 0 : story.claps.map((clap) => __awaiter(void 0, void 0, void 0, function* () { return yield fetchUser(clap.userId); })))), savedBy: story === null || story === void 0 ? void 0 : story.savedBy.map((user) => user.userId) });
-        return res.json(transformedStory);
-    }
-    catch (error) {
-        console.log(error);
-        res.status(400);
-        return res.json({ message: "Error while fetching story data" });
-    }
-});
-exports.getStory = getStory;
-const getAllStories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const stories = yield prisma.story.findMany({
-            where: {
-                published: true,
-            },
-            select: {
-                id: true,
-                title: true,
-                description: true,
-                postedOn: true,
-                published: true,
-                clapsCount: true,
-                savedBy: {
-                    select: {
-                        userId: true,
-                    },
-                },
-                topics: {
-                    select: {
-                        topic: true,
-                    },
-                },
-                coverImage: true,
-                author: {
-                    select: {
-                        id: true,
-                        userName: true,
-                        bio: true,
-                        email: true,
-                        profileImg: true,
-                    },
-                },
-            },
-        });
-        // Map over stories to transform topics to an array of strings
-        const transformedStries = stories.map((story) => (Object.assign(Object.assign({}, story), { topics: story.topics.map((topicObj) => topicObj.topic), savedBy: story === null || story === void 0 ? void 0 : story.savedBy.map((user) => user.userId) })));
-        return res.json(transformedStries);
-    }
-    catch (error) {
-        console.log(error);
-        res.status(400);
-        return res.json({ message: "Error while fetching story data" });
-    }
-});
-exports.getAllStories = getAllStories;
+const prismaClient_1 = require("../db/prismaClient");
+const cloudinary_1 = require("../utils/cloudinary");
 // create sstory
 const createStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    //@ts-ignore
     const user = req.user;
     const body = req.body;
     const coverImg = req.file;
     try {
-        // data parsing remaining
+        body.published = JSON.parse(req.body.published);
+        body.topics = req.body.topics.split(",");
+        // body parsing
+        const { success } = medium_clone_common_1.createStorySchema.safeParse(body);
+        if (!success) {
+            res.status(400);
+            return res.json({ message: "Invalid request parameters" });
+        }
         // Prepare topic IDs to connect
         let topicIdsToAdd = [];
         if (body.topics && body.topics.length > 0) {
@@ -146,7 +34,7 @@ const createStory = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             for (const topic of body.topics) {
                 if (topic == "")
                     continue;
-                const existingTopic = yield prisma.topics.findFirst({
+                const existingTopic = yield prismaClient_1.prisma.topics.findFirst({
                     where: {
                         topic: topic,
                     },
@@ -157,7 +45,7 @@ const createStory = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 }
                 else {
                     // If topic doesn't exist, create it and get its ID
-                    const newTopic = yield prisma.topics.create({
+                    const newTopic = yield prismaClient_1.prisma.topics.create({
                         data: {
                             topic: topic,
                         },
@@ -167,10 +55,9 @@ const createStory = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             }
         }
         // Upload cover image to Cloudinary and get secure URL
-        //@ts-ignore
         const secure_url = coverImg ? yield (0, cloudinary_1.uploadImageCloudinary)(coverImg) : "";
-        // Create new blog post
-        yield prisma.story.create({
+        // Create new story
+        const newStory = yield prismaClient_1.prisma.story.create({
             data: {
                 title: body.title,
                 content: body.content,
@@ -178,13 +65,13 @@ const createStory = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 postedOn: new Date(),
                 published: body.published,
                 authorId: (user === null || user === void 0 ? void 0 : user.id) || "",
-                coverImage: secure_url,
+                coverImg: secure_url,
                 topics: {
                     connect: topicIdsToAdd.map((id) => ({ id: id })),
                 },
             },
         });
-        return res.json({ message: "Story created" });
+        return res.json({ id: newStory.id });
     }
     catch (error) {
         console.log(error);
@@ -195,19 +82,26 @@ const createStory = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.createStory = createStory;
 const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    //@ts-ignore
     const user = req.user;
     const body = req.body;
     const coverImg = req.file;
+    console.log(body);
     try {
-        // body data parse remaining
+        body.published = JSON.parse(req.body.published);
+        body.topics = req.body.topics.split(",");
+        // body parsing
+        const { success } = medium_clone_common_1.updateStorySchema.safeParse(body);
+        if (!success) {
+            res.status(400);
+            return res.json({ message: "Invalid request parameters" });
+        }
         let topicIdsToAdd = [];
         if (body.topics && body.topics.length > 0) {
             // Check if topics already exist in the database
             for (const topic of body.topics) {
                 if (topic == "")
                     continue;
-                const existingTopic = yield prisma.topics.findFirst({
+                const existingTopic = yield prismaClient_1.prisma.topics.findFirst({
                     where: {
                         topic: topic,
                     },
@@ -218,7 +112,7 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 }
                 else {
                     // If topic doesn't exist, create it and get its ID
-                    const newTopic = yield prisma.topics.create({
+                    const newTopic = yield prismaClient_1.prisma.topics.create({
                         data: {
                             topic: topic,
                         },
@@ -228,7 +122,7 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             }
         }
         // Get the current topics associated with the post
-        const currentStory = yield prisma.story.findUnique({
+        const currentStory = yield prismaClient_1.prisma.story.findUnique({
             where: {
                 id: body.id,
             },
@@ -243,16 +137,15 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         // Find the topic IDs to disconnect
         const topicIdsToDisconnect = currentTopicIds.length > 0 ? currentTopicIds === null || currentTopicIds === void 0 ? void 0 : currentTopicIds.filter((id) => !topicIdsToAdd.includes(id)) : [];
         // add new image link if added else set old url
-        const existingPost = yield prisma.story.findUnique({
+        const existingPost = yield prismaClient_1.prisma.story.findUnique({
             where: {
                 id: body.id,
             },
         });
-        const currentCoverImage = existingPost === null || existingPost === void 0 ? void 0 : existingPost.coverImage;
-        //@ts-ignore
+        const currentCoverImage = existingPost === null || existingPost === void 0 ? void 0 : existingPost.coverImg;
         const secure_url = coverImg ? yield (0, cloudinary_1.uploadImageCloudinary)(coverImg) : currentCoverImage;
-        // updating the blog
-        yield prisma.story.update({
+        // updating the story
+        yield prismaClient_1.prisma.story.update({
             where: {
                 id: body.id,
                 authorId: user === null || user === void 0 ? void 0 : user.id,
@@ -262,7 +155,7 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 content: body.content,
                 description: body.description,
                 published: body.published,
-                coverImage: secure_url,
+                coverImg: secure_url,
                 topics: {
                     connect: topicIdsToAdd.length > 0 ? topicIdsToAdd.map((id) => ({ id: id })) : [], // Connect post with existing or newly created topics
                     disconnect: topicIdsToDisconnect.length > 0 ? topicIdsToDisconnect.map((id) => ({ id: id })) : [], // Disconnect post from topics that are no longer associated
@@ -278,59 +171,136 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.upadateStory = upadateStory;
-const deleteStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    //@ts-ignore
-    const user = req.user;
+const getStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.params.id;
     try {
-        // deleting blog
-        yield prisma.story.delete({
+        // finding story
+        const story = yield prismaClient_1.prisma.story.findUnique({
             where: {
                 id: id,
-                authorId: user === null || user === void 0 ? void 0 : user.id,
+            },
+            select: {
+                id: true,
+                title: true,
+                content: true,
+                description: true,
+                postedOn: true,
+                clapsCount: true,
+                published: true,
+                topics: {
+                    select: {
+                        topic: true,
+                    },
+                },
+                coverImg: true,
+                author: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        bio: true,
+                        email: true,
+                        profileImg: true,
+                    },
+                },
             },
         });
-        res.status(201);
-        return res.json({ message: "story deleted" });
+        const transformedStory = Object.assign(Object.assign({}, story), { topics: story === null || story === void 0 ? void 0 : story.topics.map((topicObj) => topicObj.topic) });
+        return res.json(transformedStory);
     }
     catch (error) {
         console.log(error);
         res.status(400);
-        return res.json({ message: "Error deleting blog" });
+        return res.json({ message: "Error while fetching story data" });
     }
 });
-exports.deleteStory = deleteStory;
+exports.getStory = getStory;
+const getAllStories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const stories = yield prismaClient_1.prisma.story.findMany({
+            where: {
+                published: true,
+            },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                postedOn: true,
+                topics: {
+                    select: {
+                        topic: true,
+                    },
+                },
+                coverImg: true,
+                author: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                    },
+                },
+            },
+        });
+        // Map over stories to transform topics to an array of strings
+        const transformedStries = stories.map((story) => (Object.assign(Object.assign({}, story), { topics: story.topics.map((topicObj) => topicObj.topic) })));
+        return res.json(transformedStries);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error while fetching story data" });
+    }
+});
+exports.getAllStories = getAllStories;
 const clapStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    //@ts-ignore
     const user = req.user;
     const body = req.body;
     try {
         // parsing body
-        const { success } = medium_clone_common_1.clapBlogSchema.safeParse(body);
+        const { success } = medium_clone_common_1.clapStorySchema.safeParse(body);
         if (!success) {
             res.status(400);
             return res.json({ message: "Invalid request parameters" });
         }
         // If the user has already clapped, delete the existing clap record
-        const existingClap = yield prisma.clap.findFirst({
+        const existingClap = yield prismaClient_1.prisma.clap.findFirst({
             where: {
                 userId: user === null || user === void 0 ? void 0 : user.id,
-                storyId: body.postId,
+                storyId: body.storyId,
             },
         });
         if (existingClap) {
-            yield prisma.clap.delete({
+            yield prismaClient_1.prisma.clap.delete({
                 where: {
                     id: existingClap.id,
                 },
             });
+            yield prismaClient_1.prisma.story.update({
+                where: {
+                    id: body.storyId,
+                },
+                data: {
+                    clapsCount: {
+                        decrement: 1,
+                    },
+                },
+            });
             return res.json({ message: "Clap removed." });
         }
-        // creating new like record
-        yield prisma.clap.create({
+        // creating new clap record
+        yield prismaClient_1.prisma.clap.create({
             data: {
                 userId: user === null || user === void 0 ? void 0 : user.id,
-                storyId: body.postId,
+                storyId: body.storyId,
+            },
+        });
+        yield prismaClient_1.prisma.story.update({
+            where: {
+                id: body.storyId,
+            },
+            data: {
+                clapsCount: {
+                    increment: 1,
+                },
             },
         });
         return res.json({ message: "story claped" });
@@ -343,25 +313,24 @@ const clapStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.clapStory = clapStory;
 const saveStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    //@ts-ignore
     const user = req.user;
     const body = req.body;
     try {
         // parsing body
-        const { success } = medium_clone_common_1.saveBlogSchema.safeParse(body);
+        const { success } = medium_clone_common_1.clapStorySchema.safeParse(body);
         if (!success) {
             res.status(400);
             return res.json({ message: "Invalid request parameters" });
         }
         // If the user has saved, delete the existing saved record
-        const existingSave = yield prisma.savedStory.findFirst({
+        const existingSave = yield prismaClient_1.prisma.savedStory.findFirst({
             where: {
                 userId: user === null || user === void 0 ? void 0 : user.id,
-                storyId: body.postId,
+                storyId: body.storyId,
             },
         });
         if (existingSave) {
-            yield prisma.savedStory.delete({
+            yield prismaClient_1.prisma.savedStory.delete({
                 where: {
                     id: existingSave.id,
                 },
@@ -369,10 +338,10 @@ const saveStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.json({ message: "story unsaved" });
         }
         // creating new save record
-        yield prisma.savedStory.create({
+        yield prismaClient_1.prisma.savedStory.create({
             data: {
                 userId: user === null || user === void 0 ? void 0 : user.id,
-                storyId: body.postId,
+                storyId: body.storyId,
             },
         });
         return res.json({ message: "story saved" });
@@ -384,3 +353,30 @@ const saveStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.saveStory = saveStory;
+const deleteStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const id = req.params.id;
+    try {
+        // Find and delete any related SavedStory records
+        yield prismaClient_1.prisma.savedStory.deleteMany({
+            where: {
+                storyId: id,
+            },
+        });
+        // deleting delete
+        yield prismaClient_1.prisma.story.delete({
+            where: {
+                id: id,
+                authorId: user === null || user === void 0 ? void 0 : user.id,
+            },
+        });
+        res.status(201);
+        return res.json({ message: "story deleted" });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error deleting story" });
+    }
+});
+exports.deleteStory = deleteStory;

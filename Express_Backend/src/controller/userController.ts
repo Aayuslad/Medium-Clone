@@ -13,7 +13,7 @@ import {
 import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { prisma } from "../index";
+import { prisma } from "../db/prismaClient";
 import { uploadImageCloudinary } from "../utils/cloudinary";
 const JWT_SECRET = process.env.JWT_SECRET;
 

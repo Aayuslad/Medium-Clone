@@ -9,15 +9,18 @@ require("dotenv/config");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const userRouter_1 = __importDefault(require("./router/userRouter"));
 const storyRouter_1 = __importDefault(require("./router/storyRouter"));
-// Create the main Hono app
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
-    origin: ["http://localhost:5173", "https://medium-clone-two-psi.vercel.app"],
+    origin: ["http://localhost:5173", "https://medium-clone-jz8b.vercel.app"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
 }));
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
+app.get("/", (req, res) => {
+    res.json({ message: " server startted " });
+});
 app.use("/api/v1/user", userRouter_1.default);
 app.use("/api/v1/story", storyRouter_1.default);
-exports.default = app;
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log("server started"));

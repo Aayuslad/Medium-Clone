@@ -12,32 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const edge_1 = require("@prisma/client/edge");
-const extension_accelerate_1 = require("@prisma/extension-accelerate");
 require("dotenv/config");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const JWT_SECRET = process.env.JWT_SECRET;
-const prisma = new edge_1.PrismaClient({
-    datasources: {
-        db: {
-            url: process.env.DATABASE_URL || "",
-        },
-    },
-}).$extends((0, extension_accelerate_1.withAccelerate)());
-// export interface CustomRequest extends Request {
-// 	user: {
-// 		id: string;
-// 		email: string;
-// 		userName: string;
-// 		password: string;
-// 		bio: string;
-// 		about: string;
-// 		profileImg: string;
-// 	} | null;
-// }
+const prismaClient_1 = require("../db/prismaClient");
 const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const token = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.Authorisation;
+    const token = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.Authorization;
     if (!token) {
         res.status(401).json({ message: "Sign in first" });
         return;
@@ -51,12 +32,11 @@ const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         }
         const userId = decodedPayload.id;
         // Find user and attach to request
-        const user = yield prisma.user.findUnique({
+        const user = yield prismaClient_1.prisma.user.findUnique({
             where: {
                 id: userId,
             },
         });
-        //@ts-ignore
         req.user = user;
         next();
     }

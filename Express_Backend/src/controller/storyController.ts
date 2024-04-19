@@ -7,7 +7,7 @@ import {
 	updateStorySchemaType,
 } from "@aayushlad/medium-clone-common";
 import { Request, Response } from "express";
-import { prisma } from "../index";
+import { prisma } from "../db/prismaClient";
 import { uploadImageCloudinary } from "../utils/cloudinary";
 
 // create sstory

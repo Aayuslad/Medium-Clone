@@ -8,22 +8,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.uploadImageCloudinary = void 0;
-const uploadImageCloudinary = function (image) {
+const cloudinary_1 = __importDefault(require("cloudinary"));
+cloudinary_1.default.v2.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET,
+});
+const uploadImageCloudinary = function (image, oldImage) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Create a FormData object and append the image and upload preset
-        const formData = new FormData();
-        formData.append("file", image);
-        formData.append("upload_preset", "uploadPresetOne"); // Replace with your upload preset
-        // Send a POST request to Cloudinary API to upload the image
-        const cloudinaryResponse = yield fetch("https://api.cloudinary.com/v1_1/daiozrypo/image/upload", {
-            method: "POST",
-            body: formData,
-        });
-        // Parse the JSON response from Cloudinary and return secure URL
-        const response = yield cloudinaryResponse.json();
-        return response.secure_url;
+        try {
+            const result = yield cloudinary_1.default.v2.uploader.upload(image.path, {
+                folder: "medium_clone",
+            });
+            if (oldImage) {
+                yield cloudinary_1.default.v2.uploader.destroy(`medium_clone/${extractPublicIdFromUrl(oldImage)}`);
+            }
+            return result.secure_url;
+        }
+        catch (error) {
+            console.error("Error uploading image to Cloudinary:", error);
+            return;
+        }
     });
 };
 exports.uploadImageCloudinary = uploadImageCloudinary;
+// Function to extract public_id from Cloudinary image URL
+function extractPublicIdFromUrl(imageUrl) {
+    const startIndex = imageUrl.lastIndexOf("/") + 1;
+    const endIndex = imageUrl.lastIndexOf(".");
+    return imageUrl.substring(startIndex, endIndex);
+}

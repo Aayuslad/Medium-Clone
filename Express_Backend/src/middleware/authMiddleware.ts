@@ -2,7 +2,7 @@ import "dotenv/config";
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 const JWT_SECRET: string | undefined = process.env.JWT_SECRET;
-import { prisma } from "../index";
+import { prisma } from "../db/prismaClient";
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
 	const token: string | undefined = req.cookies?.Authorization;

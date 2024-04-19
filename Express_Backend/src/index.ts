@@ -4,16 +4,6 @@ import "dotenv/config";
 import cookieParser from "cookie-parser";
 import userRouter from "./router/userRouter";
 import storyRouter from "./router/storyRouter";
-import { PrismaClient } from "@prisma/client";
-import { withAccelerate } from "@prisma/extension-accelerate";
-export const prisma = new PrismaClient({
-	datasources: {
-		db: {
-			url: process.env.DATABASE_URL || "",
-		},
-	},
-}).$extends(withAccelerate());
-
 const app = express();
 
 app.use(
