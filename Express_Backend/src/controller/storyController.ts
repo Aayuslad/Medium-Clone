@@ -9,6 +9,7 @@ import {
 import { Request, Response } from "express";
 import { prisma } from "../db/prismaClient";
 import { uploadImageCloudinary } from "../utils/cloudinary";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 // create sstory
 export const createStory = async (req: Request, res: Response) => {
@@ -186,6 +187,7 @@ export const upadateStory = async (req: Request, res: Response) => {
 
 export const getStory = async (req: Request, res: Response) => {
 	const id = req.params.id;
+	const token: string | undefined = req.cookies?.Authorization;
 
 	try {
 		// finding story
@@ -224,7 +226,41 @@ export const getStory = async (req: Request, res: Response) => {
 			topics: story?.topics.map((topicObj: { topic: string }) => topicObj.topic),
 		};
 
-		return res.json(transformedStory);
+		res.json(transformedStory);
+
+		// Update reading history
+		if (token) {
+			const decodedToken = jwt.decode(token as string) as JwtPayload;
+
+			const existingReadingHistory = await prisma.readingHistory.findFirst({
+				where: {
+					userId: decodedToken?.id as string,
+					storyId: id,
+				},
+			});
+
+			if (existingReadingHistory) {
+				await prisma.readingHistory.update({
+					where: {
+						id: existingReadingHistory.id,
+					},
+					data: {
+						readAt: new Date(),
+					},
+				});
+				console.log("Story already exists in reading history");;
+				
+			} else {
+				await prisma.readingHistory.create({
+					data: {
+						storyId: id,
+						userId: decodedToken?.id as string,
+					},
+				});
+			}
+		}
+
+		return;
 	} catch (error) {
 		console.log(error);
 		res.status(400);
@@ -410,5 +446,129 @@ export const deleteStory = async (req: Request, res: Response) => {
 		console.log(error);
 		res.status(400);
 		return res.json({ message: "Error deleting story" });
+	}
+};
+
+// get svaed stories
+export const getSavedStories = async (req: Request, res: Response) => {
+	const user = req.user;
+
+	try {
+		const savedStoryIds = await prisma.savedStory.findMany({
+			where: {
+				userId: user?.id,
+			},
+			select: {
+				storyId: true,
+			},
+		});
+
+		const stories = await prisma.story.findMany({
+			where: {
+				id: {
+					in: savedStoryIds.map((savedStory) => savedStory.storyId),
+				},
+				published: true,
+			},
+			select: {
+				id: true,
+				title: true,
+				description: true,
+				postedOn: true,
+				topics: {
+					select: {
+						topic: true,
+					},
+				},
+				coverImg: true,
+				author: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+					},
+				},
+			},
+		});
+
+		// Map over stories to transform topics to an array of strings
+		const transformedStries = stories.map((story) => ({
+			...story,
+			topics: story.topics.map((topicObj) => topicObj.topic),
+		}));
+
+		return res.json(transformedStries);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error fetching saved stories" });
+	}
+};
+
+// get reading history
+export const getReadingHistory = async (req: Request, res: Response) => {
+	const user = req.user;
+
+	try {
+		const readingHistoryIds = await prisma.readingHistory.findMany({
+			where: {
+				userId: user?.id,
+			},
+			orderBy: {
+				readAt: "desc",
+			},
+			select: {
+				storyId: true,
+			},
+		});
+
+		console.log(readingHistoryIds);
+
+		if (!readingHistoryIds.length) {
+			return res.json([]);
+		}
+
+		const stories = await prisma.story.findMany({
+			where: {
+				id: {
+					in: readingHistoryIds.map((readingHistory) => readingHistory.storyId),
+				},
+				published: true,
+			},
+			orderBy: {
+				id: "desc",
+			},
+			select: {
+				id: true,
+				title: true,
+				description: true,
+				postedOn: true,
+				topics: {
+					select: {
+						topic: true,
+					},
+				},
+				coverImg: true,
+				author: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+					},
+				},
+			},
+		});
+
+		// Map over stories to transform topics to an array of strings
+		const transformedStries = stories.map((story) => ({
+			...story,
+			topics: story.topics.map((topicObj) => topicObj.topic),
+		}));
+
+		return res.json(transformedStries);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error fetching reading history" });
 	}
 };

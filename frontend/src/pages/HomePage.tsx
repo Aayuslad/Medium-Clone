@@ -13,7 +13,7 @@ const HomePage = () => {
 	const scrollDirection = useScrollDirection();
 
 	useEffect(() => {
-		storyStore.getStories();
+		if (storyStore.feedStories.length === 0) storyStore.getStories();
 	}, []);
 
 	return (

@@ -8,6 +8,8 @@ type storyStoreType = {
 	skelitonLoading: boolean;
 	putStoryLoading: boolean | undefined;
 	feedStories: storyType[] | [];
+	savedStories: storyType[] | [];
+	readingHistory: storyType[] | [];
 	postStory: (value: FormData) => Promise<string>;
 	putStory: (value: FormData) => Promise<boolean>;
 	getStory: (value: { id: string }) => Promise<storyType | undefined>;
@@ -15,6 +17,8 @@ type storyStoreType = {
 	deleteStory: (value: { id: string }) => void;
 	clapStory: (value: clapStorySchemaType) => void;
 	saveStory: (value: clapStorySchemaType) => void;
+	getSavedStories: () => Promise<void>;
+	getReadingHistory: () => Promise<void>;
 };
 
 export const StoryStore = create<storyStoreType>((set) => ({
@@ -22,6 +26,8 @@ export const StoryStore = create<storyStoreType>((set) => ({
 	skelitonLoading: false,
 	putStoryLoading: undefined,
 	feedStories: [],
+	savedStories: [],
+	readingHistory: [],
 
 	postStory: async (values) => {
 		let id: string = "";
@@ -31,7 +37,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			const res = await axios.post("/api/v1/story", values);
 			id = res.data.id;
 		} catch (error) {
-			console.log(error);			
+			console.log(error);
 			toast.error("Error while creating Story!");
 		} finally {
 			set({ cursorLoading: false });
@@ -113,6 +119,31 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			}
 		} finally {
 			set({ putStoryLoading: false });
+		}
+	},
+
+	getSavedStories: async () => {
+		try {
+			set({ skelitonLoading: true });
+			const res = await axios.get("/api/v1/story/savedStories");
+			set({ savedStories: res.data });
+		} catch (error) {
+			toast.error("Error while fetching Story!");
+		} finally {
+			set({ skelitonLoading: false });
+		}
+	},
+
+	getReadingHistory: async () => {
+		try {
+			set({ skelitonLoading: true });
+			const res = await axios.get("/api/v1/story/readingHistory");
+			console.log(res.data);
+			set({ readingHistory: res.data });
+		} catch (error) {
+			toast.error("Error while fetching Story!");
+		} finally {
+			set({ skelitonLoading: false });
 		}
 	},
 }));

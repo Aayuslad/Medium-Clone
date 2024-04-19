@@ -8,11 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteStory = exports.saveStory = exports.clapStory = exports.getAllStories = exports.getStory = exports.upadateStory = exports.createStory = void 0;
+exports.getReadingHistory = exports.getSavedStories = exports.deleteStory = exports.saveStory = exports.clapStory = exports.getAllStories = exports.getStory = exports.upadateStory = exports.createStory = void 0;
 const medium_clone_common_1 = require("@aayushlad/medium-clone-common");
 const prismaClient_1 = require("../db/prismaClient");
 const cloudinary_1 = require("../utils/cloudinary");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 // create sstory
 const createStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
@@ -172,7 +176,9 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 });
 exports.upadateStory = upadateStory;
 const getStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
     const id = req.params.id;
+    const token = (_b = req.cookies) === null || _b === void 0 ? void 0 : _b.Authorization;
     try {
         // finding story
         const story = yield prismaClient_1.prisma.story.findUnique({
@@ -205,7 +211,38 @@ const getStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             },
         });
         const transformedStory = Object.assign(Object.assign({}, story), { topics: story === null || story === void 0 ? void 0 : story.topics.map((topicObj) => topicObj.topic) });
-        return res.json(transformedStory);
+        res.json(transformedStory);
+        // Update reading history
+        if (token) {
+            const decodedToken = jsonwebtoken_1.default.decode(token);
+            const existingReadingHistory = yield prismaClient_1.prisma.readingHistory.findFirst({
+                where: {
+                    userId: decodedToken === null || decodedToken === void 0 ? void 0 : decodedToken.id,
+                    storyId: id,
+                },
+            });
+            if (existingReadingHistory) {
+                yield prismaClient_1.prisma.readingHistory.update({
+                    where: {
+                        id: existingReadingHistory.id,
+                    },
+                    data: {
+                        readAt: new Date(),
+                    },
+                });
+                console.log("Story already exists in reading history");
+                ;
+            }
+            else {
+                yield prismaClient_1.prisma.readingHistory.create({
+                    data: {
+                        storyId: id,
+                        userId: decodedToken === null || decodedToken === void 0 ? void 0 : decodedToken.id,
+                    },
+                });
+            }
+        }
+        return;
     }
     catch (error) {
         console.log(error);
@@ -380,3 +417,113 @@ const deleteStory = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.deleteStory = deleteStory;
+// get svaed stories
+const getSavedStories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    try {
+        const savedStoryIds = yield prismaClient_1.prisma.savedStory.findMany({
+            where: {
+                userId: user === null || user === void 0 ? void 0 : user.id,
+            },
+            select: {
+                storyId: true,
+            },
+        });
+        const stories = yield prismaClient_1.prisma.story.findMany({
+            where: {
+                id: {
+                    in: savedStoryIds.map((savedStory) => savedStory.storyId),
+                },
+                published: true,
+            },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                postedOn: true,
+                topics: {
+                    select: {
+                        topic: true,
+                    },
+                },
+                coverImg: true,
+                author: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                    },
+                },
+            },
+        });
+        // Map over stories to transform topics to an array of strings
+        const transformedStries = stories.map((story) => (Object.assign(Object.assign({}, story), { topics: story.topics.map((topicObj) => topicObj.topic) })));
+        return res.json(transformedStries);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error fetching saved stories" });
+    }
+});
+exports.getSavedStories = getSavedStories;
+// get reading history
+const getReadingHistory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    try {
+        const readingHistoryIds = yield prismaClient_1.prisma.readingHistory.findMany({
+            where: {
+                userId: user === null || user === void 0 ? void 0 : user.id,
+            },
+            orderBy: {
+                readAt: "desc",
+            },
+            select: {
+                storyId: true,
+            },
+        });
+        console.log(readingHistoryIds);
+        if (!readingHistoryIds.length) {
+            return res.json([]);
+        }
+        const stories = yield prismaClient_1.prisma.story.findMany({
+            where: {
+                id: {
+                    in: readingHistoryIds.map((readingHistory) => readingHistory.storyId),
+                },
+                published: true,
+            },
+            orderBy: {
+                id: "desc",
+            },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                postedOn: true,
+                topics: {
+                    select: {
+                        topic: true,
+                    },
+                },
+                coverImg: true,
+                author: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                    },
+                },
+            },
+        });
+        // Map over stories to transform topics to an array of strings
+        const transformedStries = stories.map((story) => (Object.assign(Object.assign({}, story), { topics: story.topics.map((topicObj) => topicObj.topic) })));
+        return res.json(transformedStries);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error fetching reading history" });
+    }
+});
+exports.getReadingHistory = getReadingHistory;

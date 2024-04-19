@@ -14,20 +14,21 @@ datasource db {
 }
 
 model User {
-  id             String       @id @default(uuid())
-  email          String       @unique
-  userName       String       @unique
+  id             String           @id @default(uuid())
+  email          String           @unique
+  userName       String           @unique
   password       String
-  bio            String       @default("")
-  about          String       @default("")
-  profileImg     String       @default("")
+  bio            String           @default("")
+  about          String           @default("")
+  profileImg     String           @default("")
   stories        Story[] // Establishing a one-to-many relationship
   claps          Clap[] // Establishing a many-to-many relationshiip
   savedStories   SavedStory[] // Establishing a many-to-many relationship
-  followers      Follow[]     @relation("UserFollowers")
-  following      Follow[]     @relation("UserFollowing")
-  followersCount Int          @default(0) // Count of followers
-  followingCount Int          @default(0) // Count of users followed by this user
+  followers      Follow[]         @relation("UserFollowers")
+  following      Follow[]         @relation("UserFollowing")
+  followersCount Int              @default(0) // Count of followers
+  followingCount Int              @default(0) // Count of users followed by this user
+  readingHistory ReadingHistory[]
 }
 
 model Story {
@@ -44,6 +45,7 @@ model Story {
   claps       Clap[]
   savedBy     SavedStory[]
   clapsCount  Int          @default(0)
+  readingHistory ReadingHistory[]
 }
 
 model Topics {
@@ -74,4 +76,13 @@ model Follow {
   followerId  String // Foreign key to User
   following   User   @relation("UserFollowers", fields: [followingId], references: [id])
   followingId String // Foreign key to User
+}
+
+model ReadingHistory {
+  id      String   @id @default(uuid())
+  user    User     @relation(fields: [userId], references: [id])
+  userId  String // Foreign key to User
+  story   Story    @relation(fields: [storyId], references: [id])
+  storyId String // Foreign key to Story
+  readAt  DateTime @default(now())
 }

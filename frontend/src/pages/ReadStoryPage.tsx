@@ -10,6 +10,7 @@ import SaveButton from "../components/buttons/SaveButton";
 import { StoryStore } from "../stores/storyStore";
 import ReadStoryPageSkeleton from "../components/skelitons/ReadStoryPageSkeleton";
 import { FollowFollowingButton } from "../components/buttons/SmallFollowFollowingButton";
+import { formatDate } from "../helper/formatDate";
 
 const ReadStoryPage = () => {
 	const { id } = useParams<{ id: string }>();
@@ -31,24 +32,6 @@ const ReadStoryPage = () => {
 		const content = document.getElementById("content") as HTMLTextAreaElement;
 		content.style.height = `${content.scrollHeight}px`;
 	}, [story?.content]);
-
-	// fuction for formating date.
-	function formatDate(inputDate: string) {
-		const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-		// Parse the input date string
-		const date = new Date(inputDate);
-
-		// Extract the components of the date
-		const year = date.getFullYear();
-		const month = months[date.getMonth()];
-		const day = date.getDate();
-
-		// Construct the formatted date string
-		const formattedDate = `${month} ${day}, ${year}`;
-
-		return formattedDate;
-	}
 
 	return (
 		<div className="ReadStoryPage">
