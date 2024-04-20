@@ -19,6 +19,7 @@ type storyStoreType = {
 	saveStory: (value: clapStorySchemaType) => void;
 	getSavedStories: () => Promise<void>;
 	getReadingHistory: () => Promise<void>;
+	removeStoryFromFeed: (id: string) => void;
 };
 
 export const StoryStore = create<storyStoreType>((set) => ({
@@ -145,5 +146,14 @@ export const StoryStore = create<storyStoreType>((set) => ({
 		} finally {
 			set({ skelitonLoading: false });
 		}
+	},
+
+	removeStoryFromFeed: (id: string) => {
+		set((state) => {
+			return {
+				...state,
+				feedStories: state.feedStories.filter((story) => story.id !== id),
+			};
+		});
 	},
 }));

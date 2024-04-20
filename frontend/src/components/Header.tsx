@@ -23,7 +23,7 @@ const Header = () => {
 
 	return (
 		<div
-			className={`Header z-10 w-full max-w-[100vw] h-14 px-5 fixed flex items-center gap-1 border-b-2 border-neutral-300 bg-white backdrop-blur-20 duration-200 ${
+			className={`Header z-10 w-full max-w-[100vw] h-14 px-5 fixed flex items-center gap-1 border-b border-slate-200 bg-white backdrop-blur-20 duration-200 ${
 				scrollDirection === "down" ? "-top-24" : "top-0"
 			}`}
 		>

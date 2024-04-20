@@ -34,6 +34,7 @@ export type storyType = {
         userName: string;
         bio?: string;
         profileImg: string;
+        followersCount: number;
     };
 };
 export declare const signUpUserSchema: zod.ZodObject<{

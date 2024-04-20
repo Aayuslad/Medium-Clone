@@ -36,6 +36,7 @@ export type storyType = {
 		userName: string;
 		bio?: string;
 		profileImg: string;
+		followersCount: number;
 	};
 };
 

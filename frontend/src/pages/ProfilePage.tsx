@@ -6,7 +6,7 @@ import defaultProfile from "../assets/defaultProfile.jpg";
 import EditProfile from "../components/EditProfile";
 import Header from "../components/Header";
 import StoryPreview from "../components/StoryPreview";
-import { FollowFollowingButton } from "../components/buttons/BigFollowFollowingButton";
+import BigFollowFollowingButton from "../components/buttons/BigFollowFollowingButton";
 import RegularButton from "../components/buttons/RegularButton";
 import ProfilePgaeSkeliton from "../components/skelitons/ProfilePageSkeleton";
 import { AuthStore } from "../stores/authStore";
@@ -111,7 +111,7 @@ const ProfilePage = () => {
 						{/* Follow Unfollow button */}
 						{!(user?.id === authStore.user?.id) && (
 							<div className="lg:hidden px-4">
-								<FollowFollowingButton id={user?.id as string} />
+								<BigFollowFollowingButton id={user?.id as string} />
 							</div>
 						)}
 
@@ -131,7 +131,7 @@ const ProfilePage = () => {
 						{currentNav === "Home" && (
 							<div className="stories">
 								{user?.stories?.map((story, index) => (
-									<StoryPreview story={story} index={index} key={index} />
+									<StoryPreview story={story} index={index} version="profile" />
 								))}
 							</div>
 						)}
@@ -244,7 +244,7 @@ const ProfilePage = () => {
 
 						{/* Follow Unfollow button */}
 						{!(user?.id === authStore.user?.id) && (
-							<FollowFollowingButton id={user?.id as string} />
+							<BigFollowFollowingButton id={user?.id as string} />
 						)}
 
 						{/* Top 5 following */}

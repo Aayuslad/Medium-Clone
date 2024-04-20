@@ -229,6 +229,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
 						title: true,
 						description: true,
 						postedOn: true,
+						clapsCount: true,
 						topics: {
 							select: {
 								topic: true,

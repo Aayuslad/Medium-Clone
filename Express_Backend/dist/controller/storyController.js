@@ -206,6 +206,7 @@ const getStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                         bio: true,
                         email: true,
                         profileImg: true,
+                        followersCount: true,
                     },
                 },
             },

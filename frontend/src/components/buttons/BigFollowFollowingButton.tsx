@@ -8,7 +8,7 @@ type props = {
 	id: string;
 };
 
-export const FollowFollowingButton = ({ id }: props) => {
+const BigFollowFollowingButton = ({ id }: props) => {
 	const [isFollowing, setIsFollowing] = useState<boolean>();
 	const usersStore = UsersStore();
 	const authStore = AuthStore();
@@ -52,3 +52,5 @@ export const FollowFollowingButton = ({ id }: props) => {
 		</div>
 	);
 };
+
+export default BigFollowFollowingButton;

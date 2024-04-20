@@ -216,6 +216,7 @@ export const getStory = async (req: Request, res: Response) => {
 						bio: true,
 						email: true,
 						profileImg: true,
+						followersCount: true,
 					},
 				},
 			},

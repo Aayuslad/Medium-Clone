@@ -26,7 +26,9 @@ const ClapsButton = ({ storyId, totalClaps }: props) => {
 		<button
 			type="button"
 			className="flex py-2 px-2 gap-2 text-gray-500"
-			onClick={() => {
+			onClick={(e) => {
+				e.stopPropagation();
+
 				if (storyStore.putStoryLoading) {
 					return;
 				}

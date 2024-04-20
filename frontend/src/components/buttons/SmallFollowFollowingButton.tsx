@@ -7,14 +7,19 @@ type props = {
 	id: string;
 };
 
-export const FollowFollowingButton = ({ id }: props) => {
-	const [isFollowing, setIsFollowing] = useState<boolean>();
+const SmallFollowFollowingButton = ({ id }: props) => {
+	const [isFollowing, setIsFollowing] = useState<boolean | undefined>(undefined);
 	const usersStore = UsersStore();
 	const authStore = AuthStore();
 
 	useEffect(() => {
+		if (id && authStore.user?.id === id) {
+			setIsFollowing(undefined);
+			return;
+		}
+
 		if (id && authStore.user?.following) {
-			setIsFollowing(authStore.user?.following?.some((userId) => userId === id));
+			setIsFollowing(authStore.user.following.some((userId) => userId === id));
 		}
 	}, [id, authStore.user]);
 
@@ -29,23 +34,26 @@ export const FollowFollowingButton = ({ id }: props) => {
 
 	return (
 		<div className="follow">
-			{!isFollowing ? (
-				<button
-					className="text-green-600"
-					disabled={usersStore.buttonLoading}
-					onClick={onClickHandler}
-				>
-					Follow
-				</button>
-			) : (
-				<button
-					className="text-green-600"
-					disabled={usersStore.buttonLoading}
-					onClick={onClickHandler}
-				>
-					Unfollow
-				</button>
-			)}
+			{isFollowing !== undefined &&
+				(!isFollowing ? (
+					<button
+						className="text-green-600"
+						disabled={usersStore.buttonLoading}
+						onClick={onClickHandler}
+					>
+						Follow
+					</button>
+				) : (
+					<button
+						className="text-green-600"
+						disabled={usersStore.buttonLoading}
+						onClick={onClickHandler}
+					>
+						Unfollow
+					</button>
+				))}
 		</div>
 	);
 };
+
+export default SmallFollowFollowingButton;	

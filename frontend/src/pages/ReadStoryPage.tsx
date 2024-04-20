@@ -9,7 +9,8 @@ import MoreOptions from "../components/buttons/MoreOptionsButton";
 import SaveButton from "../components/buttons/SaveButton";
 import { StoryStore } from "../stores/storyStore";
 import ReadStoryPageSkeleton from "../components/skelitons/ReadStoryPageSkeleton";
-import { FollowFollowingButton } from "../components/buttons/SmallFollowFollowingButton";
+import SmallFollowFollowingButton from "../components/buttons/SmallFollowFollowingButton";
+import BigFollowFollowingButton from "../components/buttons/BigFollowFollowingButton";
 import { formatDate } from "../helper/formatDate";
 
 const ReadStoryPage = () => {
@@ -31,14 +32,14 @@ const ReadStoryPage = () => {
 	useEffect(() => {
 		const content = document.getElementById("content") as HTMLTextAreaElement;
 		content.style.height = `${content.scrollHeight}px`;
-	}, [story?.content]);
+	}, [story]);
 
 	return (
-		<div className="ReadStoryPage">
+		<div className="ReadStoryPage h-fit">
 			<Header />
 
 			{!storyStore.skelitonLoading && (
-				<div className="main-container w-full h-screen px-2 max-w-3xl mx-auto pt-10">
+				<div className="main-container w-full h-fit px-2 max-w-3xl mx-auto pt-10">
 					<p className="title px-2 pt-12 pb-3 overflow-hidden font-Merriweather font-semibold text-2xl leading-[2.2rem] sm:text-4xl sm:leading-[3rem]">
 						{story?.title}
 					</p>
@@ -52,7 +53,7 @@ const ReadStoryPage = () => {
 						<div className="info flex flex-col">
 							<div className="user-name font-semibold flex gap-3">
 								{story?.author?.userName}
-								<FollowFollowingButton id={story?.author.id as string} />
+								<SmallFollowFollowingButton id={story?.author.id as string} />
 							</div>
 							<div className="publish-date">{formatDate(story?.postedOn as string)}</div>
 						</div>
@@ -79,9 +80,69 @@ const ReadStoryPage = () => {
 					<textarea
 						id="content"
 						readOnly={true}
-						className="content w-full h-full px-2 pt-4 mb-20 overflow-hidden text-gray-900 font-Merriweather font-light outline-none resize-none text-justify text-[1rem] sm:text-xl sm:leading-9"
+						className="content w-full px-2 pt-4 mb-20 overflow-hidden text-gray-900 font-Merriweather font-light outline-none resize-none text-justify text-[1rem] sm:text-xl sm:leading-9"
 						value={story?.content}
 					/>
+
+					<div className="story-small-footer">
+						<div className="topics">
+							{story?.topics.map((topic, index) => {
+								return (
+									<span
+										key={index}
+										className="label bg-gray-200 px-3 py-2 mr-2 rounded-2xl text-xs inline-block mb-2"
+									>
+										{topic}
+									</span>
+								);
+							})}
+						</div>
+
+						<div className="button-bar flex items-center gap-4 py-1 px-4 my-4">
+							<ClapsButton storyId={story?.id as string} totalClaps={story?.clapsCount || 0} />
+
+							<CommentsButton />
+
+							<div className="flex-1"></div>
+
+							<SaveButton storyId={story?.id as string} />
+
+							<MoreOptions />
+						</div>
+					</div>
+				</div>
+			)}
+
+			{!storyStore.skelitonLoading && (
+				<div className="page-footer bg-gray-100 mt-20">
+					<div className="main-container w-full h-fit px-4 max-w-3xl mx-auto py-10">
+						<div className="flex items-center justify-between">
+							<ProfileIcon
+								profileImg={story?.author.profileImg}
+								onClick={() => navigate(`/user/${story?.author.id}`)}
+								heightWidth={20}
+							/>
+							<div className="block sm:hidden">
+								<BigFollowFollowingButton id={story?.author.id as string} />
+							</div>
+						</div>
+
+						<div className="flex mt-4 ">
+							<div className="flex-1">
+								<h2 className="text-2xl font-semibold">
+									Written by {story?.author.userName}
+								</h2>
+								<div>
+									{story?.author.followersCount}
+									{story?.author.followersCount === 1 ? " Follower" : " Followers"}
+								</div>
+								<div className="mt-3">{story?.author.bio}</div>
+							</div>
+							<div className="hidden sm:block">
+								<BigFollowFollowingButton id={story?.author.id as string} />
+							</div>
+						</div>
+					</div>
 				</div>
 			)}
 

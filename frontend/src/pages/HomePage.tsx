@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import StoryPreview from "../components/StoryPreview";
 import Header from "../components/Header";
 import StorySkeletons from "../components/skelitons/StorySkeletons";
@@ -7,10 +7,12 @@ import { StoryStore } from "../stores/storyStore";
 import MainConntainer from "../components/wrapperComponents/MainContainer";
 import LeftContainer from "../components/wrapperComponents/LeftContainer";
 import RightContainer from "../components/wrapperComponents/RightContainer";
+import TopicsNavbar from "../components/navbars/TopicsNavbar";
 
 const HomePage = () => {
 	const storyStore = StoryStore();
 	const scrollDirection = useScrollDirection();
+	const [currentNav, setCurrentNav] = useState<string>("For you");
 
 	useEffect(() => {
 		if (storyStore.feedStories.length === 0) storyStore.getStories();
@@ -23,14 +25,16 @@ const HomePage = () => {
 			<MainConntainer>
 				<LeftContainer>
 					<div
-						className={`topics z-0 border border-green-500 h-10 w-full sticky ${
+						className={`topics z-0 h-fit sticky ${
 							scrollDirection === "down" ? "top-0" : "top-14"
-						} duration-200 bg-white `}
-					></div>
+						} duration-200 bg-white relative`}
+					>
+						<TopicsNavbar currentNav={currentNav} setCurrentNav={setCurrentNav} navs={["Phychology", "Internet", "cars", "bikes", "BMW"]} />
+					</div>
 
 					{!storyStore.skelitonLoading &&
 						storyStore.feedStories?.map((story, index) => {
-							return <StoryPreview story={story} index={index} key={index} />;
+							return <StoryPreview story={story} index={index} version="home" />;
 						})}
 
 					{storyStore.skelitonLoading && <StorySkeletons />}

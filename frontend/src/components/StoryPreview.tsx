@@ -5,8 +5,16 @@ import MoreOptions from "./buttons/MoreOptionsButton";
 import RemoveButton from "./buttons/RemoveButton";
 import SaveButton from "./buttons/SaveButton";
 import { formatDate } from "../helper/formatDate";
+import ClapsButton from "./buttons/ClapsButton";
+import CommentsButton from "./buttons/CommentsButton";
 
-const StoryPreview = ({ story, index }: { story: storyType; index: number }) => {
+type props = {
+	story: storyType;
+	index: number;
+	version?: "home" | "profile";
+};
+
+const StoryPreview = ({ story, index, version = "home" }: props) => {
 	const navigate = useNavigate();
 
 	return (
@@ -19,7 +27,7 @@ const StoryPreview = ({ story, index }: { story: storyType; index: number }) => 
 				<div
 					className="profile w-7 h-7 p-0 cursor-pointer"
 					onClick={(e) => {
-						e.stopPropagation(); // Stops event propagation
+						e.stopPropagation();
 						navigate(`/user/${story.author?.id}`);
 					}}
 				>
@@ -32,7 +40,7 @@ const StoryPreview = ({ story, index }: { story: storyType; index: number }) => 
 				<div
 					className="username"
 					onClick={(e) => {
-						e.stopPropagation(); // Stops event propagation
+						e.stopPropagation();
 						navigate(`/user/${story.author?.id}`);
 					}}
 				>
@@ -57,26 +65,34 @@ const StoryPreview = ({ story, index }: { story: storyType; index: number }) => 
 			</div>
 
 			<div className="story-footer flex items-center py-4 lg:pr-40">
-				<div className="labels">
-					{story.topics.map((topic, index) => {
-						if (index > 0) return;
+				{version === "home" && (
+					<div className="labels">
+						{story.topics.map((topic, index) => {
+							if (index > 0) return;
 
-						return (
-							<span
-								key={index}
-								className="label bg-slate-100 px-3 py-2 mr-2 rounded-2xl text-xs inline-block mb-2"
-							>
-								{topic}
-							</span>
-						);
-					})}
-				</div>
+							return (
+								<span
+									key={index}
+									className="label bg-slate-100 px-3 py-2 mr-2 rounded-2xl text-xs inline-block mb-2"
+								>
+									{topic}
+								</span>
+							);
+						})}
+					</div>
+				)}
+
+				{version === "profile" && (
+					<ClapsButton storyId={story.id as string} totalClaps={story.clapsCount || 0} />
+				)}
+
+				{version === "profile" && <CommentsButton />}
 
 				<div className="flex-1"></div>
 
 				<SaveButton storyId={story.id as string} />
 
-				<RemoveButton />
+				{version === "home" && <RemoveButton id={story.id as string} />}
 
 				<MoreOptions />
 			</div>

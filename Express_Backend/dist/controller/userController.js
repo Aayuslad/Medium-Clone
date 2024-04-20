@@ -210,6 +210,7 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
                         title: true,
                         description: true,
                         postedOn: true,
+                        clapsCount: true,
                         topics: {
                             select: {
                                 topic: true,
