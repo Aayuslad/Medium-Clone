@@ -1,22 +1,24 @@
-import { storyType } from "@aayushlad/medium-clone-common";
+import { storyType, userType } from "@aayushlad/medium-clone-common";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import ProfileIcon from "../components/ProfileIcon";
+import BigFollowFollowingButton from "../components/buttons/BigFollowFollowingButton";
 import ClapsButton from "../components/buttons/ClapsButton";
 import CommentsButton from "../components/buttons/CommentsButton";
 import MoreOptions from "../components/buttons/MoreOptionsButton";
 import SaveButton from "../components/buttons/SaveButton";
-import { StoryStore } from "../stores/storyStore";
-import ReadStoryPageSkeleton from "../components/skelitons/ReadStoryPageSkeleton";
 import SmallFollowFollowingButton from "../components/buttons/SmallFollowFollowingButton";
-import BigFollowFollowingButton from "../components/buttons/BigFollowFollowingButton";
+import TopicButton from "../components/buttons/TopicButton";
+import ReadStoryPageSkeleton from "../components/skelitons/ReadStoryPageSkeleton";
 import { formatDate } from "../helper/formatDate";
+import { StoryStore } from "../stores/storyStore";
 
 const ReadStoryPage = () => {
 	const { id } = useParams<{ id: string }>();
 	const storyStore = StoryStore();
 	const [story, setStory] = useState<storyType>();
+	const [author, setAuthor] = useState<userType>();
 	const navigate = useNavigate();
 
 	// fetcing data
@@ -25,6 +27,7 @@ const ReadStoryPage = () => {
 			if (!id) return;
 			const res = await storyStore.getStory({ id });
 			setStory(res);
+			setAuthor(res?.author as userType);
 		})();
 	}, [id]);
 
@@ -87,14 +90,7 @@ const ReadStoryPage = () => {
 					<div className="story-small-footer">
 						<div className="topics">
 							{story?.topics.map((topic, index) => {
-								return (
-									<span
-										key={index}
-										className="label bg-gray-200 px-3 py-2 mr-2 rounded-2xl text-xs inline-block mb-2"
-									>
-										{topic}
-									</span>
-								);
+								return <TopicButton index={index} topic={topic} />;
 							})}
 						</div>
 
@@ -123,7 +119,9 @@ const ReadStoryPage = () => {
 								heightWidth={20}
 							/>
 							<div className="block sm:hidden">
-								<BigFollowFollowingButton id={story?.author.id as string} />
+								{author && (
+									<BigFollowFollowingButton user={author as userType} setUser={setAuthor} />
+								)}
 							</div>
 						</div>
 
@@ -133,13 +131,15 @@ const ReadStoryPage = () => {
 									Written by {story?.author.userName}
 								</h2>
 								<div>
-									{story?.author.followersCount}
-									{story?.author.followersCount === 1 ? " Follower" : " Followers"}
+									{author?.followersCount}
+									{author?.followersCount === 1 ? " Follower" : " Followers"}
 								</div>
 								<div className="mt-3">{story?.author.bio}</div>
 							</div>
 							<div className="hidden sm:block">
-								<BigFollowFollowingButton id={story?.author.id as string} />
+								{author && (
+									<BigFollowFollowingButton user={author as userType} setUser={setAuthor} />
+								)}
 							</div>
 						</div>
 					</div>

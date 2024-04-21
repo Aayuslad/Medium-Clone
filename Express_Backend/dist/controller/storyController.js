@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReadingHistory = exports.getSavedStories = exports.deleteStory = exports.saveStory = exports.clapStory = exports.getAllStories = exports.getStory = exports.upadateStory = exports.createStory = void 0;
+exports.followTopic = exports.getTopic = exports.getReadingHistory = exports.getSavedStories = exports.deleteStory = exports.saveStory = exports.clapStory = exports.getAllStories = exports.getStory = exports.upadateStory = exports.createStory = void 0;
 const medium_clone_common_1 = require("@aayushlad/medium-clone-common");
 const prismaClient_1 = require("../db/prismaClient");
 const cloudinary_1 = require("../utils/cloudinary");
@@ -135,11 +135,13 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             },
         });
         // Extract topic IDs of the current topics associated with the post
-        const currentTopicIds = ((_a = currentStory === null || currentStory === void 0 ? void 0 : currentStory.topics) === null || _a === void 0 ? void 0 : _a.length)
+        const currentTopicIds = ((_a = currentStory === null || currentStory === void 0 ? void 0 : currentStory.topics) === null || _a === void 0 ? void 0 : _a.length) && body.published
             ? currentStory.topics.map((topic) => topic.id)
             : [];
         // Find the topic IDs to disconnect
-        const topicIdsToDisconnect = currentTopicIds.length > 0 ? currentTopicIds === null || currentTopicIds === void 0 ? void 0 : currentTopicIds.filter((id) => !topicIdsToAdd.includes(id)) : [];
+        const topicIdsToDisconnect = currentTopicIds.length > 0 && body.published
+            ? currentTopicIds === null || currentTopicIds === void 0 ? void 0 : currentTopicIds.filter((id) => !topicIdsToAdd.includes(id))
+            : [];
         // add new image link if added else set old url
         const existingPost = yield prismaClient_1.prisma.story.findUnique({
             where: {
@@ -166,6 +168,34 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
             },
         });
+        if (topicIdsToAdd) {
+            yield prismaClient_1.prisma.topics.updateMany({
+                where: {
+                    id: {
+                        in: topicIdsToAdd,
+                    },
+                },
+                data: {
+                    storiesCount: {
+                        increment: 1,
+                    },
+                },
+            });
+        }
+        if (topicIdsToDisconnect) {
+            yield prismaClient_1.prisma.topics.updateMany({
+                where: {
+                    id: {
+                        in: topicIdsToAdd,
+                    },
+                },
+                data: {
+                    storiesCount: {
+                        decrement: 1,
+                    },
+                },
+            });
+        }
         return res.json({ message: "story updated" });
     }
     catch (error) {
@@ -232,7 +262,6 @@ const getStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     },
                 });
                 console.log("Story already exists in reading history");
-                ;
             }
             else {
                 yield prismaClient_1.prisma.readingHistory.create({
@@ -528,3 +557,90 @@ const getReadingHistory = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getReadingHistory = getReadingHistory;
+// get topic
+const getTopic = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const topicName = req.params.topic;
+    console.log(topicName);
+    try {
+        const topic = yield prismaClient_1.prisma.topics.findFirst({
+            where: {
+                topic: topicName,
+            },
+        });
+        console.log(topic);
+        if (!topic) {
+            res.status(400);
+            return res.json({ message: "Topic not found" });
+        }
+        return res.json(topic);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error fetching topic data" });
+    }
+});
+exports.getTopic = getTopic;
+// follow topic
+const followTopic = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const body = req.body;
+    console.log(body);
+    try {
+        // parsing body
+        const { success } = medium_clone_common_1.followTopicSchema.safeParse(body);
+        if (!success) {
+            res.status(400);
+            return res.json({ message: "Invalid request parameters" });
+        }
+        // if user alredy follows, then unfollow
+        const existingFollow = yield prismaClient_1.prisma.followedTopic.findFirst({
+            where: {
+                userId: user === null || user === void 0 ? void 0 : user.id,
+                topicId: body.topicId,
+            },
+        });
+        if (existingFollow) {
+            yield prismaClient_1.prisma.followedTopic.delete({
+                where: {
+                    id: existingFollow.id,
+                },
+            });
+            yield prismaClient_1.prisma.topics.update({
+                where: {
+                    id: body.topicId,
+                },
+                data: {
+                    followersCount: {
+                        decrement: 1,
+                    },
+                },
+            });
+            return res.json({ message: "topic unfollowed" });
+        }
+        // creating new follow record
+        yield prismaClient_1.prisma.followedTopic.create({
+            data: {
+                userId: user === null || user === void 0 ? void 0 : user.id,
+                topicId: body.topicId,
+            },
+        });
+        yield prismaClient_1.prisma.topics.update({
+            where: {
+                id: body.topicId,
+            },
+            data: {
+                followersCount: {
+                    increment: 1,
+                },
+            },
+        });
+        return res.json({ message: "topic followed" });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error following topic" });
+    }
+});
+exports.followTopic = followTopic;

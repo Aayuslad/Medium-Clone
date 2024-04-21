@@ -8,13 +8,13 @@ import Header from "../components/Header";
 import StoryPreview from "../components/StoryPreview";
 import BigFollowFollowingButton from "../components/buttons/BigFollowFollowingButton";
 import RegularButton from "../components/buttons/RegularButton";
+import RegularLeftContainerNavbar from "../components/navbars/RegularLeftContainerNavbar";
 import ProfilePgaeSkeliton from "../components/skelitons/ProfilePageSkeleton";
+import LeftContainer from "../components/wrapperComponents/LeftContainer";
+import MainConntainer from "../components/wrapperComponents/MainContainer";
+import RightContainer from "../components/wrapperComponents/RightContainer";
 import { AuthStore } from "../stores/authStore";
 import { UsersStore } from "../stores/usersStore";
-import MainConntainer from "../components/wrapperComponents/MainContainer";
-import LeftContainer from "../components/wrapperComponents/LeftContainer";
-import RightContainer from "../components/wrapperComponents/RightContainer";
-import RegularLeftContainerNavbar from "../components/navbars/RegularLeftContainerNavbar";
 
 const ProfilePage = () => {
 	const { id } = useParams<{ id: string }>();
@@ -109,9 +109,9 @@ const ProfilePage = () => {
 						</div>
 
 						{/* Follow Unfollow button */}
-						{!(user?.id === authStore.user?.id) && (
+						{user && !(user?.id === authStore.user?.id) && (
 							<div className="lg:hidden px-4">
-								<BigFollowFollowingButton id={user?.id as string} />
+								<BigFollowFollowingButton user={user as userType} setUser={setUser} />
 							</div>
 						)}
 
@@ -208,7 +208,6 @@ const ProfilePage = () => {
 					</LeftContainer>
 
 					<RightContainer>
-						{/* <div className="small-container w-[350px] hidden lg:block px-10 h-screen sticky top-0"> */}
 						{/* Profile */}
 						<div className="Profile flex items-center justify-between">
 							<div className="profile-img w-20 pt-10 pb-3">
@@ -243,8 +242,8 @@ const ProfilePage = () => {
 						<div className="bio py-3">{user?.bio}</div>
 
 						{/* Follow Unfollow button */}
-						{!(user?.id === authStore.user?.id) && (
-							<BigFollowFollowingButton id={user?.id as string} />
+						{user && !(user?.id === authStore.user?.id) && (
+							<BigFollowFollowingButton user={user as userType} setUser={setUser} />
 						)}
 
 						{/* Top 5 following */}
@@ -274,7 +273,6 @@ const ProfilePage = () => {
 								</div>
 							</div>
 						)}
-						{/* </div> */}
 					</RightContainer>
 				</MainConntainer>
 			)}

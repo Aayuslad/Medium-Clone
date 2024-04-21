@@ -8,6 +8,7 @@ type authStoreType = {
 	loading: boolean;
 	isLoggedIn: boolean;
 	user: userType | undefined;
+	setUser: (user: userType) => void;
 	signup: (values: signUpUserSchemaType, navigate: NavigateFunction) => void;
 	signin: (values: signinUserSchemaType, navigate: NavigateFunction) => void;
 	signOut: () => void;
@@ -18,6 +19,9 @@ export const AuthStore = create<authStoreType>((set) => ({
 	loading: true,
 	isLoggedIn: false,
 	user: undefined,
+	setUser: (user: userType) => {
+		set({ user });
+	},
 
 	signup: async function (values, navigate) {
 		let toastId: string | undefined;

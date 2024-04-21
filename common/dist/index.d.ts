@@ -11,6 +11,10 @@ export type userType = {
     savedStories?: string[];
     claps?: string[];
     following?: string[];
+    followedTopics: {
+        topic: string;
+        id: string;
+    }[];
     topFiveFollowing?: {
         id: string;
         profileImg: string;
@@ -36,6 +40,12 @@ export type storyType = {
         profileImg: string;
         followersCount: number;
     };
+};
+export type topicType = {
+    id: string;
+    topic: string;
+    followersCount: number;
+    storiesCount: number;
 };
 export declare const signUpUserSchema: zod.ZodObject<{
     userName: zod.ZodString;
@@ -149,4 +159,12 @@ export declare const clapStorySchema: zod.ZodObject<{
     storyId: string;
 }>;
 export type clapStorySchemaType = zod.infer<typeof clapStorySchema>;
+export declare const followTopicSchema: zod.ZodObject<{
+    topicId: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    topicId: string;
+}, {
+    topicId: string;
+}>;
+export type followTopicSchemaType = zod.infer<typeof followTopicSchema>;
 export {};

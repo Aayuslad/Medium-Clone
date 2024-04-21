@@ -12,6 +12,10 @@ export type userType = {
 	savedStories?: string[];
 	claps?: string[];
 	following?: string[];
+	followedTopics: {
+		topic: string;
+		id: string;
+	}[];
 	topFiveFollowing?: {
 		id: string;
 		profileImg: string;
@@ -38,6 +42,13 @@ export type storyType = {
 		profileImg: string;
 		followersCount: number;
 	};
+};
+
+export type topicType = {
+	id: string;
+	topic: string;
+	followersCount: number;
+	storiesCount: number;
 };
 
 //
@@ -107,10 +118,17 @@ type updateStorySchemaIntermidiateType = zod.infer<typeof updateStorySchema>;
 export type updateStorySchemaType = updateStorySchemaIntermidiateType & {
 	coverImg?: File | string;
 };
-//
 
+//
 export const clapStorySchema = zod.object({
 	storyId: zod.string(),
 });
 
 export type clapStorySchemaType = zod.infer<typeof clapStorySchema>;
+
+//
+export const followTopicSchema = zod.object({
+	topicId: zod.string(),
+});
+
+export type followTopicSchemaType = zod.infer<typeof followTopicSchema>;

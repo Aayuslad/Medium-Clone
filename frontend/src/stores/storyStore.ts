@@ -1,4 +1,4 @@
-import { clapStorySchemaType, storyType } from "@aayushlad/medium-clone-common";
+import { clapStorySchemaType, storyType, topicType } from "@aayushlad/medium-clone-common";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { create } from "zustand";
@@ -7,9 +7,12 @@ type storyStoreType = {
 	cursorLoading: boolean;
 	skelitonLoading: boolean;
 	putStoryLoading: boolean | undefined;
+	buttonLoading: boolean;
 	feedStories: storyType[] | [];
 	savedStories: storyType[] | [];
 	readingHistory: storyType[] | [];
+	topic: topicType | undefined;
+	setTopic: (topic: topicType) => void;
 	postStory: (value: FormData) => Promise<string>;
 	putStory: (value: FormData) => Promise<boolean>;
 	getStory: (value: { id: string }) => Promise<storyType | undefined>;
@@ -20,15 +23,22 @@ type storyStoreType = {
 	getSavedStories: () => Promise<void>;
 	getReadingHistory: () => Promise<void>;
 	removeStoryFromFeed: (id: string) => void;
+	getTopic: (topic: string) => Promise<void>;
+	followTopic: (values: { topicId: string }) => Promise<void>;
 };
 
 export const StoryStore = create<storyStoreType>((set) => ({
 	cursorLoading: false,
 	skelitonLoading: false,
 	putStoryLoading: undefined,
+	buttonLoading: false,
 	feedStories: [],
 	savedStories: [],
 	readingHistory: [],
+	topic: undefined,
+	setTopic: (topic) => {
+		set({ topic });
+	},
 
 	postStory: async (values) => {
 		let id: string = "";
@@ -155,5 +165,28 @@ export const StoryStore = create<storyStoreType>((set) => ({
 				feedStories: state.feedStories.filter((story) => story.id !== id),
 			};
 		});
+	},
+
+	getTopic: async (topic: string) => {
+		try {
+			set({ skelitonLoading: true });
+			const res = await axios.get(`/api/v1/story/topic/${topic}`);
+			set({ topic: res.data });
+		} catch (error) {
+			toast.error("Error while fetching topic!");
+		} finally {
+			set({ skelitonLoading: false });
+		}
+	},
+
+	followTopic: async (values) => {
+		try {
+			set({ buttonLoading: true });
+			await axios.post(`/api/v1/story/followTopic`, values);
+		} catch (error) {
+			toast.error("Error while following topic!");
+		} finally {
+			set({ buttonLoading: false });
+		}
 	},
 }));

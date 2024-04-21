@@ -162,6 +162,11 @@ export const getUser = async (req: Request, res: Response) => {
 				bio: true,
 				about: true,
 				profileImg: true,
+				followedTopics: {
+					select: {
+						topic: true,
+					},
+				},
 				savedStories: {
 					select: {
 						storyId: true,
@@ -170,13 +175,13 @@ export const getUser = async (req: Request, res: Response) => {
 				claps: {
 					select: {
 						storyId: true,
-					}
+					},
 				},
 				following: {
 					select: {
 						followingId: true,
-					}
-				}
+					},
+				},
 			},
 		});
 
@@ -188,8 +193,12 @@ export const getUser = async (req: Request, res: Response) => {
 		const transformedUser = {
 			...userData,
 			savedStories: userData?.savedStories.map((story) => story.storyId),
-			claps: userData.claps.map(clap => clap.storyId),
-			following: userData.following.map(user => user.followingId)
+			claps: userData.claps.map((clap) => clap.storyId),
+			following: userData.following.map((user) => user.followingId),
+			followedTopics: userData.followedTopics.map((topic) => ({
+				topic: topic.topic.topic,
+				id: topic.topic.id,
+			})),
 		};
 
 		return res.json(transformedUser);
@@ -308,7 +317,6 @@ export const updateUser = async (req: Request, res: Response) => {
 	const profileImg = req.file;
 
 	console.log(body);
-	
 
 	try {
 		const { success } = updateUserSchema.safeParse(body);
@@ -384,7 +392,7 @@ export const updateUserAboutSection = async (req: Request, res: Response) => {
 			data: {
 				about: body.about,
 			},
-		});  
+		});
 
 		return res.json({ message: "User updated" });
 	} catch (error) {

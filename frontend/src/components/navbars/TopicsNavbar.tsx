@@ -1,45 +1,50 @@
 import React, { useEffect, useState, useRef } from "react";
 import AddTopicButton from "../buttons/AddTopicbutton";
+import { AuthStore } from "../../stores/authStore";
 
 type Props = {
-  navs: string[];
-  currentNav: string;
-  setCurrentNav: React.Dispatch<React.SetStateAction<string>>;
+	currentNav: string;
+	setCurrentNav: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const TopicsNavbar = ({ navs, currentNav, setCurrentNav }: Props) => {
-  const [isAtStart, setIsAtStart] = useState(true);
-  const [isAtEnd, setIsAtEnd] = useState(false);
-  const navRef = useRef<HTMLDivElement>(null);
+const TopicsNavbar = ({ currentNav, setCurrentNav }: Props) => {
+	const [isAtStart, setIsAtStart] = useState(true);
+	const [isAtEnd, setIsAtEnd] = useState(false);
+	const navRef = useRef<HTMLDivElement>(null);
+	const authStore = AuthStore();
 
-  const handleScroll = () => {
-    if (navRef.current) {
-      const target = navRef.current;
-      setIsAtStart(target.scrollLeft === 0);
-	  console.log(target.scrollLeft + target.clientWidth, target.scrollWidth);
-	  
-      setIsAtEnd(target.scrollLeft + target.clientWidth >= target.scrollWidth);
-    }
-  };
+	const handleScroll = () => {
+		if (navRef.current) {
+			const target = navRef.current;
+			setIsAtStart(target.scrollLeft === 0);
+			console.log(target.scrollLeft + target.clientWidth, target.scrollWidth);
 
-  useEffect(() => {
-    const scrollContainer = navRef.current;
-    if (scrollContainer) {
-      scrollContainer.addEventListener("scroll", handleScroll as EventListener);
-      return () => {
-        scrollContainer.removeEventListener("scroll", handleScroll as EventListener);
-      };
-    }
-  }, []);
+			setIsAtEnd(target.scrollLeft + target.clientWidth >= target.scrollWidth);
+		}
+	};
 
-  return (
+	useEffect(() => {
+		const scrollContainer = navRef.current;
+		if (scrollContainer) {
+			scrollContainer.addEventListener("scroll", handleScroll as EventListener);
+			return () => {
+				scrollContainer.removeEventListener("scroll", handleScroll as EventListener);
+			};
+		}
+	}, []);
+
+	return (
 		<div className="nav-container relative max-w-[680px]">
 			<div
 				ref={navRef}
 				className="nav flex gap-9 border-b max-w-fit sm:max-w-full lg:w-full border-slate-200 pl-4 pr-10 overflow-x-scroll no-scrollbar duration-300"
 			>
 				<AddTopicButton />
-				{["For you", "Following", ...navs].map((nav, index) => (
+				{[
+					"For you",
+					"Following",
+					...(authStore.user?.followedTopics?.map((topic) => topic.topic) || []),
+				].map((nav, index) => (
 					<div
 						key={index}
 						onClick={() => setCurrentNav(nav)}
@@ -92,7 +97,7 @@ const TopicsNavbar = ({ navs, currentNav, setCurrentNav }: Props) => {
 				</button>
 			)}
 		</div>
-  );
+	);
 };
 
 export default TopicsNavbar;

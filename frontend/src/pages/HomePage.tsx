@@ -29,7 +29,7 @@ const HomePage = () => {
 							scrollDirection === "down" ? "top-0" : "top-14"
 						} duration-200 bg-white relative`}
 					>
-						<TopicsNavbar currentNav={currentNav} setCurrentNav={setCurrentNav} navs={["Phychology", "Internet", "cars", "bikes", "BMW"]} />
+						<TopicsNavbar currentNav={currentNav} setCurrentNav={setCurrentNav} />
 					</div>
 
 					{!storyStore.skelitonLoading &&

@@ -7,6 +7,7 @@ import SaveButton from "./buttons/SaveButton";
 import { formatDate } from "../helper/formatDate";
 import ClapsButton from "./buttons/ClapsButton";
 import CommentsButton from "./buttons/CommentsButton";
+import TopicButton from "./buttons/TopicButton";
 
 type props = {
 	story: storyType;
@@ -70,14 +71,7 @@ const StoryPreview = ({ story, index, version = "home" }: props) => {
 						{story.topics.map((topic, index) => {
 							if (index > 0) return;
 
-							return (
-								<span
-									key={index}
-									className="label bg-slate-100 px-3 py-2 mr-2 rounded-2xl text-xs inline-block mb-2"
-								>
-									{topic}
-								</span>
-							);
+							return <TopicButton index={index} topic={topic} />;
 						})}
 					</div>
 				)}

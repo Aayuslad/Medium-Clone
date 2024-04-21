@@ -4,7 +4,6 @@
 	"description": "",
 	"main": "dist/index.js",
 	"scripts": {
-		"postinstall": "prisma generate",
 		"build": "tsc",
 		"start": "node dist/index.js",
 		"dev": "concurrently \"tsc -w\" \"nodemon dist/index\""
@@ -12,7 +11,7 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"@aayushlad/medium-clone-common": "^1.0.34",
+		"@aayushlad/medium-clone-common": "^1.0.36",
 		"@prisma/client": "^5.12.1",
 		"@prisma/extension-accelerate": "^1.0.0",
 		"bcrypt": "^5.1.1",

@@ -13,8 +13,10 @@ router.put("/", authMiddleware_1.default, multerMiddleware_1.upload.single("cove
 router.get("/savedStories", authMiddleware_1.default, storyController_1.getSavedStories);
 router.get("/bulk", storyController_1.getAllStories);
 router.get("/readingHistory", authMiddleware_1.default, storyController_1.getReadingHistory);
+router.get("/topic/:topic", storyController_1.getTopic);
 router.get("/:id", storyController_1.getStory);
 router.post("/clap", authMiddleware_1.default, storyController_1.clapStory);
 router.post("/save", authMiddleware_1.default, storyController_1.saveStory);
+router.post("/followTopic", authMiddleware_1.default, storyController_1.followTopic);
 router.delete("/:id", authMiddleware_1.default, storyController_1.deleteStory);
 exports.default = router;

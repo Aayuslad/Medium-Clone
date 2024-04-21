@@ -75,6 +75,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			set({ buttonLoading: true });
 			await axios.post("api/v1/user/followUser", values);
 		} catch (error) {
+			toast.error("Error while following user!");
 		} finally {
 			set({ buttonLoading: false });
 		}

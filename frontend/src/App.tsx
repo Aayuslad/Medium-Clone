@@ -9,6 +9,7 @@ import ReadBlogPage from "./pages/ReadStoryPage";
 import SigninPage from "./pages/SigninPage";
 import SignupPage from "./pages/SignupPage";
 import { AuthStore } from "./stores/authStore";
+import TopicPage from "./pages/TopicPage";
 
 export default function App() {
 	const authStore = AuthStore();
@@ -30,6 +31,7 @@ export default function App() {
 				<Route path="/story/:id" element={authStore.loading ? <LoadingPage /> : <ReadBlogPage />} />
 				<Route path="/user/:id" element={authStore.loading ? <LoadingPage /> : <ProfilePage />} />
 				<Route path="/libray" element={authStore.loading ? <LoadingPage /> : <LibraryPage />} />
+				<Route path="/topic/:topic" element={authStore.loading ? <LoadingPage /> : <TopicPage />} />
 			</Routes>
 		</BrowserRouter>
 	);

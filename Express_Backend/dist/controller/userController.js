@@ -151,6 +151,11 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 bio: true,
                 about: true,
                 profileImg: true,
+                followedTopics: {
+                    select: {
+                        topic: true,
+                    },
+                },
                 savedStories: {
                     select: {
                         storyId: true,
@@ -159,20 +164,23 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 claps: {
                     select: {
                         storyId: true,
-                    }
+                    },
                 },
                 following: {
                     select: {
                         followingId: true,
-                    }
-                }
+                    },
+                },
             },
         });
         if (!userData) {
             res.status(404);
             return res.json({ message: "User not found" });
         }
-        const transformedUser = Object.assign(Object.assign({}, userData), { savedStories: userData === null || userData === void 0 ? void 0 : userData.savedStories.map((story) => story.storyId), claps: userData.claps.map(clap => clap.storyId), following: userData.following.map(user => user.followingId) });
+        const transformedUser = Object.assign(Object.assign({}, userData), { savedStories: userData === null || userData === void 0 ? void 0 : userData.savedStories.map((story) => story.storyId), claps: userData.claps.map((clap) => clap.storyId), following: userData.following.map((user) => user.followingId), followedTopics: userData.followedTopics.map((topic) => ({
+                topic: topic.topic.topic,
+                id: topic.topic.id,
+            })) });
         return res.json(transformedUser);
     }
     catch (error) {

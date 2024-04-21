@@ -3,6 +3,8 @@ import {
 	clapStorySchemaType,
 	createStorySchema,
 	createStorySchemaType,
+	followTopicSchema,
+	followTopicSchemaType,
 	updateStorySchema,
 	updateStorySchemaType,
 } from "@aayushlad/medium-clone-common";
@@ -10,6 +12,7 @@ import { Request, Response } from "express";
 import { prisma } from "../db/prismaClient";
 import { uploadImageCloudinary } from "../utils/cloudinary";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import zod from "zod";
 
 // create sstory
 export const createStory = async (req: Request, res: Response) => {
@@ -140,13 +143,16 @@ export const upadateStory = async (req: Request, res: Response) => {
 		});
 
 		// Extract topic IDs of the current topics associated with the post
-		const currentTopicIds: string[] = currentStory?.topics?.length
-			? currentStory.topics.map((topic) => topic.id)
-			: [];
+		const currentTopicIds: string[] =
+			currentStory?.topics?.length && body.published
+				? currentStory.topics.map((topic) => topic.id)
+				: [];
 
 		// Find the topic IDs to disconnect
 		const topicIdsToDisconnect: string[] =
-			currentTopicIds.length > 0 ? currentTopicIds?.filter((id) => !topicIdsToAdd.includes(id)) : [];
+			currentTopicIds.length > 0 && body.published
+				? currentTopicIds?.filter((id) => !topicIdsToAdd.includes(id))
+				: [];
 
 		// add new image link if added else set old url
 		const existingPost = await prisma.story.findUnique({
@@ -176,6 +182,36 @@ export const upadateStory = async (req: Request, res: Response) => {
 				},
 			},
 		});
+
+		if (topicIdsToAdd) {
+			await prisma.topics.updateMany({
+				where: {
+					id: {
+						in: topicIdsToAdd,
+					},
+				},
+				data: {
+					storiesCount: {
+						increment: 1,
+					},
+				},
+			});
+		}
+
+		if (topicIdsToDisconnect) {
+			await prisma.topics.updateMany({
+				where: {
+					id: {
+						in: topicIdsToAdd,
+					},
+				},
+				data: {
+					storiesCount: {
+						decrement: 1,
+					},
+				},
+			});
+		}
 
 		return res.json({ message: "story updated" });
 	} catch (error) {
@@ -249,8 +285,7 @@ export const getStory = async (req: Request, res: Response) => {
 						readAt: new Date(),
 					},
 				});
-				console.log("Story already exists in reading history");;
-				
+				console.log("Story already exists in reading history");
 			} else {
 				await prisma.readingHistory.create({
 					data: {
@@ -571,5 +606,104 @@ export const getReadingHistory = async (req: Request, res: Response) => {
 		console.log(error);
 		res.status(400);
 		return res.json({ message: "Error fetching reading history" });
+	}
+};
+
+// get topic
+export const getTopic = async (req: Request, res: Response) => {
+	const topicName = req.params.topic;
+
+	console.log(topicName);
+
+	try {
+		const topic = await prisma.topics.findFirst({
+			where: {
+				topic: topicName,
+			},
+		});
+
+		console.log(topic);
+
+		if (!topic) {
+			res.status(400);
+			return res.json({ message: "Topic not found" });
+		}
+
+		return res.json(topic);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error fetching topic data" });
+	}
+};
+
+// follow topic
+export const followTopic = async (req: Request, res: Response) => {
+	const user = req.user;
+	const body: followTopicSchemaType = req.body;
+
+	console.log(body);
+
+	try {
+		// parsing body
+		const { success } = followTopicSchema.safeParse(body);
+		if (!success) {
+			res.status(400);
+			return res.json({ message: "Invalid request parameters" });
+		}
+
+		// if user alredy follows, then unfollow
+		const existingFollow = await prisma.followedTopic.findFirst({
+			where: {
+				userId: user?.id,
+				topicId: body.topicId,
+			},
+		});
+
+		if (existingFollow) {
+			await prisma.followedTopic.delete({
+				where: {
+					id: existingFollow.id,
+				},
+			});
+
+			await prisma.topics.update({
+				where: {
+					id: body.topicId,
+				},
+				data: {
+					followersCount: {
+						decrement: 1,
+					},
+				},
+			});
+
+			return res.json({ message: "topic unfollowed" });
+		}
+
+		// creating new follow record
+		await prisma.followedTopic.create({
+			data: {
+				userId: user?.id as string,
+				topicId: body.topicId,
+			},
+		});
+
+		await prisma.topics.update({
+			where: {
+				id: body.topicId,
+			},
+			data: {
+				followersCount: {
+					increment: 1,
+				},
+			},
+		});
+
+		return res.json({ message: "topic followed" });
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error following topic" });
 	}
 };
