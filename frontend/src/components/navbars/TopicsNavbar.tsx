@@ -58,12 +58,12 @@ const TopicsNavbar = ({ currentNav, setCurrentNav }: Props) => {
 			</div>
 			{!isAtStart && (
 				<button
-					className="left-button absolute left-0 py-3 pr-3 top-1/2 -translate-y-1/2 transition duration-300 white-box-shadow"
+					className="left-button absolute left-0 py-3 pr-3 top-1/2 -translate-y-1/2 transition duration-300 left-white-box-shadow"
 					onClick={() => {
 						if (navRef.current) {
 							navRef.current.scrollLeft -= 100;
 						}
-					}}
+					}}	
 				>
 					<svg width="26px" height="26px" viewBox="0 0 19 19" aria-hidden="true">
 						<path
@@ -75,7 +75,7 @@ const TopicsNavbar = ({ currentNav, setCurrentNav }: Props) => {
 			)}
 			{!isAtEnd && (
 				<button
-					className="right-button absolute py-3 pl-3 right-0 top-1/2 -translate-y-1/2 transition duration-300 white-box-shadow"
+					className="right-button absolute py-3 right-0 top-1/2 -translate-y-1/2 transition duration-300 right-white-box-shadow"
 					onClick={() => {
 						if (navRef.current) {
 							navRef.current.scrollLeft += 100;

@@ -16,15 +16,15 @@ const BigFollowFollowingButton = ({ user, setUser }: props) => {
 	const authStore = AuthStore();
 
 	useEffect(() => {
-		if (user.id && authStore.user?.id === user.id) {
+		if (user?.id && authStore.user?.id === user?.id) {
 			setIsFollowing(undefined);
 			return;
 		}
 
-		if (user.id && authStore.user?.following) {
+		if (user?.id && authStore.user?.following) {
 			setIsFollowing(authStore.user?.following?.some((userId) => userId === user.id));
 		}
-	}, [user.id, authStore.user]);
+	}, [user?.id, authStore.user]);
 
 	function onClickHandler() {
 		if (!authStore.user) {

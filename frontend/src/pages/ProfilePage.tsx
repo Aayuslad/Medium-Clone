@@ -109,7 +109,7 @@ const ProfilePage = () => {
 						</div>
 
 						{/* Follow Unfollow button */}
-						{user && !(user?.id === authStore.user?.id) && (
+						{!(user?.id === authStore.user?.id) && (
 							<div className="lg:hidden px-4">
 								<BigFollowFollowingButton user={user as userType} setUser={setUser} />
 							</div>
@@ -242,7 +242,7 @@ const ProfilePage = () => {
 						<div className="bio py-3">{user?.bio}</div>
 
 						{/* Follow Unfollow button */}
-						{user && !(user?.id === authStore.user?.id) && (
+						{!(user?.id === authStore.user?.id) && (
 							<BigFollowFollowingButton user={user as userType} setUser={setUser} />
 						)}
 

@@ -137,9 +137,7 @@ const ReadStoryPage = () => {
 								<div className="mt-3">{story?.author.bio}</div>
 							</div>
 							<div className="hidden sm:block">
-								{author && (
-									<BigFollowFollowingButton user={author as userType} setUser={setAuthor} />
-								)}
+								<BigFollowFollowingButton user={author as userType} setUser={setAuthor} />
 							</div>
 						</div>
 					</div>
