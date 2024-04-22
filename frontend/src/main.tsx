@@ -5,8 +5,8 @@ import axios from "axios";
 import { Toaster } from "react-hot-toast";
 // axios.defaults.baseURL = "https://backend.aayushlad058.workers.dev";
 // axios.defaults.baseURL = "http://127.0.0.1:8787";
-// axios.defaults.baseURL = "http://localhost:8080";
-axios.defaults.baseURL = "https://medium-clone-one-ruddy.vercel.app";
+axios.defaults.baseURL = "http://localhost:8080";
+// axios.defaults.baseURL = "https://medium-clone-one-ruddy.vercel.app";
 axios.defaults.withCredentials = true;
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);

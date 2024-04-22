@@ -414,7 +414,6 @@ export const followUser = async (req: Request, res: Response) => {
 	const body: followUserSchemaType = req.body;
 
 	try {
-		// parse body
 		const { success } = followUserSchema.safeParse(body);
 		if (!success) {
 			res.status(400);

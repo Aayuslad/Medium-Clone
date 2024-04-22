@@ -5,10 +5,10 @@ import { create } from "zustand";
 
 type storyStoreType = {
 	cursorLoading: boolean;
-	skelitonLoading: boolean;
+	skeletonLoading: boolean;
 	putStoryLoading: boolean | undefined;
 	buttonLoading: boolean;
-	feedStories: storyType[] | [];
+	feedStories: { topic: string; stories: storyType[] }[] | [];
 	savedStories: storyType[] | [];
 	readingHistory: storyType[] | [];
 	topic: topicType | undefined;
@@ -17,6 +17,8 @@ type storyStoreType = {
 	putStory: (value: FormData) => Promise<boolean>;
 	getStory: (value: { id: string }) => Promise<storyType | undefined>;
 	getStories: () => void;
+	getStoriesByTopics: (values: { topics: string[] }) => Promise<void>;
+	getStoriesByAuthor: () => Promise<void>;
 	deleteStory: (value: { id: string }) => void;
 	clapStory: (value: clapStorySchemaType) => void;
 	saveStory: (value: clapStorySchemaType) => void;
@@ -29,7 +31,7 @@ type storyStoreType = {
 
 export const StoryStore = create<storyStoreType>((set) => ({
 	cursorLoading: false,
-	skelitonLoading: false,
+	skeletonLoading: false,
 	putStoryLoading: undefined,
 	buttonLoading: false,
 	feedStories: [],
@@ -73,26 +75,70 @@ export const StoryStore = create<storyStoreType>((set) => ({
 
 	getStory: async (values) => {
 		try {
-			set({ skelitonLoading: true });
+			set({ skeletonLoading: true });
 			const res = await axios.get(`/api/v1/story/${values.id}`);
 			console.log(res.data);
 			return res.data;
 		} catch (error) {
 			toast.error("Error while fetching Story!");
 		} finally {
-			set({ skelitonLoading: false });
+			set({ skeletonLoading: false });
 		}
 	},
 
 	getStories: async () => {
 		try {
-			set({ skelitonLoading: true });
+			set({ skeletonLoading: true });
 			const res = await axios.get(`/api/v1/story/bulk`);
-			set({ feedStories: res.data });
+			set({ feedStories: [{ topic: "For you", stories: res.data }] });
 		} catch (error) {
 			toast.error("Error while fetching Story!");
 		} finally {
-			set({ skelitonLoading: false });
+			set({ skeletonLoading: false });
+		}
+	},
+
+	getStoriesByTopics: async (values) => {
+		try {
+			set({ skeletonLoading: true });
+			const res = await axios.get(`/api/v1/story/getStoriesByTopics/${values.topics}`);
+			set((state) => ({
+				...state,
+				feedStories: [
+					...state.feedStories,
+					{
+						topic: res.data.topic,
+						stories: res.data.stories,
+					},
+				],
+			}));
+		} catch (error) {
+			console.log(error);
+
+			toast.error("Error while fetching Story!");
+		} finally {
+			set({ skeletonLoading: false });
+		}
+	},
+
+	getStoriesByAuthor: async () => {
+		try {
+			set({ skeletonLoading: true });
+			const res = await axios.get(`/api/v1/story/getStoriesByAuthor`);
+			set((state) => ({
+				...state,
+				feedStories: [
+					...state.feedStories,
+					{
+						topic: res.data.topic,
+						stories: res.data.stories,
+					},
+				],
+			}));
+		} catch (error) {
+			toast.error("Error while fetching Story!");
+		} finally {
+			set({ skeletonLoading: false });
 		}
 	},
 
@@ -135,47 +181,47 @@ export const StoryStore = create<storyStoreType>((set) => ({
 
 	getSavedStories: async () => {
 		try {
-			set({ skelitonLoading: true });
+			set({ skeletonLoading: true });
 			const res = await axios.get("/api/v1/story/savedStories");
 			set({ savedStories: res.data });
 		} catch (error) {
 			toast.error("Error while fetching Story!");
 		} finally {
-			set({ skelitonLoading: false });
+			set({ skeletonLoading: false });
 		}
 	},
 
 	getReadingHistory: async () => {
 		try {
-			set({ skelitonLoading: true });
+			set({ skeletonLoading: true });
 			const res = await axios.get("/api/v1/story/readingHistory");
 			console.log(res.data);
 			set({ readingHistory: res.data });
 		} catch (error) {
 			toast.error("Error while fetching Story!");
 		} finally {
-			set({ skelitonLoading: false });
+			set({ skeletonLoading: false });
 		}
 	},
 
 	removeStoryFromFeed: (id: string) => {
-		set((state) => {
-			return {
-				...state,
-				feedStories: state.feedStories.filter((story) => story.id !== id),
-			};
-		});
+		// set((state) => {
+		// 	return {
+		// 		...state,
+		// 		feedStories: state.feedStories.filter((story) => story.id !== id),
+		// 	};
+		// });
 	},
 
 	getTopic: async (topic: string) => {
 		try {
-			set({ skelitonLoading: true });
+			set({ skeletonLoading: true });
 			const res = await axios.get(`/api/v1/story/topic/${topic}`);
 			set({ topic: res.data });
 		} catch (error) {
 			toast.error("Error while fetching topic!");
 		} finally {
-			set({ skelitonLoading: false });
+			set({ skeletonLoading: false });
 		}
 	},
 

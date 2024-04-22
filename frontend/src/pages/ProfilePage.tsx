@@ -74,7 +74,7 @@ const ProfilePage = () => {
 		<div className="ProfilePage">
 			<Header />
 
-			{!usersStore.skelitonLoading && (
+			{!usersStore.skeletonLoading && (
 				<MainConntainer>
 					<LeftContainer>
 						{/* Profile */}
@@ -277,7 +277,7 @@ const ProfilePage = () => {
 				</MainConntainer>
 			)}
 
-			{usersStore.skelitonLoading && <ProfilePgaeSkeliton />}
+			{usersStore.skeletonLoading && <ProfilePgaeSkeliton />}
 
 			{/* Edit user profile compoent */}
 			{profileEdit && <EditProfile onCloseClick={() => setProfileEdit(false)} />}

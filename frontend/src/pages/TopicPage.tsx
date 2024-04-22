@@ -20,7 +20,7 @@ const TopicPage = () => {
 			<Header />
 
 			<MainConntainer>
-				{!storyStore.skelitonLoading && storyStore.topic && (
+				{!storyStore.skeletonLoading && storyStore.topic && (
 					<div className="w-full flex flex-col">
 						<div className="header w-full flex flex-col gap-6 justify-center items-center py-20 border-b border-slate-200">
 							<h1 className="font-bold text-5xl">{topic}</h1>
@@ -40,7 +40,7 @@ const TopicPage = () => {
 					</div>
 				)}
 
-				{storyStore.skelitonLoading && <div>skelitonLoading</div>}
+				{storyStore.skeletonLoading && <div>skeletonLoading</div>}
 			</MainConntainer>
 		</div>
 	);

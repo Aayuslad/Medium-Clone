@@ -41,7 +41,7 @@ const ReadStoryPage = () => {
 		<div className="ReadStoryPage h-fit">
 			<Header />
 
-			{!storyStore.skelitonLoading && (
+			{!storyStore.skeletonLoading && (
 				<div className="main-container w-full h-fit px-2 max-w-3xl mx-auto pt-10">
 					<p className="title px-2 pt-12 pb-3 overflow-hidden font-Merriweather font-semibold text-2xl leading-[2.2rem] sm:text-4xl sm:leading-[3rem]">
 						{story?.title}
@@ -109,7 +109,7 @@ const ReadStoryPage = () => {
 				</div>
 			)}
 
-			{!storyStore.skelitonLoading && (
+			{!storyStore.skeletonLoading && (
 				<div className="page-footer bg-gray-100 mt-20">
 					<div className="main-container w-full h-fit px-4 max-w-3xl mx-auto py-10">
 						<div className="flex items-center justify-between">
@@ -144,7 +144,7 @@ const ReadStoryPage = () => {
 				</div>
 			)}
 
-			{storyStore.skelitonLoading && <ReadStoryPageSkeleton />}
+			{storyStore.skeletonLoading && <ReadStoryPageSkeleton />}
 		</div>
 	);
 };

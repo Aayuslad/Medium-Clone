@@ -37,7 +37,7 @@ const LibraryPage = () => {
 						setCurrentNav={setCurrentNav}
 					/>
 
-					{currentNav === "Saved stories" && !storyStore.skelitonLoading && (
+					{currentNav === "Saved stories" && !storyStore.skeletonLoading && (
 						<>
 							{storyStore.savedStories.map((story, index) => (
 								<StoryPreview story={story} index={index} version="profile" />
@@ -45,7 +45,7 @@ const LibraryPage = () => {
 						</>
 					)}
 
-					{currentNav === "Reading History" && !storyStore.skelitonLoading && (
+					{currentNav === "Reading History" && !storyStore.skeletonLoading && (
 						<>
 							{storyStore.readingHistory.map((story, index) => (
 								<StoryPreview story={story} index={index} version="profile" />
@@ -53,7 +53,7 @@ const LibraryPage = () => {
 						</>
 					)}
 
-					{storyStore.skelitonLoading && <BlogsSkelitons />}
+					{storyStore.skeletonLoading && <BlogsSkelitons />}
 				</LeftContainer>
 				<RightContainer>right</RightContainer>
 			</MainConntainer>

@@ -9,12 +9,10 @@ import {
 	updateStorySchemaType,
 } from "@aayushlad/medium-clone-common";
 import { Request, Response } from "express";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { prisma } from "../db/prismaClient";
 import { uploadImageCloudinary } from "../utils/cloudinary";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import zod from "zod";
 
-// create sstory
 export const createStory = async (req: Request, res: Response) => {
 	const user = req.user;
 	const body: createStorySchemaType = req.body;
@@ -24,7 +22,6 @@ export const createStory = async (req: Request, res: Response) => {
 		body.published = JSON.parse(req.body.published as string);
 		body.topics = req.body.topics.split(",");
 
-		// body parsing
 		const { success } = createStorySchema.safeParse(body);
 		if (!success) {
 			res.status(400);
@@ -91,19 +88,17 @@ export const upadateStory = async (req: Request, res: Response) => {
 	const body: updateStorySchemaType = req.body;
 	const coverImg = req.file;
 
-	console.log(body);
-
 	try {
 		body.published = JSON.parse(req.body.published as string);
 		body.topics = req.body.topics.split(",");
 
-		// body parsing
 		const { success } = updateStorySchema.safeParse(body);
 		if (!success) {
 			res.status(400);
 			return res.json({ message: "Invalid request parameters" });
 		}
 
+		// Prepare topic IDs to connect
 		let topicIdsToAdd: string[] = [];
 		if (body.topics && body.topics.length > 0) {
 			// Check if topics already exist in the database
@@ -183,6 +178,7 @@ export const upadateStory = async (req: Request, res: Response) => {
 			},
 		});
 
+		// Updating topics count
 		if (topicIdsToAdd) {
 			await prisma.topics.updateMany({
 				where: {
@@ -197,7 +193,6 @@ export const upadateStory = async (req: Request, res: Response) => {
 				},
 			});
 		}
-
 		if (topicIdsToDisconnect) {
 			await prisma.topics.updateMany({
 				where: {
@@ -345,11 +340,131 @@ export const getAllStories = async (req: Request, res: Response) => {
 	}
 };
 
+export const getStoriesByTopics = async (req: Request, res: Response) => {
+	const topics = req.params.topics;
+
+	try {
+		const stories = await prisma.story.findMany({
+			where: {
+				published: true,
+				topics: {
+					some: {
+						topic: {
+							in: topics.split(","),
+						},
+					},
+				},
+			},
+			select: {
+				id: true,
+				title: true,
+				description: true,
+				postedOn: true,
+				topics: {
+					select: {
+						topic: true,
+					},
+				},
+				coverImg: true,
+				author: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+					},
+				},
+			},
+		});
+
+		// Map over stories to transform topics to an array of strings
+		const transformedStories = {
+			topic: topics,
+			stories: stories.map((story) => ({
+				...story,
+				topics: story.topics.map((topicObj) => topicObj.topic),
+			})),
+		};
+
+		return res.json(transformedStories);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error while fetching story data" });
+	}
+};
+
+export const getStoriesByAuthor = async (req: Request, res: Response) => {
+	const user = req.user;
+
+	try {
+		const followdAuthors = await prisma.user.findFirst({
+			where: {
+				id: user?.id,
+			},
+			select: {
+				following: {
+					select:{
+						followingId: true,
+					}
+				}
+			},
+		});
+
+		console.log(followdAuthors);
+		
+
+		const stories = await prisma.story.findMany({
+			where: {
+				published: true,
+				author: {
+					id: {
+						in: followdAuthors?.following.map((author) => author.followingId),
+					},
+				},
+			},
+			select: {
+				id: true,
+				title: true,
+				description: true,
+				postedOn: true,
+				topics: {
+					select: {
+						topic: true,
+					},
+				},
+				coverImg: true,
+				author: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+					},
+				},
+			},
+		});		
+
+		// Map over stories to transform topics to an array of strings
+		const transformedStories = {
+			topic: "Following",
+			stories: stories.map((story) => ({
+				...story,
+				topics: story.topics.map((topicObj) => topicObj.topic),
+			})),
+		};
+
+		return res.json(transformedStories);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error while fetching story data" });
+	}
+};
+
 export const clapStory = async (req: Request, res: Response) => {
 	const user = req.user;
 	const body: clapStorySchemaType = req.body;
+
 	try {
-		// parsing body
 		const { success } = clapStorySchema.safeParse(body);
 		if (!success) {
 			res.status(400);
@@ -416,7 +531,6 @@ export const saveStory = async (req: Request, res: Response) => {
 	const body: clapStorySchemaType = req.body;
 
 	try {
-		// parsing body
 		const { success } = clapStorySchema.safeParse(body);
 		if (!success) {
 			res.status(400);
@@ -558,8 +672,6 @@ export const getReadingHistory = async (req: Request, res: Response) => {
 			},
 		});
 
-		console.log(readingHistoryIds);
-
 		if (!readingHistoryIds.length) {
 			return res.json([]);
 		}
@@ -609,11 +721,8 @@ export const getReadingHistory = async (req: Request, res: Response) => {
 	}
 };
 
-// get topic
 export const getTopic = async (req: Request, res: Response) => {
 	const topicName = req.params.topic;
-
-	console.log(topicName);
 
 	try {
 		const topic = await prisma.topics.findFirst({
@@ -621,8 +730,6 @@ export const getTopic = async (req: Request, res: Response) => {
 				topic: topicName,
 			},
 		});
-
-		console.log(topic);
 
 		if (!topic) {
 			res.status(400);
@@ -637,15 +744,11 @@ export const getTopic = async (req: Request, res: Response) => {
 	}
 };
 
-// follow topic
 export const followTopic = async (req: Request, res: Response) => {
 	const user = req.user;
 	const body: followTopicSchemaType = req.body;
 
-	console.log(body);
-
 	try {
-		// parsing body
 		const { success } = followTopicSchema.safeParse(body);
 		if (!success) {
 			res.status(400);

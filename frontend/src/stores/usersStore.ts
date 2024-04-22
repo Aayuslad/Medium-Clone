@@ -4,7 +4,7 @@ import { toast } from "react-hot-toast";
 import { create } from "zustand";
 
 type authStoreType = {
-	skelitonLoading: boolean;
+	skeletonLoading: boolean;
 	buttonLoading: boolean;
 	getAnotherUser: (values: { id: string }) => Promise<userType>;
 	updateUser: (values: FormData, getUser: () => void) => Promise<void>;
@@ -13,18 +13,18 @@ type authStoreType = {
 };
 
 export const UsersStore = create<authStoreType>((set) => ({
-	skelitonLoading: false,
+	skeletonLoading: false,
 	buttonLoading: false,
 
 	getAnotherUser: async function (values) {
 		try {
-			set({ skelitonLoading: true });
+			set({ skeletonLoading: true });
 			const response = await axios.get(`/api/v1/user/userProfile/${values.id}`);
 			return response.data;
 		} catch (error) {
 			console.error(error);
 		} finally {
-			set({ skelitonLoading: false });
+			set({ skeletonLoading: false });
 		}
 	},
 

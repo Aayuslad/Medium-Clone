@@ -12,6 +12,8 @@ router.post("/", authMiddleware_1.default, multerMiddleware_1.upload.single("cov
 router.put("/", authMiddleware_1.default, multerMiddleware_1.upload.single("coverImg"), storyController_1.upadateStory);
 router.get("/savedStories", authMiddleware_1.default, storyController_1.getSavedStories);
 router.get("/bulk", storyController_1.getAllStories);
+router.get("/getStoriesByTopics/:topics", storyController_1.getStoriesByTopics);
+router.get("/getStoriesByAuthor", authMiddleware_1.default, storyController_1.getStoriesByAuthor);
 router.get("/readingHistory", authMiddleware_1.default, storyController_1.getReadingHistory);
 router.get("/topic/:topic", storyController_1.getTopic);
 router.get("/:id", storyController_1.getStory);

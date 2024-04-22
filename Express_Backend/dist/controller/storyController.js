@@ -12,12 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.followTopic = exports.getTopic = exports.getReadingHistory = exports.getSavedStories = exports.deleteStory = exports.saveStory = exports.clapStory = exports.getAllStories = exports.getStory = exports.upadateStory = exports.createStory = void 0;
+exports.followTopic = exports.getTopic = exports.getReadingHistory = exports.getSavedStories = exports.deleteStory = exports.saveStory = exports.clapStory = exports.getStoriesByAuthor = exports.getStoriesByTopics = exports.getAllStories = exports.getStory = exports.upadateStory = exports.createStory = void 0;
 const medium_clone_common_1 = require("@aayushlad/medium-clone-common");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prismaClient_1 = require("../db/prismaClient");
 const cloudinary_1 = require("../utils/cloudinary");
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-// create sstory
 const createStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     const body = req.body;
@@ -25,7 +24,6 @@ const createStory = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     try {
         body.published = JSON.parse(req.body.published);
         body.topics = req.body.topics.split(",");
-        // body parsing
         const { success } = medium_clone_common_1.createStorySchema.safeParse(body);
         if (!success) {
             res.status(400);
@@ -89,16 +87,15 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const user = req.user;
     const body = req.body;
     const coverImg = req.file;
-    console.log(body);
     try {
         body.published = JSON.parse(req.body.published);
         body.topics = req.body.topics.split(",");
-        // body parsing
         const { success } = medium_clone_common_1.updateStorySchema.safeParse(body);
         if (!success) {
             res.status(400);
             return res.json({ message: "Invalid request parameters" });
         }
+        // Prepare topic IDs to connect
         let topicIdsToAdd = [];
         if (body.topics && body.topics.length > 0) {
             // Check if topics already exist in the database
@@ -168,6 +165,7 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
             },
         });
+        // Updating topics count
         if (topicIdsToAdd) {
             yield prismaClient_1.prisma.topics.updateMany({
                 where: {
@@ -318,11 +316,117 @@ const getAllStories = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.getAllStories = getAllStories;
+const getStoriesByTopics = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const topics = req.params.topics;
+    try {
+        const stories = yield prismaClient_1.prisma.story.findMany({
+            where: {
+                published: true,
+                topics: {
+                    some: {
+                        topic: {
+                            in: topics.split(","),
+                        },
+                    },
+                },
+            },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                postedOn: true,
+                topics: {
+                    select: {
+                        topic: true,
+                    },
+                },
+                coverImg: true,
+                author: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                    },
+                },
+            },
+        });
+        // Map over stories to transform topics to an array of strings
+        const transformedStories = {
+            topic: topics,
+            stories: stories.map((story) => (Object.assign(Object.assign({}, story), { topics: story.topics.map((topicObj) => topicObj.topic) }))),
+        };
+        return res.json(transformedStories);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error while fetching story data" });
+    }
+});
+exports.getStoriesByTopics = getStoriesByTopics;
+const getStoriesByAuthor = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    try {
+        const followdAuthors = yield prismaClient_1.prisma.user.findFirst({
+            where: {
+                id: user === null || user === void 0 ? void 0 : user.id,
+            },
+            select: {
+                following: {
+                    select: {
+                        followingId: true,
+                    }
+                }
+            },
+        });
+        console.log(followdAuthors);
+        const stories = yield prismaClient_1.prisma.story.findMany({
+            where: {
+                published: true,
+                author: {
+                    id: {
+                        in: followdAuthors === null || followdAuthors === void 0 ? void 0 : followdAuthors.following.map((author) => author.followingId),
+                    },
+                },
+            },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                postedOn: true,
+                topics: {
+                    select: {
+                        topic: true,
+                    },
+                },
+                coverImg: true,
+                author: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                    },
+                },
+            },
+        });
+        // Map over stories to transform topics to an array of strings
+        const transformedStories = {
+            topic: "Following",
+            stories: stories.map((story) => (Object.assign(Object.assign({}, story), { topics: story.topics.map((topicObj) => topicObj.topic) }))),
+        };
+        return res.json(transformedStories);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error while fetching story data" });
+    }
+});
+exports.getStoriesByAuthor = getStoriesByAuthor;
 const clapStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     const body = req.body;
     try {
-        // parsing body
         const { success } = medium_clone_common_1.clapStorySchema.safeParse(body);
         if (!success) {
             res.status(400);
@@ -383,7 +487,6 @@ const saveStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     const body = req.body;
     try {
-        // parsing body
         const { success } = medium_clone_common_1.clapStorySchema.safeParse(body);
         if (!success) {
             res.status(400);
@@ -512,7 +615,6 @@ const getReadingHistory = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 storyId: true,
             },
         });
-        console.log(readingHistoryIds);
         if (!readingHistoryIds.length) {
             return res.json([]);
         }
@@ -557,17 +659,14 @@ const getReadingHistory = (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getReadingHistory = getReadingHistory;
-// get topic
 const getTopic = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const topicName = req.params.topic;
-    console.log(topicName);
     try {
         const topic = yield prismaClient_1.prisma.topics.findFirst({
             where: {
                 topic: topicName,
             },
         });
-        console.log(topic);
         if (!topic) {
             res.status(400);
             return res.json({ message: "Topic not found" });
@@ -581,13 +680,10 @@ const getTopic = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getTopic = getTopic;
-// follow topic
 const followTopic = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     const body = req.body;
-    console.log(body);
     try {
-        // parsing body
         const { success } = medium_clone_common_1.followTopicSchema.safeParse(body);
         if (!success) {
             res.status(400);

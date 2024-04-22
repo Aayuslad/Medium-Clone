@@ -366,7 +366,6 @@ const followUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     const user = req.user;
     const body = req.body;
     try {
-        // parse body
         const { success } = medium_clone_common_1.followUserSchema.safeParse(body);
         if (!success) {
             res.status(400);

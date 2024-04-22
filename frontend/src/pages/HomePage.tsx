@@ -32,12 +32,13 @@ const HomePage = () => {
 						<TopicsNavbar currentNav={currentNav} setCurrentNav={setCurrentNav} />
 					</div>
 
-					{!storyStore.skelitonLoading &&
-						storyStore.feedStories?.map((story, index) => {
-							return <StoryPreview story={story} index={index} version="home" />;
-						})}
-
-					{storyStore.skelitonLoading && <StorySkeletons />}
+					{!storyStore.skeletonLoading &&
+						storyStore.feedStories
+							?.find((feedStory) => feedStory.topic === currentNav)
+							?.stories.map((story, index) => (
+								<StoryPreview story={story} index={index} version="home" />
+							))}
+					{storyStore.skeletonLoading && <StorySkeletons />}
 				</LeftContainer>
 
 				<RightContainer>
