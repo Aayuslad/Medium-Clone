@@ -205,12 +205,17 @@ export const StoryStore = create<storyStoreType>((set) => ({
 	},
 
 	removeStoryFromFeed: (id: string) => {
-		// set((state) => {
-		// 	return {
-		// 		...state,
-		// 		feedStories: state.feedStories.filter((story) => story.id !== id),
-		// 	};
-		// });
+		set((state) => {
+			return {
+				...state,
+				feedStories: state.feedStories.map((feedStory) => {
+					return {
+						topic: feedStory.topic,
+						stories: feedStory.stories.filter((story) => story.id !== id),
+					};
+				}),
+			};
+		});
 	},
 
 	getTopic: async (topic: string) => {
