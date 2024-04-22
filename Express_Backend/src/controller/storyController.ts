@@ -374,7 +374,7 @@ export const getStoriesByTopics = async (req: Request, res: Response) => {
 					},
 				},
 			},
-		});
+		});		
 
 		// Map over stories to transform topics to an array of strings
 		const transformedStories = {
