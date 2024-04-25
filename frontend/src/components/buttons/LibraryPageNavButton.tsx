@@ -6,7 +6,7 @@ const LibraryPageNavButton = () => {
 	return (
 		<button
 			className="library text-black flex items-center gap-4 py-2 px-5 cursor-pointer"
-			onClick={() => navigation("/libray")}
+			onClick={() => navigation("/libray/Saved%20stories")}
 		>
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
 				<path

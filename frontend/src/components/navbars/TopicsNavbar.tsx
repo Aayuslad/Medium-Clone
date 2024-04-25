@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import AddTopicButton from "../buttons/AddTopicbutton";
 import { AuthStore } from "../../stores/authStore";
-import { StoryStore } from "../../stores/storyStore";
+// import { StoryStore } from "../../stores/storyStore";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
 	currentNav: string;
@@ -12,8 +13,9 @@ const TopicsNavbar = ({ currentNav, setCurrentNav }: Props) => {
 	const [isAtStart, setIsAtStart] = useState(true);
 	const [isAtEnd, setIsAtEnd] = useState(false);
 	const navRef = useRef<HTMLDivElement>(null);
+	const navigate = useNavigate();
 	const authStore = AuthStore();
-	const storyStore = StoryStore();
+	// const storyStore = StoryStore();
 
 	const handleScroll = () => {
 		if (navRef.current) {
@@ -50,18 +52,20 @@ const TopicsNavbar = ({ currentNav, setCurrentNav }: Props) => {
 					<div
 						key={index}
 						onClick={() => {
+							navigate(`/${nav}`);
+
 							setCurrentNav(nav);
 
-							const existingTopics = storyStore.feedStories.map((story) => story.topic);
+							// const existingTopics = storyStore.feedStories.map((story) => story.topic);
 
-							if (nav == "Following" && !existingTopics.includes(nav)) {
-								storyStore.getStoriesByAuthor();
-								return;
-							}
+							// if (nav == "Following" && !existingTopics.includes(nav)) {
+							// 	storyStore.getStoriesByAuthor();
+							// 	return;
+							// }
 
-							if (!existingTopics.includes(nav)) {
-								storyStore.getStoriesByTopics({ topics: [nav] });
-							}
+							// if (!existingTopics.includes(nav)) {
+							// 	storyStore.getStoriesByTopics({ topics: [nav] });
+							// }
 						}}
 						className={`cursor-pointer text-nowrap py-4 text-[14px] border-black ${
 							currentNav === nav ? "border-b" : ""
@@ -80,7 +84,7 @@ const TopicsNavbar = ({ currentNav, setCurrentNav }: Props) => {
 						}
 					}}
 				>
-					<svg width="26px" height="26px" viewBox="0 0 19 19" aria-hidden="true">
+					<svg width="26px" height="26px" viewBox="0 0 19 19">
 						<path
 							d="M11.47 13.97L6.99 9.48 11.47 5l.55.5-3.99 3.98 4 4z"
 							fillRule="evenodd"
@@ -101,7 +105,6 @@ const TopicsNavbar = ({ currentNav, setCurrentNav }: Props) => {
 						width="26px"
 						height="26px"
 						viewBox="0 0 19 19"
-						aria-hidden="true"
 						style={{ transform: "rotate(180deg)" }}
 					>
 						<path

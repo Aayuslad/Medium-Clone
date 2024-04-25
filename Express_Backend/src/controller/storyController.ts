@@ -408,10 +408,7 @@ export const getStoriesByAuthor = async (req: Request, res: Response) => {
 					}
 				}
 			},
-		});
-
-		console.log(followdAuthors);
-		
+		});		
 
 		const stories = await prisma.story.findMany({
 			where: {

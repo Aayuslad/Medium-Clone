@@ -90,7 +90,9 @@ export const StoryStore = create<storyStoreType>((set) => ({
 		try {
 			set({ skeletonLoading: true });
 			const res = await axios.get(`/api/v1/story/bulk`);
-			set({ feedStories: [{ topic: "For you", stories: res.data }] });
+			set((state) => ({
+				feedStories: [...state.feedStories, { topic: "For you", stories: res.data }],
+			}));
 		} catch (error) {
 			toast.error("Error while fetching Story!");
 		} finally {
@@ -103,7 +105,6 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			set({ skeletonLoading: true });
 			const res = await axios.get(`/api/v1/story/getStoriesByTopics/${values.topics}`);
 			set((state) => ({
-				...state,
 				feedStories: [
 					...state.feedStories,
 					{
@@ -126,7 +127,6 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			set({ skeletonLoading: true });
 			const res = await axios.get(`/api/v1/story/getStoriesByAuthor`);
 			set((state) => ({
-				...state,
 				feedStories: [
 					...state.feedStories,
 					{
@@ -207,7 +207,6 @@ export const StoryStore = create<storyStoreType>((set) => ({
 	removeStoryFromFeed: (id: string) => {
 		set((state) => {
 			return {
-				...state,
 				feedStories: state.feedStories.map((feedStory) => {
 					return {
 						topic: feedStory.topic,

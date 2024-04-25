@@ -379,7 +379,6 @@ const getStoriesByAuthor = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 }
             },
         });
-        console.log(followdAuthors);
         const stories = yield prismaClient_1.prisma.story.findMany({
             where: {
                 published: true,

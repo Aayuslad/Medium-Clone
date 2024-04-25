@@ -8,15 +8,25 @@ import MainConntainer from "../components/wrapperComponents/MainContainer";
 import LeftContainer from "../components/wrapperComponents/LeftContainer";
 import RightContainer from "../components/wrapperComponents/RightContainer";
 import TopicsNavbar from "../components/navbars/TopicsNavbar";
+import { useParams } from "react-router-dom";
 
 const HomePage = () => {
 	const storyStore = StoryStore();
 	const scrollDirection = useScrollDirection();
-	const [currentNav, setCurrentNav] = useState<string>("For you");
+	const { nav } = useParams<{ nav: string }>();
+	const [currentNav, setCurrentNav] = useState<string>("");
 
 	useEffect(() => {
-		if (storyStore.feedStories.length === 0) storyStore.getStories();
-	}, []);
+		const existingTopics = storyStore.feedStories.map((story) => story.topic);
+		if((nav === "For you" || nav === undefined) && !existingTopics.includes("For you")) {
+			storyStore.getStories();
+		} else if (nav === "Following" && !existingTopics.includes("Following")) {
+			storyStore.getStoriesByAuthor();
+		} else if (nav !== "Following" && nav !== "For you" && nav !== undefined && !existingTopics.includes(nav as string)) {
+			storyStore.getStoriesByTopics({ topics: [nav as string] });
+		}
+		setCurrentNav(nav || "For you")
+	}, [nav])
 
 	return (
 		<div className="HomePage" style={{ cursor: storyStore.cursorLoading ? "wait" : "default" }}>
@@ -42,23 +52,29 @@ const HomePage = () => {
 				</LeftContainer>
 
 				<RightContainer>
-					Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis porro at magni perspiciatis
-					deleniti laudantium aut nulla beatae, exercitationem modi tempore explicabo laboriosam
-					sequi saepe hic officia labore nisi error sed aperiam nihil, unde impedit doloribus. Magni
-					hic eius reprehenderit numquam, sequi neque quos voluptatum laborum fuga quia, fugit iusto
-					quasi voluptatibus repellendus molestiae odio. Sequi voluptatibus aliquid explicabo
-					obcaecati quod labore quaerat consequuntur et tempore aspernatur dolorum fugiat fugit,
-					amet asperiores. Sunt temporibus aut sint aliquam quaerat fuga hic rem at veritatis optio
-					illum mollitia iusto, vero quos sapiente. Odit vel quam, quae libero reiciendis, sunt
-					rerum aspernatur id laborum porro delectus eaque a expedita optio! Dicta ut tempora
-					nesciunt, iusto dolorum repudiandae nihil officiis ducimus similique aliquam minus, quas
-					cupiditate, dignissimos provident. Ipsum temporibus omnis totam aspernatur nam consequatur
-					vel reiciendis sit similique perferendis, blanditiis quae voluptatibus neque facilis
-					consequuntur atque vitae quasi voluptatem, eligendi, fugit illum! Error incidunt, dolore
-					alias libero repellendus amet, officiis nostrum accusamus perferendis similique vitae sint
-					voluptatem suscipit placeat, possimus atque asperiores aliquam cumque quod ea vero id quia
-					modi? Quo dicta nulla voluptate eaque, illum atque, asperiores molestiae architecto rem
-					officiis delectus, vel minima quos officia mollitia aspernatur porro magni quisquam ipsam!
+					Lorem ipsum dolor sit amet consectetur, adipisicing elit. Nam aspernatur odio illum ad
+					reiciendis animi error itaque quis tenetur? Eum fugiat error omnis ducimus odio temporibus
+					debitis ea quia, amet quo inventore. Odit reprehenderit fuga accusamus quis quos pariatur
+					facere praesentium consequuntur quibusdam porro nulla ipsa, alias modi autem sapiente?
+					Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dolor, quia! Lorem ipsum dolor
+					sit, amet consectetur adipisicing elit. Sit eligendi esse veniam accusamus autem
+					reiciendis ullam provident iusto consectetur eveniet! Doloribus in cumque fugiat ipsum
+					mollitia nostrum modi a inventore et dolorem. Consectetur eos, cupiditate eius, asperiores
+					pariatur quos est sapiente ea illum tempore odit minima dolores dolore natus maxime
+					officia, nesciunt repellendus tenetur porro! Unde repellendus tempore sit eaque temporibus
+					autem odit libero magni! Aliquam iure nemo totam? Perspiciatis sint, nisi quis fugit
+					fugiat amet. Voluptatibus quo, velit cum ad error sapiente totam, pariatur eligendi neque
+					nulla consequuntur, sequi eum necessitatibus perspiciatis ex corrupti. Ex quaerat vero
+					minima dolorum, incidunt, nemo nostrum, iure nihil voluptatem dolores quas quibusdam sed
+					adipisci quia. Sunt vel et natus totam? Aperiam omnis voluptas ipsam consequatur illum
+					ipsum sunt dolore velit? Magnam voluptates beatae obcaecati? Voluptatem cumque consectetur
+					corrupti unde quis nemo velit sed necessitatibus dolore eos mollitia sit, libero,
+					similique beatae quasi iusto numquam repudiandae voluptate provident consequatur fugit.
+					Doloribus autem voluptates quas consectetur nulla totam quos odio. Quidem maiores quas
+					aspernatur tempora, explicabo nisi sit? Sapiente quisquam perspiciatis, recusandae
+					deserunt commodi fugiat error ipsa, dolorum eum fuga deleniti veritatis. Fugiat
+					perspiciatis earum tenetur inventore quo? Excepturi natus mollitia vitae maiores magnam
+					ratione.
 				</RightContainer>
 			</MainConntainer>
 		</div>

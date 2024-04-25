@@ -270,11 +270,6 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.getUserProfile = getUserProfile;
-// const updateUserSchema = zod.object({
-// 	userName: zod.string().regex(/^\S*$/),
-// 	bio: zod.string(),
-// });
-// type updateUserSchemaType = zod.infer<typeof updateUserSchema>;
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     const body = req.body;
@@ -433,3 +428,7 @@ const followUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.followUser = followUser;
+// get user following authors
+// get user muted authors
+// get random authors
+// get random topics

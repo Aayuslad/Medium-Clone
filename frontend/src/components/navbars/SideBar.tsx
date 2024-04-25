@@ -1,5 +1,6 @@
 import LibraryPageNavButton from "../buttons/LibraryPageNavButton";
 import ProfilePageNavButton from "../buttons/ProfilePageNavButton";
+import RefineRecommendationsPageNavButton from "../buttons/RefineRecommendationsPageNavButton";
 import SignOutBtnWithEmail from "../buttons/SignOutBtnWithEmail";
 import StoriesPageNavButton from "../buttons/StoriesPageNavButton";
 import WriteStoryButton from "../buttons/WriteStoryButton";
@@ -18,6 +19,11 @@ const SideBar = () => {
 			<LibraryPageNavButton />
 
 			<StoriesPageNavButton />
+
+			<div className="border border-slate-200 my-4"></div>
+
+			<div className="px-6 py-1 cursor-pointer">Settings</div>
+			<RefineRecommendationsPageNavButton />
 
 			<div className="border border-slate-200 my-4"></div>
 

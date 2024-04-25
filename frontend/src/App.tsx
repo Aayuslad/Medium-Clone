@@ -10,6 +10,7 @@ import SigninPage from "./pages/SigninPage";
 import SignupPage from "./pages/SignupPage";
 import { AuthStore } from "./stores/authStore";
 import TopicPage from "./pages/TopicPage";
+import RefineRecommendations from "./pages/RefineRecomandations";
 
 export default function App() {
 	const authStore = AuthStore();
@@ -22,6 +23,7 @@ export default function App() {
 		<BrowserRouter>
 			<Routes>
 				<Route path="/" element={authStore.loading ? <LoadingPage /> : <HomePage />} />
+				<Route path="/:nav" element={authStore.loading ? <LoadingPage /> : <HomePage />} />
 				<Route path="/signup" element={<SignupPage />} />
 				<Route path="/signin" element={<SigninPage />} />
 				<Route
@@ -29,9 +31,13 @@ export default function App() {
 					element={authStore.loading ? <LoadingPage /> : <ComposeBlogPage />}
 				/>
 				<Route path="/story/:id" element={authStore.loading ? <LoadingPage /> : <ReadBlogPage />} />
-				<Route path="/user/:id" element={authStore.loading ? <LoadingPage /> : <ProfilePage />} />
-				<Route path="/libray" element={authStore.loading ? <LoadingPage /> : <LibraryPage />} />
+				<Route path="/user/:id/:nav" element={authStore.loading ? <LoadingPage /> : <ProfilePage />} />
+				<Route path="/libray/:nav" element={authStore.loading ? <LoadingPage /> : <LibraryPage />} />
 				<Route path="/topic/:topic" element={authStore.loading ? <LoadingPage /> : <TopicPage />} />
+				<Route
+					path="/refineRecommendations/:nav"
+					element={authStore.loading ? <LoadingPage /> : <RefineRecommendations />}
+				/>
 			</Routes>
 		</BrowserRouter>
 	);

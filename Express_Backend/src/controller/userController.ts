@@ -303,13 +303,6 @@ export const getUserProfile = async (req: Request, res: Response) => {
 	}
 };
 
-// const updateUserSchema = zod.object({
-// 	userName: zod.string().regex(/^\S*$/),
-// 	bio: zod.string(),
-// });
-
-// type updateUserSchemaType = zod.infer<typeof updateUserSchema>;
-
 export const updateUser = async (req: Request, res: Response) => {
 	const user = req.user;
 
@@ -489,3 +482,11 @@ export const followUser = async (req: Request, res: Response) => {
 		return res.json({ message: "Error while updating user" });
 	}
 };
+
+// get user following authors
+
+// get user muted authors
+
+// get random authors
+
+// get random topics

@@ -8,7 +8,7 @@ const ProfileNavButton = () => {
 	return (
 		<button
 			className="profile text-black flex items-center gap-4 py-2 px-5 cursor-pointer"
-			onClick={() => navigate(`/user/${authStore.user?.id}`)}
+			onClick={() => navigate(`/user/${authStore.user?.id}/Home`)}
 		>
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
 				<circle cx="12" cy="7" r="4.5" stroke="currentColor"></circle>

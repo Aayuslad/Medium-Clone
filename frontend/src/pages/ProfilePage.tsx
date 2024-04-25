@@ -25,7 +25,8 @@ const ProfilePage = () => {
 	const [user, setUser] = useState<userType>();
 	const [profileEdit, setProfileEdit] = useState<boolean>(false);
 	const [aboutFormState, setAboutFormState] = useState<boolean>(true);
-	const [currentNav, setCurrentNav] = useState<string>("Home");
+	const [currentNav, setCurrentNav] = useState<string>("");
+	const { nav } = useParams<{ nav: string }>();
 
 	const formik = useFormik({
 		initialValues: {
@@ -69,6 +70,11 @@ const ProfilePage = () => {
 			);
 		}
 	}, [aboutFormState]);
+
+	// setting topics bar navigation
+	useEffect(() => {
+		setCurrentNav(nav || "Home");
+	}, []);
 
 	return (
 		<div className="ProfilePage">
@@ -122,6 +128,7 @@ const ProfilePage = () => {
 
 						{/* Navbar */}
 						<RegularLeftContainerNavbar
+							page={`user/${id}`}
 							navs={["Home", "About"]}
 							currentNav={currentNav}
 							setCurrentNav={setCurrentNav}
