@@ -1,6 +1,10 @@
+import { useNavigate } from "react-router-dom";
+
 const NotificationButton = () => {
+	const navigate = useNavigate();
+
 	return (
-		<div className="bell mx-4 cursor-pointer">
+		<button className="bell mx-4 cursor-pointer" onClick={() => navigate("/notifications/All")}>
 			<div className="icon">
 				<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
 					<path d="M15 18.5a3 3 0 1 1-6 0" stroke="currentColor" strokeLinecap="round"></path>
@@ -11,7 +15,7 @@ const NotificationButton = () => {
 					></path>
 				</svg>
 			</div>
-		</div>
+		</button>
 	);
 };
 

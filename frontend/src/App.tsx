@@ -11,6 +11,8 @@ import SignupPage from "./pages/SignupPage";
 import { AuthStore } from "./stores/authStore";
 import TopicPage from "./pages/TopicPage";
 import RefineRecommendations from "./pages/RefineRecomandations";
+import StoriesPage from "./pages/StoriesPage";
+import NotificationsPage from "./pages/NotificationsPage";
 
 export default function App() {
 	const authStore = AuthStore();
@@ -31,12 +33,20 @@ export default function App() {
 					element={authStore.loading ? <LoadingPage /> : <ComposeBlogPage />}
 				/>
 				<Route path="/story/:id" element={authStore.loading ? <LoadingPage /> : <ReadBlogPage />} />
-				<Route path="/user/:id/:nav" element={authStore.loading ? <LoadingPage /> : <ProfilePage />} />
+				<Route
+					path="/user/:id/:nav"
+					element={authStore.loading ? <LoadingPage /> : <ProfilePage />}
+				/>
 				<Route path="/libray/:nav" element={authStore.loading ? <LoadingPage /> : <LibraryPage />} />
 				<Route path="/topic/:topic" element={authStore.loading ? <LoadingPage /> : <TopicPage />} />
 				<Route
 					path="/refineRecommendations/:nav"
 					element={authStore.loading ? <LoadingPage /> : <RefineRecommendations />}
+				/>
+				<Route path="/stories/:nav" element={authStore.loading ? <LoadingPage /> : <StoriesPage />} />
+				<Route
+					path="/notifications/:nav"
+					element={authStore.loading ? <LoadingPage /> : <NotificationsPage />}
 				/>
 			</Routes>
 		</BrowserRouter>

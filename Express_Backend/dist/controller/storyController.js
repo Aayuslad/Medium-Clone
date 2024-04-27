@@ -194,6 +194,21 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
             });
         }
+        // updating stories count in topics if published
+        if (body.published) {
+            yield prismaClient_1.prisma.topics.updateMany({
+                where: {
+                    id: {
+                        in: topicIdsToAdd,
+                    },
+                },
+                data: {
+                    storiesCount: {
+                        increment: 1,
+                    },
+                },
+            });
+        }
         return res.json({ message: "story updated" });
     }
     catch (error) {
@@ -250,25 +265,24 @@ const getStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     storyId: id,
                 },
             });
-            if (existingReadingHistory) {
-                yield prismaClient_1.prisma.readingHistory.update({
-                    where: {
-                        id: existingReadingHistory.id,
-                    },
-                    data: {
-                        readAt: new Date(),
-                    },
-                });
-                console.log("Story already exists in reading history");
-            }
-            else {
-                yield prismaClient_1.prisma.readingHistory.create({
-                    data: {
-                        storyId: id,
-                        userId: decodedToken === null || decodedToken === void 0 ? void 0 : decodedToken.id,
-                    },
-                });
-            }
+            // if (existingReadingHistory) {
+            // 	await prisma.readingHistory.update({
+            // 		where: {
+            // 			id: existingReadingHistory.id,
+            // 		},
+            // 		data: {
+            // 			readAt: new Date(),
+            // 		},
+            // 	});
+            // 	console.log("Story already exists in reading history");
+            // } else {
+            // 	await prisma.readingHistory.create({
+            // 		data: {
+            // 			storyId: id,
+            // 			userId: decodedToken?.id as string,
+            // 		},
+            // 	});
+            // }
         }
         return;
     }
@@ -290,6 +304,7 @@ const getAllStories = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 title: true,
                 description: true,
                 postedOn: true,
+                clapsCount: true,
                 topics: {
                     select: {
                         topic: true,
@@ -335,6 +350,7 @@ const getStoriesByTopics = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 title: true,
                 description: true,
                 postedOn: true,
+                clapsCount: true,
                 topics: {
                     select: {
                         topic: true,
@@ -375,8 +391,8 @@ const getStoriesByAuthor = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 following: {
                     select: {
                         followingId: true,
-                    }
-                }
+                    },
+                },
             },
         });
         const stories = yield prismaClient_1.prisma.story.findMany({
@@ -573,6 +589,7 @@ const getSavedStories = (req, res) => __awaiter(void 0, void 0, void 0, function
                 title: true,
                 description: true,
                 postedOn: true,
+                clapsCount: true,
                 topics: {
                     select: {
                         topic: true,
@@ -632,6 +649,7 @@ const getReadingHistory = (req, res) => __awaiter(void 0, void 0, void 0, functi
                 title: true,
                 description: true,
                 postedOn: true,
+                clapsCount: true,
                 topics: {
                     select: {
                         topic: true,

@@ -29,7 +29,7 @@ const StoryPreview = ({ story, index, version = "home" }: props) => {
 					className="profile w-7 h-7 p-0 cursor-pointer"
 					onClick={(e) => {
 						e.stopPropagation();
-						navigate(`/user/${story.author?.id}`);
+						navigate(`/user/${story.author?.id}/Home`);
 					}}
 				>
 					<img

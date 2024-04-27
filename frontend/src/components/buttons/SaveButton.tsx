@@ -14,7 +14,7 @@ const SaveButton = ({ storyId }: props) => {
 	useEffect(() => {
 		if (authStore.user?.savedStories && storyId)
 			setAlredySaved(authStore.user.savedStories.some((save) => save === storyId));
-	}, [authStore.user, storyId]);
+	}, [authStore.user?.savedStories, storyId]);
 
 	return (
 		<button
@@ -33,7 +33,21 @@ const SaveButton = ({ storyId }: props) => {
 					return;
 				}
 
-				setAlredySaved((state) => !state);
+				if (alredySaved) {
+					authStore.setUser({
+						...authStore.user,
+						savedStories: authStore.user.savedStories
+							? authStore.user.savedStories.filter((id) => id !== storyId)
+							: [],
+					});
+				} else {
+					authStore.setUser({
+						...authStore.user,
+						savedStories: authStore.user.savedStories
+							? [...authStore.user.savedStories, storyId]
+							: [storyId],
+					});
+				}
 			}}
 		>
 			{!alredySaved && (

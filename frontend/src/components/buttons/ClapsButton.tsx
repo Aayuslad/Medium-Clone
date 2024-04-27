@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { StoryStore } from "../../stores/storyStore";
 import { AuthStore } from "../../stores/authStore";
+import { storyType } from "@aayushlad/medium-clone-common";
 
 type props = {
 	storyId: string;
 	totalClaps: number;
+	setStory?: React.Dispatch<React.SetStateAction<storyType | undefined>>;
 };
 
-const ClapsButton = ({ storyId, totalClaps }: props) => {
+const ClapsButton = ({ storyId, totalClaps, setStory }: props) => {
 	const storyStore = StoryStore();
 	const authStore = AuthStore();
 	const [clapsCount, setClapsCount] = useState<number>(totalClaps);
@@ -16,38 +18,52 @@ const ClapsButton = ({ storyId, totalClaps }: props) => {
 	useEffect(() => {
 		if (authStore.user?.claps && storyId)
 			setAlredyClaped(authStore.user.claps.some((id) => id === storyId));
-	}, [authStore.user, storyId]);
+	}, [authStore.user?.claps, storyId]);
 
 	useEffect(() => {
 		setClapsCount(totalClaps);
 	}, [totalClaps]);
 
+	function onClickHandler(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+		e.stopPropagation();
+
+		if (storyStore.putStoryLoading) {
+			return;
+		}
+
+		storyStore.clapStory({ storyId });
+
+		if (!authStore.user) {
+			return;
+		}
+
+		if (alredyClaped) {
+			setClapsCount((state) => state - 1);
+			if (setStory) {
+				setStory((state) => (state ? { ...state, clapsCount: clapsCount - 1 } : undefined));
+			}
+		} else {
+			setClapsCount((state) => state + 1);
+			if (setStory) {
+				setStory((state) => (state ? { ...state, clapsCount: clapsCount + 1 } : undefined));
+			}
+		}
+
+		if (alredyClaped) {
+			authStore.setUser({
+				...authStore.user,
+				claps: authStore.user.claps ? authStore.user.claps.filter((id) => id !== storyId) : [],
+			});
+		} else {
+			authStore.setUser({
+				...authStore.user,
+				claps: authStore.user.claps ? [...authStore.user.claps, storyId] : [storyId],
+			});
+		}
+	}
+
 	return (
-		<button
-			type="button"
-			className="flex py-2 px-2 gap-2 text-gray-500"
-			onClick={(e) => {
-				e.stopPropagation();
-
-				if (storyStore.putStoryLoading) {
-					return;
-				}
-
-				storyStore.clapStory({ storyId });
-
-				if (!authStore.user) {
-					return;
-				}
-
-				if (alredyClaped) {
-					setClapsCount((state) => state - 1);
-				} else {
-					setClapsCount((state) => state + 1);
-				}
-
-				setAlredyClaped((state) => !state);
-			}}
-		>
+		<button type="button" className="flex py-2 px-2 gap-2 text-gray-500" onClick={onClickHandler}>
 			{!alredyClaped && (
 				<svg width="24" height="24" viewBox="0 0 24 24" aria-label="clap">
 					<path

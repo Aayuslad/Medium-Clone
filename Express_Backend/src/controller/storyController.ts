@@ -208,6 +208,22 @@ export const upadateStory = async (req: Request, res: Response) => {
 			});
 		}
 
+		// updating stories count in topics if published
+		if (body.published) {
+			await prisma.topics.updateMany({
+				where: {
+					id: {
+						in: topicIdsToAdd,
+					},
+				},
+				data: {
+					storiesCount: {
+						increment: 1,
+					},
+				},
+			});
+		}
+
 		return res.json({ message: "story updated" });
 	} catch (error) {
 		console.log(error);
@@ -271,24 +287,24 @@ export const getStory = async (req: Request, res: Response) => {
 				},
 			});
 
-			if (existingReadingHistory) {
-				await prisma.readingHistory.update({
-					where: {
-						id: existingReadingHistory.id,
-					},
-					data: {
-						readAt: new Date(),
-					},
-				});
-				console.log("Story already exists in reading history");
-			} else {
-				await prisma.readingHistory.create({
-					data: {
-						storyId: id,
-						userId: decodedToken?.id as string,
-					},
-				});
-			}
+			// if (existingReadingHistory) {
+			// 	await prisma.readingHistory.update({
+			// 		where: {
+			// 			id: existingReadingHistory.id,
+			// 		},
+			// 		data: {
+			// 			readAt: new Date(),
+			// 		},
+			// 	});
+			// 	console.log("Story already exists in reading history");
+			// } else {
+			// 	await prisma.readingHistory.create({
+			// 		data: {
+			// 			storyId: id,
+			// 			userId: decodedToken?.id as string,
+			// 		},
+			// 	});
+			// }
 		}
 
 		return;
@@ -310,6 +326,7 @@ export const getAllStories = async (req: Request, res: Response) => {
 				title: true,
 				description: true,
 				postedOn: true,
+				clapsCount: true,
 				topics: {
 					select: {
 						topic: true,
@@ -360,6 +377,7 @@ export const getStoriesByTopics = async (req: Request, res: Response) => {
 				title: true,
 				description: true,
 				postedOn: true,
+				clapsCount: true,
 				topics: {
 					select: {
 						topic: true,
@@ -374,7 +392,7 @@ export const getStoriesByTopics = async (req: Request, res: Response) => {
 					},
 				},
 			},
-		});		
+		});
 
 		// Map over stories to transform topics to an array of strings
 		const transformedStories = {
@@ -403,12 +421,12 @@ export const getStoriesByAuthor = async (req: Request, res: Response) => {
 			},
 			select: {
 				following: {
-					select:{
+					select: {
 						followingId: true,
-					}
-				}
+					},
+				},
 			},
-		});		
+		});
 
 		const stories = await prisma.story.findMany({
 			where: {
@@ -438,7 +456,7 @@ export const getStoriesByAuthor = async (req: Request, res: Response) => {
 					},
 				},
 			},
-		});		
+		});
 
 		// Map over stories to transform topics to an array of strings
 		const transformedStories = {
@@ -622,6 +640,7 @@ export const getSavedStories = async (req: Request, res: Response) => {
 				title: true,
 				description: true,
 				postedOn: true,
+				clapsCount: true,
 				topics: {
 					select: {
 						topic: true,
@@ -688,6 +707,7 @@ export const getReadingHistory = async (req: Request, res: Response) => {
 				title: true,
 				description: true,
 				postedOn: true,
+				clapsCount: true,
 				topics: {
 					select: {
 						topic: true,

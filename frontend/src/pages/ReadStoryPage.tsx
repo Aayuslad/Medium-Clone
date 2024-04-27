@@ -13,12 +13,14 @@ import TopicButton from "../components/buttons/TopicButton";
 import ReadStoryPageSkeleton from "../components/skelitons/ReadStoryPageSkeleton";
 import { formatDate } from "../helper/formatDate";
 import { StoryStore } from "../stores/storyStore";
+import ResponseBox from "../components/ResponseBox";
 
 const ReadStoryPage = () => {
 	const { id } = useParams<{ id: string }>();
 	const storyStore = StoryStore();
 	const [story, setStory] = useState<storyType>();
 	const [author, setAuthor] = useState<userType>();
+	const [commentBox, setCommentBox] = useState<boolean>(false);
 	const navigate = useNavigate();
 
 	// fetcing data
@@ -50,7 +52,7 @@ const ReadStoryPage = () => {
 					<div className="profile py-4 flex items-center text-sm">
 						<ProfileIcon
 							profileImg={story?.author.profileImg}
-							onClick={() => navigate(`/user/${story?.author.id}`)}
+							onClick={() => navigate(`/user/${story?.author.id}/Home`)}
 						/>
 
 						<div className="info flex flex-col">
@@ -63,9 +65,13 @@ const ReadStoryPage = () => {
 					</div>
 
 					<div className="button-bar border-y border-slate-300 flex items-center gap-4 py-1 px-4 my-4">
-						<ClapsButton storyId={story?.id as string} totalClaps={story?.clapsCount || 0} />
+						<ClapsButton
+							storyId={story?.id as string}
+							totalClaps={story?.clapsCount || 0}
+							setStory={setStory}
+						/>
 
-						<CommentsButton />
+						<CommentsButton onClick={() => setCommentBox((state) => !state)} />
 
 						<div className="flex-1"></div>
 
@@ -95,7 +101,11 @@ const ReadStoryPage = () => {
 						</div>
 
 						<div className="button-bar flex items-center gap-4 py-1 px-4 my-4">
-							<ClapsButton storyId={story?.id as string} totalClaps={story?.clapsCount || 0} />
+							<ClapsButton
+								storyId={story?.id as string}
+								totalClaps={story?.clapsCount || 0}
+								setStory={setStory}
+							/>
 
 							<CommentsButton />
 
@@ -115,7 +125,7 @@ const ReadStoryPage = () => {
 						<div className="flex items-center justify-between">
 							<ProfileIcon
 								profileImg={story?.author.profileImg}
-								onClick={() => navigate(`/user/${story?.author.id}`)}
+								onClick={() => navigate(`/user/${story?.author.id}/Home`)}
 								heightWidth={20}
 							/>
 							<div className="block sm:hidden">
@@ -145,6 +155,8 @@ const ReadStoryPage = () => {
 			)}
 
 			{storyStore.skeletonLoading && <ReadStoryPageSkeleton />}
+
+			<ResponseBox commentBox={commentBox} setCommentBox={setCommentBox} />
 		</div>
 	);
 };
