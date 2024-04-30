@@ -70,7 +70,7 @@ const SmallStoryPreview = ({ story, index }: props) => {
 					<ClapsButton storyId={story.id as string} totalClaps={story.clapsCount || 0} />
 				</div>
 
-				<CommentsButton />
+				<CommentsButton responseCount={story.responseCount || 0} />
 
 				<div className="flex-1"></div>
 

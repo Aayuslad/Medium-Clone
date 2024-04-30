@@ -1,7 +1,8 @@
-import { clapStorySchemaType, storyType, topicType } from "@aayushlad/medium-clone-common";
+import { clapStorySchemaType, responseType, storyType, topicType } from "@aayushlad/medium-clone-common";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { create } from "zustand";
+import { makeResponseSchemaType } from "../components/ResponseBox";
 
 type storyStoreType = {
 	cursorLoading: boolean;
@@ -27,6 +28,8 @@ type storyStoreType = {
 	removeStoryFromFeed: (id: string) => void;
 	getTopic: (topic: string) => Promise<void>;
 	followTopic: (values: { topicId: string }) => Promise<void>;
+	makeResponse: (values: makeResponseSchemaType) => Promise<responseType | undefined>;
+	getResponseByStoryId: (values: { storyId: string }) => Promise<responseType[] | undefined>;
 };
 
 export const StoryStore = create<storyStoreType>((set) => ({
@@ -237,6 +240,30 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			toast.error("Error while following topic!");
 		} finally {
 			set({ buttonLoading: false });
+		}
+	},
+
+	makeResponse: async (values) => {
+		try {
+			set({ buttonLoading: true });
+			const res = await axios.post("/api/v1/story/makeResponse", values);
+			return res.data;
+		} catch (error) {
+			toast.error("Error while making response!");
+		} finally {
+			set({ buttonLoading: false });
+		}
+	},
+
+	getResponseByStoryId: async (values) => {
+		try {			
+			set({ skeletonLoading: true });
+			const res = await axios.get(`/api/v1/story/responses/${values.storyId}`);
+			return res.data;
+		} catch (error) {
+			toast.error("Error while fetching response!");
+		} finally {
+			set({ skeletonLoading: false });
 		}
 	},
 }));

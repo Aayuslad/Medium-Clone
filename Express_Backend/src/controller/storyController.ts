@@ -5,6 +5,8 @@ import {
 	createStorySchemaType,
 	followTopicSchema,
 	followTopicSchemaType,
+	makeResponseSchema,
+	makeResponseSchemaType,
 	updateStorySchema,
 	updateStorySchemaType,
 } from "@aayushlad/medium-clone-common";
@@ -12,6 +14,7 @@ import { Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { prisma } from "../db/prismaClient";
 import { uploadImageCloudinary } from "../utils/cloudinary";
+import zod from "zod";
 
 export const createStory = async (req: Request, res: Response) => {
 	const user = req.user;
@@ -249,6 +252,7 @@ export const getStory = async (req: Request, res: Response) => {
 				description: true,
 				postedOn: true,
 				clapsCount: true,
+				responseCount: true,
 				published: true,
 				topics: {
 					select: {
@@ -327,6 +331,7 @@ export const getAllStories = async (req: Request, res: Response) => {
 				description: true,
 				postedOn: true,
 				clapsCount: true,
+				responseCount: true,
 				topics: {
 					select: {
 						topic: true,
@@ -378,6 +383,7 @@ export const getStoriesByTopics = async (req: Request, res: Response) => {
 				description: true,
 				postedOn: true,
 				clapsCount: true,
+				responseCount: true,
 				topics: {
 					select: {
 						topic: true,
@@ -641,6 +647,7 @@ export const getSavedStories = async (req: Request, res: Response) => {
 				description: true,
 				postedOn: true,
 				clapsCount: true,
+				responseCount: true,
 				topics: {
 					select: {
 						topic: true,
@@ -708,6 +715,7 @@ export const getReadingHistory = async (req: Request, res: Response) => {
 				description: true,
 				postedOn: true,
 				clapsCount: true,
+				responseCount: true,
 				topics: {
 					select: {
 						topic: true,
@@ -827,3 +835,107 @@ export const followTopic = async (req: Request, res: Response) => {
 		return res.json({ message: "Error following topic" });
 	}
 };
+
+// make a response
+export const makeResponse = async (req: Request, res: Response) => {
+	const user = req.user;
+	const body: makeResponseSchemaType = req.body;
+
+	try {
+		const { success } = makeResponseSchema.safeParse(body);
+		if (!success) {
+			res.status(400);
+			return res.json({ message: "Invalid request parameters" });
+		}
+
+		// creating new response record
+		const response = await prisma.response.create({
+			data: {
+				content: body.content,
+				storyId: body.storyId,
+				userId: user?.id as string,
+			},
+		});
+
+		// updating responseCount in story
+		await prisma.story.update({
+			where: {
+				id: body.storyId,
+			},
+			data: {
+				responseCount: {
+					increment: 1,
+				},
+			},
+		});
+
+		const newResponse = await prisma.response.findFirst({
+			where: {
+				id: response.id,
+			},
+			select: {
+				id: true,
+				content: true,
+				postedAt: true,
+				user: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+					},
+				},
+			},
+		});
+
+		return res.json(newResponse);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error making response" });
+	}
+};
+
+export const getResponseByStoryId = async (req: Request, res: Response) => {
+	const storyId = req.params.storyId;
+
+	console.log(storyId);
+
+	try {
+		const responses = await prisma.response.findMany({
+			where: {
+				storyId: storyId,
+			},
+			orderBy: {
+				postedAt: "desc",
+			},
+			select: {
+				id: true,
+				content: true,
+				postedAt: true,
+				user: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+					},
+				},
+			},
+		});
+
+		return res.json(responses);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error fetching response" });
+	}
+};
+
+// edit a response
+
+// delete a response
+
+// make a reply to response
+
+// edit a reply to response
+
+// dekete a response

@@ -30,6 +30,8 @@ model User {
   followingCount Int              @default(0)
   readingHistory ReadingHistory[]
   followedTopics FollowedTopic[]
+  responses      Response[]
+  subResponses   SubResponse[]
 }
 
 model Story {
@@ -46,7 +48,9 @@ model Story {
   claps          Clap[]
   savedBy        SavedStory[]
   clapsCount     Int              @default(0)
+  responseCount  Int              @default(0)
   readingHistory ReadingHistory[]
+  responses      Response[]
 }
 
 model Topics {
@@ -97,4 +101,25 @@ model ReadingHistory {
   story   Story    @relation(fields: [storyId], references: [id])
   storyId String // Foreign key to Story
   readAt  DateTime @default(now())
+}
+
+model Response {
+  id           String        @id @default(uuid())
+  content      String
+  postedAt     DateTime      @default(now())
+  user         User          @relation(fields: [userId], references: [id])
+  userId       String // Foreign key to User
+  story        Story         @relation(fields: [storyId], references: [id])
+  storyId      String // Foreign key to Story
+  subResponses SubResponse[]
+}
+
+model SubResponse {
+  id         String   @id @default(uuid())
+  content    String
+  postedAt   DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String // Foreign key to User
+  response   Response @relation(fields: [responseId], references: [id])
+  responseId String // Foreign key to Response
 }

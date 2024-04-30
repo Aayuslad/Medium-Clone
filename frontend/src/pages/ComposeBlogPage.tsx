@@ -40,7 +40,7 @@ const ComposeBlogPage = () => {
 			const flag = await toast.promise(storyStore.putStory(formData), {
 				loading: "Posting...",
 				success: "New Blog Posted",
-				error: "Error Posting Blog!",
+				error: "Error Posting Story!",
 			});
 			if (flag) {
 				navigate("/");

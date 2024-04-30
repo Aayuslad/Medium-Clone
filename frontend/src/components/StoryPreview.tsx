@@ -80,7 +80,15 @@ const StoryPreview = ({ story, index, version = "home" }: props) => {
 					<ClapsButton storyId={story.id as string} totalClaps={story.clapsCount || 0} />
 				)}
 
-				{version === "profile" && <CommentsButton />}
+				{version === "profile" && (
+					<CommentsButton
+						responseCount={story.responseCount || 0}
+						onClick={(e) => {
+							e?.stopPropagation();
+							navigate(`/story/${story.id}`, { state: { responseBox: true } });
+						}}
+					/>
+				)}
 
 				<div className="flex-1"></div>
 

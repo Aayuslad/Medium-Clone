@@ -1,8 +1,9 @@
 import { storyType, userType } from "@aayushlad/medium-clone-common";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import ProfileIcon from "../components/ProfileIcon";
+import ResponseBox from "../components/ResponseBox";
 import BigFollowFollowingButton from "../components/buttons/BigFollowFollowingButton";
 import ClapsButton from "../components/buttons/ClapsButton";
 import CommentsButton from "../components/buttons/CommentsButton";
@@ -13,15 +14,20 @@ import TopicButton from "../components/buttons/TopicButton";
 import ReadStoryPageSkeleton from "../components/skelitons/ReadStoryPageSkeleton";
 import { formatDate } from "../helper/formatDate";
 import { StoryStore } from "../stores/storyStore";
-import ResponseBox from "../components/ResponseBox";
 
 const ReadStoryPage = () => {
-	const { id } = useParams<{ id: string }>();
+	const { id } = useParams();
 	const storyStore = StoryStore();
-	const [story, setStory] = useState<storyType>();
+	const [story, setStory] = useState<storyType | undefined>(undefined);
 	const [author, setAuthor] = useState<userType>();
-	const [commentBox, setCommentBox] = useState<boolean>(false);
+	const [responseBox, setResponseBox] = useState<boolean>(false);
 	const navigate = useNavigate();
+	const { state } = useLocation();
+
+	// Opening response box if response box button is clicked on story preview
+	useEffect(() => {
+		if (state && state.responseBox) setResponseBox(state.responseBox);
+	}, [state]);
 
 	// fetcing data
 	useEffect(() => {
@@ -33,17 +39,11 @@ const ReadStoryPage = () => {
 		})();
 	}, [id]);
 
-	// abjusting heigh of textarea component
-	useEffect(() => {
-		const content = document.getElementById("content") as HTMLTextAreaElement;
-		content.style.height = `${content.scrollHeight}px`;
-	}, [story]);
-
 	return (
 		<div className="ReadStoryPage h-fit">
 			<Header />
 
-			{!storyStore.skeletonLoading && (
+			{(story !== undefined || !storyStore.skeletonLoading) && (
 				<div className="main-container w-full h-fit px-2 max-w-3xl mx-auto pt-10">
 					<p className="title px-2 pt-12 pb-3 overflow-hidden font-Merriweather font-semibold text-2xl leading-[2.2rem] sm:text-4xl sm:leading-[3rem]">
 						{story?.title}
@@ -71,7 +71,10 @@ const ReadStoryPage = () => {
 							setStory={setStory}
 						/>
 
-						<CommentsButton onClick={() => setCommentBox((state) => !state)} />
+						<CommentsButton
+							onClick={() => setResponseBox((state) => !state)}
+							responseCount={story?.responseCount || 0}
+						/>
 
 						<div className="flex-1"></div>
 
@@ -86,12 +89,9 @@ const ReadStoryPage = () => {
 						</div>
 					)}
 
-					<textarea
-						id="content"
-						readOnly={true}
-						className="content w-full px-2 pt-4 mb-20 overflow-hidden text-gray-900 font-Merriweather font-light outline-none resize-none text-justify text-[1rem] sm:text-xl sm:leading-9"
-						value={story?.content}
-					/>
+					<pre className="content w-full text-wrap px-2 pt-4 mb-20 overflow-hidden text-gray-900 font-Merriweather font-light outline-none resize-none text-justify text-[1rem] sm:text-xl leading-[1.6rem] sm:leading-[2rem] break-words">
+						{story?.content}
+					</pre>
 
 					<div className="story-small-footer">
 						<div className="topics">
@@ -107,7 +107,10 @@ const ReadStoryPage = () => {
 								setStory={setStory}
 							/>
 
-							<CommentsButton />
+							<CommentsButton
+								onClick={() => setResponseBox((state) => !state)}
+								responseCount={story?.responseCount || 0}
+							/>
 
 							<div className="flex-1"></div>
 
@@ -119,7 +122,7 @@ const ReadStoryPage = () => {
 				</div>
 			)}
 
-			{!storyStore.skeletonLoading && (
+			{(story !== undefined || !storyStore.skeletonLoading) && (
 				<div className="page-footer bg-gray-100 mt-20">
 					<div className="main-container w-full h-fit px-4 max-w-3xl mx-auto py-10">
 						<div className="flex items-center justify-between">
@@ -154,9 +157,14 @@ const ReadStoryPage = () => {
 				</div>
 			)}
 
-			{storyStore.skeletonLoading && <ReadStoryPageSkeleton />}
+			{(storyStore.skeletonLoading || !story) && <ReadStoryPageSkeleton />}
 
-			<ResponseBox commentBox={commentBox} setCommentBox={setCommentBox} />
+			<ResponseBox
+				responseBox={responseBox}
+				responseCount={story?.responseCount || 0}
+				storyId={story?.id as string}
+				setResponseBox={setResponseBox}
+			/>
 		</div>
 	);
 };

@@ -31,6 +31,7 @@ export type storyType = {
     postedOn: string;
     published?: boolean;
     clapsCount?: number;
+    responseCount?: number;
     coverImg: string;
     topics: string[];
     author: {
@@ -46,6 +47,16 @@ export type topicType = {
     topic: string;
     followersCount: number;
     storiesCount: number;
+};
+export type responseType = {
+    user: {
+        id: string;
+        userName: string;
+        profileImg: string;
+    };
+    id: string;
+    content: string;
+    postedAt: string;
 };
 export declare const signUpUserSchema: zod.ZodObject<{
     userName: zod.ZodString;
@@ -167,4 +178,15 @@ export declare const followTopicSchema: zod.ZodObject<{
     topicId: string;
 }>;
 export type followTopicSchemaType = zod.infer<typeof followTopicSchema>;
+export declare const makeResponseSchema: zod.ZodObject<{
+    content: zod.ZodString;
+    storyId: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    content: string;
+    storyId: string;
+}, {
+    content: string;
+    storyId: string;
+}>;
+export type makeResponseSchemaType = zod.infer<typeof makeResponseSchema>;
 export {};

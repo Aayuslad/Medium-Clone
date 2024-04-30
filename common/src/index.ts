@@ -33,6 +33,7 @@ export type storyType = {
 	postedOn: string;
 	published?: boolean;
 	clapsCount?: number;
+	responseCount?: number;
 	coverImg: string;
 	topics: string[];
 	author: {
@@ -49,6 +50,17 @@ export type topicType = {
 	topic: string;
 	followersCount: number;
 	storiesCount: number;
+};
+
+export type responseType = {
+	user: {
+		id: string;
+		userName: string;
+		profileImg: string;
+	};
+	id: string;
+	content: string;
+	postedAt: string;
 };
 
 //
@@ -132,3 +144,11 @@ export const followTopicSchema = zod.object({
 });
 
 export type followTopicSchemaType = zod.infer<typeof followTopicSchema>;
+
+//
+export const makeResponseSchema = zod.object({
+	content: zod.string().max(500),
+	storyId: zod.string(),
+});
+
+export type makeResponseSchemaType = zod.infer<typeof makeResponseSchema>;
