@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.makeResponseSchema = exports.followTopicSchema = exports.clapStorySchema = exports.updateStorySchema = exports.createStorySchema = exports.followUserSchema = exports.updateUserAboutSectionSchema = exports.updateUserSchema = exports.signinUserSchema = exports.signUpUserSchema = void 0;
+exports.makeReplyToResponseSchema = exports.makeResponseSchema = exports.followTopicSchema = exports.clapStorySchema = exports.updateStorySchema = exports.createStorySchema = exports.followUserSchema = exports.updateUserAboutSectionSchema = exports.updateUserSchema = exports.signinUserSchema = exports.signUpUserSchema = void 0;
 const zod_1 = __importDefault(require("zod"));
 //
 exports.signUpUserSchema = zod_1.default.object({
@@ -53,4 +53,8 @@ exports.followTopicSchema = zod_1.default.object({
 exports.makeResponseSchema = zod_1.default.object({
     content: zod_1.default.string().max(500),
     storyId: zod_1.default.string(),
+});
+exports.makeReplyToResponseSchema = zod_1.default.object({
+    content: zod_1.default.string(),
+    responseId: zod_1.default.string(),
 });

@@ -65,7 +65,7 @@ const ClapsButton = ({ storyId, totalClaps, setStory }: props) => {
 	return (
 		<button type="button" className="flex py-2 px-2 gap-2 text-gray-500" onClick={onClickHandler}>
 			{!alredyClaped && (
-				<svg width="24" height="24" viewBox="0 0 24 24" aria-label="clap">
+				<svg width="24" height="24" viewBox="0 0 24 24">
 					<path
 						fillRule="evenodd"
 						clipRule="evenodd"
@@ -75,10 +75,10 @@ const ClapsButton = ({ storyId, totalClaps, setStory }: props) => {
 			)}
 
 			{alredyClaped && (
-				<svg width="24" height="24" viewBox="0 0 24 24" aria-label="clap">
+				<svg width="24" height="24" viewBox="0 0 24 24">
 					<path
-						fill-rule="evenodd"
-						clip-rule="evenodd"
+						fillRule="evenodd"
+						clipRule="evenodd"
 						d="M11.37.83L12 3.28l.63-2.45h-1.26zM15.42 1.84l-1.18-.39-.34 2.5 1.52-2.1zM9.76 1.45l-1.19.4 1.53 2.1-.34-2.5zM20.25 11.84l-2.5-4.4a1.42 1.42 0 0 0-.93-.64.96.96 0 0 0-.75.18c-.25.19-.4.42-.45.7l.05.05 2.35 4.13c1.62 2.95 1.1 5.78-1.52 8.4l-.46.41c1-.13 1.93-.6 2.78-1.45 2.7-2.7 2.51-5.59 1.43-7.38zM12.07 9.01c-.13-.69.08-1.3.57-1.77l-2.06-2.07a1.12 1.12 0 0 0-1.56 0c-.15.15-.22.34-.27.53L12.07 9z"
 					></path>
 					<path

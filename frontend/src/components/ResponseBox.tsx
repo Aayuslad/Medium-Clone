@@ -7,6 +7,7 @@ import { StoryStore } from "../stores/storyStore";
 import { AuthStore } from "../stores/authStore";
 import { responseType } from "@aayushlad/medium-clone-common";
 import Response from "./Response";
+import ResponseSkeleton from "./skelitons/ResponseSkeleton";
 
 export type makeResponseSchemaType = {
 	content: string;
@@ -17,10 +18,17 @@ type props = {
 	storyId: string;
 	responseBox: boolean;
 	responseCount: number;
+	setResponseCount: React.Dispatch<React.SetStateAction<number>>;
 	setResponseBox: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const ResponseBox = ({ responseBox, setResponseBox, storyId, responseCount = 0 }: props) => {
+const ResponseBox = ({
+	responseBox,
+	setResponseBox,
+	storyId,
+	responseCount = 0,
+	setResponseCount,
+}: props) => {
 	const storyStore = StoryStore();
 	const authStore = AuthStore();
 	const [responses, setResponses] = useState<responseType[]>();
@@ -34,7 +42,10 @@ const ResponseBox = ({ responseBox, setResponseBox, storyId, responseCount = 0 }
 			console.log(values);
 			const response = await storyStore.makeResponse(values);
 			formik.resetForm();
-			if (response) setResponses([response, ...(responses || [])]);
+			if (response) {
+				setResponses([response, ...(responses || [])]);
+				setResponseCount((count) => count + 1);
+			}
 		},
 	});
 
@@ -71,47 +82,56 @@ const ResponseBox = ({ responseBox, setResponseBox, storyId, responseCount = 0 }
 				<CrossCloseButton onClick={() => setResponseBox(false)} type="button" />
 			</div>
 
-			<form
-				className="makeResponse h-fit mt-6 px-3 py-4 rounded custom-box-shadow"
-				onSubmit={formik.handleSubmit}
-			>
-				<div className="profile flex">
-					<div className="-ml-4">
-						<ProfileIcon heightWidth={7} />
+			{authStore.isLoggedIn ? (
+				<form
+					className="makeResponse h-fit mt-6 px-3 py-4 rounded custom-box-shadow"
+					onSubmit={formik.handleSubmit}
+				>
+					<div className="profile flex">
+						<div className="-ml-4">
+							<ProfileIcon heightWidth={7} />
+						</div>
+						<span>{authStore.user?.userName}</span>
 					</div>
-					<span>{authStore.user?.userName}</span>
-				</div>
 
-				<textarea
-					id="responseConetnt"
-					rows={1}
-					className="responseConetnt w-full max-h-[300px] mt-4 resize-none outline-none"
-					placeholder="What are your thoughts ?"
-					{...formik.getFieldProps("content")}
-				></textarea>
+					<textarea
+						id="responseConetnt"
+						rows={1}
+						className="responseConetnt w-full max-h-[300px] mt-4 resize-none outline-none"
+						placeholder="What are your thoughts ?"
+						{...formik.getFieldProps("content")}
+					></textarea>
 
-				<div className="buttons flex justify-end mt-4">
-					<RegularButton
-						text="Cancel"
-						type="reset"
-						bgColor="white"
-						color="black"
-						onClick={() => formik.resetForm()}
-					/>
-					<RegularButton
-						text={`${storyStore.buttonLoading ? "Responding..." : "Respond"}`}
-						type="submit"
-						bgColor="green"
-						color="white"
-					/>
+					<div className="buttons flex justify-end mt-4">
+						<RegularButton
+							text="Cancel"
+							type="reset"
+							bgColor="white"
+							color="black"
+							onClick={() => formik.resetForm()}
+						/>
+						<RegularButton
+							text={`${storyStore.buttonLoading ? "Responding..." : "Respond"}`}
+							type="submit"
+							bgColor="green"
+							color="white"
+						/>
+					</div>
+				</form>
+			) : (
+				<div className="px-4 py-2 mt-4 text-slate-700 custom-box-shadow rounded">
+					Signin to respond
 				</div>
-			</form>
+			)}
 
 			<hr className="my-6 -mx-4 h-px bg-slate-300" />
 
-			{responses?.map((response) => {
-				return <Response response={response} key={response.id} />;
-			})}
+			{(responses || storyStore.skeletonLoading) &&
+				responses?.map((response) => {
+					return <Response response={response} key={response.id} />;
+				})}
+
+			{!responses && storyStore.skeletonLoading && <ResponseSkeleton />}
 		</div>
 	);
 };

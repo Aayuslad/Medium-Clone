@@ -61,6 +61,7 @@ export type responseType = {
 	id: string;
 	content: string;
 	postedAt: string;
+	replyCount?: number;
 };
 
 //
@@ -152,3 +153,10 @@ export const makeResponseSchema = zod.object({
 });
 
 export type makeResponseSchemaType = zod.infer<typeof makeResponseSchema>;
+
+export const makeReplyToResponseSchema = zod.object({
+	content: zod.string(),
+	responseId: zod.string(),
+});
+
+export type makeReplyToResponseSchemaType = zod.infer<typeof makeReplyToResponseSchema>;

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getResponseByStoryId = exports.makeResponse = exports.followTopic = exports.getTopic = exports.getReadingHistory = exports.getSavedStories = exports.deleteStory = exports.saveStory = exports.clapStory = exports.getStoriesByAuthor = exports.getStoriesByTopics = exports.getAllStories = exports.getStory = exports.upadateStory = exports.createStory = void 0;
+exports.getReplyByResponseId = exports.makeReplyToResponse = exports.getResponseByStoryId = exports.makeResponse = exports.followTopic = exports.getTopic = exports.getReadingHistory = exports.getSavedStories = exports.deleteStory = exports.saveStory = exports.clapStory = exports.getStoriesByAuthor = exports.getStoriesByTopics = exports.getAllStories = exports.getStory = exports.upadateStory = exports.createStory = void 0;
 const medium_clone_common_1 = require("@aayushlad/medium-clone-common");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prismaClient_1 = require("../db/prismaClient");
@@ -295,8 +295,12 @@ const getStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.getStory = getStory;
 const getAllStories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
     try {
         const stories = yield prismaClient_1.prisma.story.findMany({
+            skip: (page - 1) * pageSize,
+            take: pageSize,
             where: {
                 published: true,
             },
@@ -780,17 +784,6 @@ const makeResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 userId: user === null || user === void 0 ? void 0 : user.id,
             },
         });
-        // updating responseCount in story
-        yield prismaClient_1.prisma.story.update({
-            where: {
-                id: body.storyId,
-            },
-            data: {
-                responseCount: {
-                    increment: 1,
-                },
-            },
-        });
         const newResponse = yield prismaClient_1.prisma.response.findFirst({
             where: {
                 id: response.id,
@@ -799,12 +792,24 @@ const makeResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 id: true,
                 content: true,
                 postedAt: true,
+                replyCount: true,
                 user: {
                     select: {
                         id: true,
                         userName: true,
                         profileImg: true,
                     },
+                },
+            },
+        });
+        // updating responseCount in story
+        yield prismaClient_1.prisma.story.update({
+            where: {
+                id: body.storyId,
+            },
+            data: {
+                responseCount: {
+                    increment: 1,
                 },
             },
         });
@@ -817,9 +822,9 @@ const makeResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.makeResponse = makeResponse;
+// get responses by story id
 const getResponseByStoryId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const storyId = req.params.storyId;
-    console.log(storyId);
     try {
         const responses = yield prismaClient_1.prisma.response.findMany({
             where: {
@@ -827,6 +832,54 @@ const getResponseByStoryId = (req, res) => __awaiter(void 0, void 0, void 0, fun
             },
             orderBy: {
                 postedAt: "desc",
+            },
+            select: {
+                id: true,
+                content: true,
+                postedAt: true,
+                replyCount: true,
+                user: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                    },
+                },
+            },
+        });
+        yield new Promise((resolve) => setTimeout(resolve, 10000));
+        return res.json(responses);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error fetching response" });
+    }
+});
+exports.getResponseByStoryId = getResponseByStoryId;
+// edit a response
+// delete a response
+// make a reply to subresponse
+const makeReplyToResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const body = req.body;
+    try {
+        const { success } = medium_clone_common_1.makeReplyToResponseSchema.safeParse(body);
+        if (!success) {
+            res.status(400);
+            return res.json({ message: "Invalid request parameters" });
+        }
+        // creating new subresponse record
+        const reply = yield prismaClient_1.prisma.subResponse.create({
+            data: {
+                content: body.content,
+                responseId: body.responseId,
+                userId: user === null || user === void 0 ? void 0 : user.id,
+            },
+        });
+        const newRelay = yield prismaClient_1.prisma.subResponse.findFirst({
+            where: {
+                id: reply.id,
             },
             select: {
                 id: true,
@@ -841,7 +894,52 @@ const getResponseByStoryId = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 },
             },
         });
-        return res.json(responses);
+        res.json(newRelay);
+        // incrementing replycount in response
+        yield prismaClient_1.prisma.response.update({
+            where: {
+                id: body.responseId,
+            },
+            data: {
+                replyCount: {
+                    increment: 1,
+                },
+            },
+        });
+        return;
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error making response" });
+    }
+});
+exports.makeReplyToResponse = makeReplyToResponse;
+// get reply by response id
+const getReplyByResponseId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const responseId = req.params.responseId;
+    try {
+        const replies = yield prismaClient_1.prisma.subResponse.findMany({
+            where: {
+                responseId: responseId,
+            },
+            orderBy: {
+                postedAt: "asc",
+            },
+            select: {
+                id: true,
+                content: true,
+                postedAt: true,
+                user: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                    },
+                },
+            },
+        });
+        return res.json(replies);
     }
     catch (error) {
         console.log(error);
@@ -849,9 +947,6 @@ const getResponseByStoryId = (req, res) => __awaiter(void 0, void 0, void 0, fun
         return res.json({ message: "Error fetching response" });
     }
 });
-exports.getResponseByStoryId = getResponseByStoryId;
-// edit a response
-// delete a response
-// make a reply to response
+exports.getReplyByResponseId = getReplyByResponseId;
 // edit a reply to response
 // dekete a response

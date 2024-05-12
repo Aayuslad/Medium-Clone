@@ -6,12 +6,14 @@ import {
 	followTopic,
 	getAllStories,
 	getReadingHistory,
+	getReplyByResponseId,
 	getResponseByStoryId,
 	getSavedStories,
 	getStoriesByAuthor,
 	getStoriesByTopics,
 	getStory,
 	getTopic,
+	makeReplyToResponse,
 	makeResponse,
 	saveStory,
 	upadateStory,
@@ -28,12 +30,14 @@ router.get("/getStoriesByTopics/:topics", getStoriesByTopics);
 router.get("/getStoriesByAuthor", authMiddleware, getStoriesByAuthor);
 router.get("/readingHistory", authMiddleware, getReadingHistory);
 router.get("/topic/:topic", getTopic);
-router.get("/responses/:storyId", authMiddleware, getResponseByStoryId);
+router.get("/responses/:storyId", getResponseByStoryId);
+router.get("/replies/:responseId", getReplyByResponseId);
 router.get("/:id", getStory);
 router.post("/clap", authMiddleware, clapStory);
 router.post("/save", authMiddleware, saveStory);
 router.post("/followTopic", authMiddleware, followTopic);
 router.post("/makeResponse", authMiddleware, makeResponse);
+router.post("/makeReplyToResponse", authMiddleware, makeReplyToResponse);
 router.delete("/:id", authMiddleware, deleteStory);
 
 export default router;

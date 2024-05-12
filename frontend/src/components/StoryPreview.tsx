@@ -11,16 +11,14 @@ import TopicButton from "./buttons/TopicButton";
 
 type props = {
 	story: storyType;
-	index: number;
 	version?: "home" | "profile";
 };
 
-const StoryPreview = ({ story, index, version = "home" }: props) => {
+const StoryPreview = ({ story, version = "home" }: props) => {
 	const navigate = useNavigate();
 
 	return (
 		<div
-			key={index}
 			onClick={() => navigate(`/story/${story.id}`)}
 			className="story mt-6 border-b border-slate-5 max-w-[680px] sm:mx-auto lg:mx-0 lg:mr-auto flex flex-col gap-2 cursor-pointer"
 		>
@@ -71,7 +69,7 @@ const StoryPreview = ({ story, index, version = "home" }: props) => {
 						{story.topics.map((topic, index) => {
 							if (index > 0) return;
 
-							return <TopicButton index={index} topic={topic} />;
+							return <TopicButton key={index} topic={topic} />;
 						})}
 					</div>
 				)}

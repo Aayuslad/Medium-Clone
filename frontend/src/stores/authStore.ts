@@ -80,10 +80,8 @@ export const AuthStore = create<authStoreType>((set) => ({
 		try {
 			set({ loading: true });
 			const response = await axios.get("/api/v1/user");
-			console.log("user", response.data);
 			set({ user: response.data, isLoggedIn: true });
 		} catch (error) {
-			console.log(error);
 		} finally {
 			set({ loading: false });
 		}

@@ -1,4 +1,10 @@
-import { clapStorySchemaType, responseType, storyType, topicType } from "@aayushlad/medium-clone-common";
+import {
+	clapStorySchemaType,
+	makeReplyToResponseSchemaType,
+	responseType,
+	storyType,
+	topicType,
+} from "@aayushlad/medium-clone-common";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { create } from "zustand";
@@ -17,7 +23,7 @@ type storyStoreType = {
 	postStory: (value: FormData) => Promise<string>;
 	putStory: (value: FormData) => Promise<boolean>;
 	getStory: (value: { id: string }) => Promise<storyType | undefined>;
-	getStories: () => void;
+	getStories: (page: number) => Promise<void>;
 	getStoriesByTopics: (values: { topics: string[] }) => Promise<void>;
 	getStoriesByAuthor: () => Promise<void>;
 	deleteStory: (value: { id: string }) => void;
@@ -30,6 +36,8 @@ type storyStoreType = {
 	followTopic: (values: { topicId: string }) => Promise<void>;
 	makeResponse: (values: makeResponseSchemaType) => Promise<responseType | undefined>;
 	getResponseByStoryId: (values: { storyId: string }) => Promise<responseType[] | undefined>;
+	makeReplyToResponse: (values: makeReplyToResponseSchemaType) => Promise<responseType | undefined>;
+	getReplyByResponseId: (values: { responseId: string }) => Promise<responseType[] | undefined>;
 };
 
 export const StoryStore = create<storyStoreType>((set) => ({
@@ -80,7 +88,6 @@ export const StoryStore = create<storyStoreType>((set) => ({
 		try {
 			set({ skeletonLoading: true });
 			const res = await axios.get(`/api/v1/story/${values.id}`);
-			console.log(res.data);
 			return res.data;
 		} catch (error) {
 			toast.error("Error while fetching Story!");
@@ -89,12 +96,21 @@ export const StoryStore = create<storyStoreType>((set) => ({
 		}
 	},
 
-	getStories: async () => {
+	getStories: async (page = 1, pageSize = 5) => {
 		try {
 			set({ skeletonLoading: true });
-			const res = await axios.get(`/api/v1/story/bulk`);
+			const res = await axios.get(`/api/v1/story/bulk?page=${page}&pageSize=${pageSize}`);
 			set((state) => ({
-				feedStories: [...state.feedStories, { topic: "For you", stories: res.data }],
+				feedStories: [
+					...state.feedStories,
+					{
+						topic: "For you",
+						stories: [
+							...(state.feedStories.find((story) => story.topic === "For you")?.stories || []),
+							...res.data,
+						],
+					},
+				],
 			}));
 		} catch (error) {
 			toast.error("Error while fetching Story!");
@@ -256,12 +272,36 @@ export const StoryStore = create<storyStoreType>((set) => ({
 	},
 
 	getResponseByStoryId: async (values) => {
-		try {			
+		try {
 			set({ skeletonLoading: true });
 			const res = await axios.get(`/api/v1/story/responses/${values.storyId}`);
 			return res.data;
 		} catch (error) {
 			toast.error("Error while fetching response!");
+		} finally {
+			set({ skeletonLoading: false });
+		}
+	},
+
+	makeReplyToResponse: async (values) => {
+		try {
+			set({ buttonLoading: true });
+			const res = await axios.post("/api/v1/story/makeReplyToResponse", values);
+			return res.data;
+		} catch (error) {
+			toast.error("Error while making reply!");
+		} finally {
+			set({ buttonLoading: false });
+		}
+	},
+
+	getReplyByResponseId: async (values) => {
+		try {
+			set({ skeletonLoading: true });
+			const res = await axios.get(`/api/v1/story/replies/${values.responseId}`);
+			return res.data;
+		} catch (error) {
+			toast.error("Error while fetching replies!");
 		} finally {
 			set({ skeletonLoading: false });
 		}

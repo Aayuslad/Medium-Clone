@@ -5,6 +5,8 @@ import {
 	createStorySchemaType,
 	followTopicSchema,
 	followTopicSchemaType,
+	makeReplyToResponseSchema,
+	makeReplyToResponseSchemaType,
 	makeResponseSchema,
 	makeResponseSchemaType,
 	updateStorySchema,
@@ -320,8 +322,13 @@ export const getStory = async (req: Request, res: Response) => {
 };
 
 export const getAllStories = async (req: Request, res: Response) => {
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 10;
+
 	try {
 		const stories = await prisma.story.findMany({
+			skip: (page - 1) * pageSize,
+			take: pageSize,
 			where: {
 				published: true,
 			},
@@ -857,6 +864,25 @@ export const makeResponse = async (req: Request, res: Response) => {
 			},
 		});
 
+		const newResponse = await prisma.response.findFirst({
+			where: {
+				id: response.id,
+			},
+			select: {
+				id: true,
+				content: true,
+				postedAt: true,
+				replyCount: true,
+				user: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+					},
+				},
+			},
+		});
+
 		// updating responseCount in story
 		await prisma.story.update({
 			where: {
@@ -869,24 +895,6 @@ export const makeResponse = async (req: Request, res: Response) => {
 			},
 		});
 
-		const newResponse = await prisma.response.findFirst({
-			where: {
-				id: response.id,
-			},
-			select: {
-				id: true,
-				content: true,
-				postedAt: true,
-				user: {
-					select: {
-						id: true,
-						userName: true,
-						profileImg: true,
-					},
-				},
-			},
-		});
-
 		return res.json(newResponse);
 	} catch (error) {
 		console.log(error);
@@ -895,10 +903,9 @@ export const makeResponse = async (req: Request, res: Response) => {
 	}
 };
 
+// get responses by story id
 export const getResponseByStoryId = async (req: Request, res: Response) => {
 	const storyId = req.params.storyId;
-
-	console.log(storyId);
 
 	try {
 		const responses = await prisma.response.findMany({
@@ -912,6 +919,7 @@ export const getResponseByStoryId = async (req: Request, res: Response) => {
 				id: true,
 				content: true,
 				postedAt: true,
+				replyCount: true,
 				user: {
 					select: {
 						id: true,
@@ -921,6 +929,9 @@ export const getResponseByStoryId = async (req: Request, res: Response) => {
 				},
 			},
 		});
+
+				await new Promise((resolve) => setTimeout(resolve, 10000));
+
 
 		return res.json(responses);
 	} catch (error) {
@@ -934,7 +945,100 @@ export const getResponseByStoryId = async (req: Request, res: Response) => {
 
 // delete a response
 
-// make a reply to response
+// make a reply to subresponse
+export const makeReplyToResponse = async (req: Request, res: Response) => {
+	const user = req.user;
+	const body: makeReplyToResponseSchemaType = req.body;
+
+	try {
+		const { success } = makeReplyToResponseSchema.safeParse(body);
+		if (!success) {
+			res.status(400);
+			return res.json({ message: "Invalid request parameters" });
+		}
+
+		// creating new subresponse record
+		const reply = await prisma.subResponse.create({
+			data: {
+				content: body.content,
+				responseId: body.responseId,
+				userId: user?.id as string,
+			},
+		});
+
+		const newRelay = await prisma.subResponse.findFirst({
+			where: {
+				id: reply.id,
+			},
+			select: {
+				id: true,
+				content: true,
+				postedAt: true,
+				user: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+					},
+				},
+			},
+		});
+
+		res.json(newRelay);
+
+		// incrementing replycount in response
+		await prisma.response.update({
+			where: {
+				id: body.responseId,
+			},
+			data: {
+				replyCount: {
+					increment: 1,
+				},
+			},
+		});
+
+		return;
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error making response" });
+	}
+};
+
+// get reply by response id
+export const getReplyByResponseId = async (req: Request, res: Response) => {
+	const responseId = req.params.responseId;
+
+	try {
+		const replies = await prisma.subResponse.findMany({
+			where: {
+				responseId: responseId,
+			},
+			orderBy: {
+				postedAt: "asc",
+			},
+			select: {
+				id: true,
+				content: true,
+				postedAt: true,
+				user: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+					},
+				},
+			},
+		});
+
+		return res.json(replies);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error fetching response" });
+	}
+};
 
 // edit a reply to response
 

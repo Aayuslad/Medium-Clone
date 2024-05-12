@@ -15,18 +15,24 @@ const HomePage = () => {
 	const scrollDirection = useScrollDirection();
 	const { nav } = useParams<{ nav: string }>();
 	const [currentNav, setCurrentNav] = useState<string>("");
+	const [page, setPage] = useState<number>(1);
 
 	useEffect(() => {
 		const existingTopics = storyStore.feedStories.map((story) => story.topic);
-		if((nav === "For you" || nav === undefined) && !existingTopics.includes("For you")) {
-			storyStore.getStories();
+		if (nav === "For you" || nav === undefined) {
+			storyStore.getStories(page);
 		} else if (nav === "Following" && !existingTopics.includes("Following")) {
 			storyStore.getStoriesByAuthor();
-		} else if (nav !== "Following" && nav !== "For you" && nav !== undefined && !existingTopics.includes(nav as string)) {
+		} else if (
+			nav !== "Following" &&
+			nav !== "For you" &&
+			nav !== undefined &&
+			!existingTopics.includes(nav as string)
+		) {
 			storyStore.getStoriesByTopics({ topics: [nav as string] });
 		}
-		setCurrentNav(nav || "For you")
-	}, [nav])
+		setCurrentNav(nav || "For you");
+	}, [nav, page]);
 
 	return (
 		<div className="HomePage" style={{ cursor: storyStore.cursorLoading ? "wait" : "default" }}>
@@ -46,9 +52,13 @@ const HomePage = () => {
 						storyStore.feedStories
 							?.find((feedStory) => feedStory.topic === currentNav)
 							?.stories.map((story, index) => (
-								<StoryPreview story={story} index={index} version="home" />
+								<StoryPreview story={story} key={index} version="home" />
 							))}
 					{storyStore.skeletonLoading && <StorySkeletons />}
+
+					<button type="button" onClick={() => setPage((state) => state + 1)}>
+						Fetch more
+					</button>
 				</LeftContainer>
 
 				<RightContainer>

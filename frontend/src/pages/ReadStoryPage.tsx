@@ -21,6 +21,7 @@ const ReadStoryPage = () => {
 	const [story, setStory] = useState<storyType | undefined>(undefined);
 	const [author, setAuthor] = useState<userType>();
 	const [responseBox, setResponseBox] = useState<boolean>(false);
+	const [responseCount, setResponseCount] = useState<number>(0);
 	const navigate = useNavigate();
 	const { state } = useLocation();
 
@@ -36,6 +37,7 @@ const ReadStoryPage = () => {
 			const res = await storyStore.getStory({ id });
 			setStory(res);
 			setAuthor(res?.author as userType);
+			setResponseCount(res?.responseCount || 0);
 		})();
 	}, [id]);
 
@@ -73,7 +75,7 @@ const ReadStoryPage = () => {
 
 						<CommentsButton
 							onClick={() => setResponseBox((state) => !state)}
-							responseCount={story?.responseCount || 0}
+							responseCount={responseCount}
 						/>
 
 						<div className="flex-1"></div>
@@ -96,7 +98,7 @@ const ReadStoryPage = () => {
 					<div className="story-small-footer">
 						<div className="topics">
 							{story?.topics.map((topic, index) => {
-								return <TopicButton index={index} topic={topic} />;
+								return <TopicButton key={index} topic={topic} />;
 							})}
 						</div>
 
@@ -161,8 +163,9 @@ const ReadStoryPage = () => {
 
 			<ResponseBox
 				responseBox={responseBox}
-				responseCount={story?.responseCount || 0}
+				responseCount={responseCount}
 				storyId={story?.id as string}
+				setResponseCount={setResponseCount}
 				setResponseBox={setResponseBox}
 			/>
 		</div>

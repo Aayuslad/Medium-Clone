@@ -57,6 +57,7 @@ export type responseType = {
     id: string;
     content: string;
     postedAt: string;
+    replyCount?: number;
 };
 export declare const signUpUserSchema: zod.ZodObject<{
     userName: zod.ZodString;
@@ -189,4 +190,15 @@ export declare const makeResponseSchema: zod.ZodObject<{
     storyId: string;
 }>;
 export type makeResponseSchemaType = zod.infer<typeof makeResponseSchema>;
+export declare const makeReplyToResponseSchema: zod.ZodObject<{
+    content: zod.ZodString;
+    responseId: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    content: string;
+    responseId: string;
+}, {
+    content: string;
+    responseId: string;
+}>;
+export type makeReplyToResponseSchemaType = zod.infer<typeof makeReplyToResponseSchema>;
 export {};
