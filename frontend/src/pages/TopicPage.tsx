@@ -44,7 +44,7 @@ const TopicPage = () => {
 								{storyStore.feedStories
 									.find((story) => story.topic === topic)
 									?.stories.map((story, index) => (
-										<StoryPreview index={index} key={story.id} story={story} version="profile" />
+										<StoryPreview key={story.id} story={story} version="profile" />
 									))}
 							</div>
 							

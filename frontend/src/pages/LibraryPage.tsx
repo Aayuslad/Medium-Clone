@@ -46,7 +46,7 @@ const LibraryPage = () => {
 					{currentNav === "Saved stories" && !storyStore.skeletonLoading && (
 						<>
 							{storyStore.savedStories.map((story, index) => (
-								<StoryPreview story={story} index={index} version="profile" />
+								<StoryPreview story={story} key={index} version="profile" />
 							))}
 						</>
 					)}
@@ -54,7 +54,7 @@ const LibraryPage = () => {
 					{currentNav === "Reading History" && !storyStore.skeletonLoading && (
 						<>
 							{storyStore.readingHistory.map((story, index) => (
-								<StoryPreview story={story} index={index} version="profile" />
+								<StoryPreview story={story} key={index} version="profile" />
 							))}
 						</>
 					)}

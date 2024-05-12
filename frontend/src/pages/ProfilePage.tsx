@@ -138,7 +138,7 @@ const ProfilePage = () => {
 						{currentNav === "Home" && (
 							<div className="stories">
 								{user?.stories?.map((story, index) => (
-									<StoryPreview story={story} index={index} version="profile" />
+									<StoryPreview story={story} key={index} version="profile" />
 								))}
 							</div>
 						)}
