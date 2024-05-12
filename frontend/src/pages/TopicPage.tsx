@@ -43,7 +43,7 @@ const TopicPage = () => {
 							<div className="stories md:hidden">
 								{storyStore.feedStories
 									.find((story) => story.topic === topic)
-									?.stories.map((story, index) => (
+									?.stories.map((story) => (
 										<StoryPreview key={story.id} story={story} version="profile" />
 									))}
 							</div>
