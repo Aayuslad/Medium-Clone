@@ -27,11 +27,6 @@ export async function sinInValidation(values: FormValues) {
 	return error;
 }
 
-// validating topics form
-export async function topicValidation(values: FormValues) {
-	
-}
-
 // All the functions (Logic) starts from here
 
 // validate email
