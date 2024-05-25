@@ -174,6 +174,7 @@ export const upadateStory = async (req: Request, res: Response) => {
 				content: body.content,
 				description: body.description,
 				published: body.published,
+				postedOn: new Date(),
 				coverImg: secure_url,
 				topics: {
 					connect: topicIdsToAdd.length > 0 ? topicIdsToAdd.map((id) => ({ id: id })) : [], // Connect post with existing or newly created topics
@@ -929,9 +930,6 @@ export const getResponseByStoryId = async (req: Request, res: Response) => {
 				},
 			},
 		});
-
-				await new Promise((resolve) => setTimeout(resolve, 10000));
-
 
 		return res.json(responses);
 	} catch (error) {

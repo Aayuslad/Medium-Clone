@@ -101,16 +101,22 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			set({ skeletonLoading: true });
 			const res = await axios.get(`/api/v1/story/bulk?page=${page}&pageSize=${pageSize}`);
 			set((state) => ({
-				feedStories: [
-					...state.feedStories,
-					{
-						topic: "For you",
-						stories: [
-							...(state.feedStories.find((story) => story.topic === "For you")?.stories || []),
-							...res.data,
-						],
-					},
-				],
+				feedStories: state.feedStories
+					.map((story) => {
+						if (story.topic === "For you") {
+							return {
+								...story,
+								stories: [...story.stories, ...res.data],
+							};
+						}
+						return story;
+					})
+					.concat([
+						{
+							topic: "For you",
+							stories: res.data,
+						},
+					]),
 			}));
 		} catch (error) {
 			toast.error("Error while fetching Story!");

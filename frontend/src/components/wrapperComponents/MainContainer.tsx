@@ -1,11 +1,15 @@
-import { ReactNode } from "react";
+import { ReactNode, forwardRef } from "react";
 
-const MainConntainer = ({ children }: { children: ReactNode }) => {
+interface MainContainerProps {
+	children: ReactNode;
+}
+
+const MainContainer = forwardRef<HTMLDivElement, MainContainerProps>(({ children }, ref) => {
 	return (
-		<div className="MainContainer w-full flex-1 max-w-6xl mx-auto mt-14 flex">
+		<div ref={ref} className="MainContainer w-full flex-1 max-w-6xl mx-auto mt-14 flex">
 			{children}
 		</div>
 	);
-};
+});
 
-export default MainConntainer;
+export default MainContainer;

@@ -158,6 +158,7 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 content: body.content,
                 description: body.description,
                 published: body.published,
+                postedOn: new Date(),
                 coverImg: secure_url,
                 topics: {
                     connect: topicIdsToAdd.length > 0 ? topicIdsToAdd.map((id) => ({ id: id })) : [], // Connect post with existing or newly created topics
@@ -847,7 +848,6 @@ const getResponseByStoryId = (req, res) => __awaiter(void 0, void 0, void 0, fun
                 },
             },
         });
-        yield new Promise((resolve) => setTimeout(resolve, 10000));
         return res.json(responses);
     }
     catch (error) {

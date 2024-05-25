@@ -144,7 +144,7 @@ const Response = ({ response }: { response: responseType }) => {
 										<div>
 											<div className="text-xs font-semibold">
 												{reply.user.userName}{" "}
-												{response.user.userName === authStore.user?.userName && (
+												{reply.user.userName === authStore.user?.userName && (
 													<span className="bg-slate-200 px-1.5 pb-0.5 rounded text-slate-600 text-xs">
 														you
 													</span>

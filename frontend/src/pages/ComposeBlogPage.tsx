@@ -36,7 +36,7 @@ const ComposeBlogPage = () => {
 		validateOnChange: false,
 		onSubmit: async (values) => {
 			const formData = valueToFormData(values);
-			formData.append("published", "true");
+			formData.set("published", "true");
 			const flag = await toast.promise(storyStore.putStory(formData), {
 				loading: "Posting...",
 				success: "New Blog Posted",
@@ -72,7 +72,7 @@ const ComposeBlogPage = () => {
 		// };
 	}, []);
 
-	// Debounce effect 
+	// Debounce effect
 	const debouncedValues = useDebounce(formik.values, 5000);
 	useEffect(() => {
 		async function submitDebouncedValues() {
@@ -95,8 +95,13 @@ const ComposeBlogPage = () => {
 	// topics list input logic
 	const addTopic = () => {
 		if (topic.trim() !== "" && (formik.values.topics == undefined || formik.values?.topics?.length < 5)) {
-			formik.setValues({ ...formik.values, topics: [...formik.values.topics, topic] });
-			setTopic("");
+			const regex = /^[A-Z][a-z]+(?:[A-Z][a-z]+)*$/;
+			if (regex.test(topic)) {
+				formik.setValues({ ...formik.values, topics: [...formik.values.topics, topic] });
+				setTopic("");
+			} else {
+				toast.error("Topic must be in capital camel case!");
+			}
 		}
 	};
 	const deleteTopic = (index: number) => {

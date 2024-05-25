@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import StoryPreview from "../components/StoryPreview";
 import Header from "../components/Header";
 import StorySkeletons from "../components/skelitons/StorySkeletons";
@@ -34,11 +34,41 @@ const HomePage = () => {
 		setCurrentNav(nav || "For you");
 	}, [nav, page]);
 
+	const mainContainerRef = useRef<HTMLDivElement | null>(null);
+	const [isFetching, setIsFetching] = useState(false);
+
+	const handleScroll = () => {
+		if (mainContainerRef.current) {
+			const mainContainer = mainContainerRef.current;
+			const containerBottom = mainContainer.offsetTop + mainContainer.offsetHeight;
+			const scrollPosition = window.pageYOffset + window.innerHeight;
+
+			if (scrollPosition >= containerBottom - 1) {
+				setIsFetching(true);
+				console.log("fetching");
+			}
+		}
+	};
+
+	useEffect(() => {
+		if (isFetching) {
+			setPage((prevPage) => prevPage + 1);
+			setIsFetching(false);
+		}
+	}, [isFetching, setPage]);
+
+	useEffect(() => {
+		window.addEventListener("scroll", handleScroll);
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+		};
+	}, []);
+
 	return (
 		<div className="HomePage" style={{ cursor: storyStore.cursorLoading ? "wait" : "default" }}>
 			<Header />
 
-			<MainConntainer>
+			<MainConntainer ref={mainContainerRef}>
 				<LeftContainer>
 					<div
 						className={`topics z-0 h-fit sticky ${
@@ -48,17 +78,12 @@ const HomePage = () => {
 						<TopicsNavbar currentNav={currentNav} setCurrentNav={setCurrentNav} />
 					</div>
 
-					{!storyStore.skeletonLoading &&
-						storyStore.feedStories
-							?.find((feedStory) => feedStory.topic === currentNav)
-							?.stories.map((story, index) => (
-								<StoryPreview story={story} key={index} version="home" />
-							))}
+					{storyStore.feedStories
+						?.find((feedStory) => feedStory.topic === currentNav)
+						?.stories.map((story, index) => (
+							<StoryPreview story={story} key={index} version="home" />
+						))}
 					{storyStore.skeletonLoading && <StorySkeletons />}
-
-					<button type="button" onClick={() => setPage((state) => state + 1)}>
-						Fetch more
-					</button>
 				</LeftContainer>
 
 				<RightContainer>

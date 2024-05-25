@@ -7,7 +7,7 @@ interface FormValues {
 	password?: string;
 }
 
-// validating registration form
+// validating signup form
 export async function sinUpValidation(values: FormValues) {
 	const error: Partial<FormValues> = usernameVerify({}, values);
 	if (error.userName) return error;
@@ -18,13 +18,18 @@ export async function sinUpValidation(values: FormValues) {
 	return error;
 }
 
-// validating registration form
+// validating signin form
 export async function sinInValidation(values: FormValues) {
 	const error: Partial<FormValues> = nameOrEmailVerify({}, values);
 	if (error.emailOrName) return error;
 	passwordVerify(error, values);
 
 	return error;
+}
+
+// validating topics form
+export async function topicValidation(values: FormValues) {
+	
 }
 
 // All the functions (Logic) starts from here
@@ -71,6 +76,6 @@ function nameOrEmailVerify(error: Partial<FormValues> = {}, values: FormValues) 
 	if (values.emailOrName?.includes(" ")) {
 		error.emailOrName = toast.error("Invalid input in Username or email");
 	}
- 
+
 	return error;
 }
