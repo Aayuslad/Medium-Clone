@@ -826,8 +826,12 @@ exports.makeResponse = makeResponse;
 // get responses by story id
 const getResponseByStoryId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const storyId = req.params.storyId;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 6;
     try {
         const responses = yield prismaClient_1.prisma.response.findMany({
+            skip: (page - 1) * pageSize,
+            take: pageSize,
             where: {
                 storyId: storyId,
             },
@@ -918,6 +922,8 @@ exports.makeReplyToResponse = makeReplyToResponse;
 // get reply by response id
 const getReplyByResponseId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const responseId = req.params.responseId;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = 4;
     try {
         const replies = yield prismaClient_1.prisma.subResponse.findMany({
             where: {
@@ -926,6 +932,8 @@ const getReplyByResponseId = (req, res) => __awaiter(void 0, void 0, void 0, fun
             orderBy: {
                 postedAt: "asc",
             },
+            take: pageSize,
+            skip: (page - 1) * pageSize,
             select: {
                 id: true,
                 content: true,

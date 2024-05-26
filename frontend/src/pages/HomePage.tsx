@@ -16,11 +16,14 @@ const HomePage = () => {
 	const { nav } = useParams<{ nav: string }>();
 	const [currentNav, setCurrentNav] = useState<string>("");
 	const [page, setPage] = useState<number>(1);
+	const mainContainerRef = useRef<HTMLDivElement | null>(null);
+	const [allStoriesLoaded, setAllStoriesLoaded] = useState<boolean>(false);
 
+	// data fetching
 	useEffect(() => {
 		const existingTopics = storyStore.feedStories.map((story) => story.topic);
-		if (nav === "For you" || nav === undefined) {
-			storyStore.getStories(page);
+		if (nav === "For you" || (nav === undefined && !allStoriesLoaded)) {
+			storyStore.getStories(page, setAllStoriesLoaded);
 		} else if (nav === "Following" && !existingTopics.includes("Following")) {
 			storyStore.getStoriesByAuthor();
 		} else if (
@@ -34,9 +37,7 @@ const HomePage = () => {
 		setCurrentNav(nav || "For you");
 	}, [nav, page]);
 
-	const mainContainerRef = useRef<HTMLDivElement | null>(null);
-	const [isFetching, setIsFetching] = useState(false);
-
+	// pagination logic
 	const handleScroll = () => {
 		if (mainContainerRef.current) {
 			const mainContainer = mainContainerRef.current;
@@ -44,19 +45,12 @@ const HomePage = () => {
 			const scrollPosition = window.pageYOffset + window.innerHeight;
 
 			if (scrollPosition >= containerBottom - 1) {
-				setIsFetching(true);
-				console.log("fetching");
+				setPage((prevPage) => prevPage + 1);
 			}
 		}
 	};
 
-	useEffect(() => {
-		if (isFetching) {
-			setPage((prevPage) => prevPage + 1);
-			setIsFetching(false);
-		}
-	}, [isFetching, setPage]);
-
+	// scroll event
 	useEffect(() => {
 		window.addEventListener("scroll", handleScroll);
 		return () => {

@@ -907,9 +907,13 @@ export const makeResponse = async (req: Request, res: Response) => {
 // get responses by story id
 export const getResponseByStoryId = async (req: Request, res: Response) => {
 	const storyId = req.params.storyId;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 6;
 
 	try {
 		const responses = await prisma.response.findMany({
+			skip: (page - 1) * pageSize,
+			take: pageSize,
 			where: {
 				storyId: storyId,
 			},
@@ -1007,6 +1011,8 @@ export const makeReplyToResponse = async (req: Request, res: Response) => {
 // get reply by response id
 export const getReplyByResponseId = async (req: Request, res: Response) => {
 	const responseId = req.params.responseId;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = 4;
 
 	try {
 		const replies = await prisma.subResponse.findMany({
@@ -1016,6 +1022,8 @@ export const getReplyByResponseId = async (req: Request, res: Response) => {
 			orderBy: {
 				postedAt: "asc",
 			},
+			take: pageSize,
+			skip: (page - 1) * pageSize,
 			select: {
 				id: true,
 				content: true,

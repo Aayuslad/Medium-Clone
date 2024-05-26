@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ProfileIcon from "./ProfileIcon";
 import CrossCloseButton from "./buttons/CrossCloseButton";
 import RegularButton from "./buttons/RegularButton";
@@ -32,6 +32,9 @@ const ResponseBox = ({
 	const storyStore = StoryStore();
 	const authStore = AuthStore();
 	const [responses, setResponses] = useState<responseType[]>();
+	const [page, setPage] = useState<number>(1);
+	const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+	const [allResponseLoaed, setAllResponseLoaded] = useState<boolean>(false);
 
 	const formik = useFormik<makeResponseSchemaType>({
 		initialValues: {
@@ -53,15 +56,44 @@ const ResponseBox = ({
 		formik.setFieldValue("storyId", storyId);
 	}, [storyId]);
 
+	// response data fetching
 	useEffect(() => {
 		(async () => {
-			if (responseBox) {
-				const responses = await storyStore.getResponseByStoryId({ storyId });
-				setResponses(responses);
+			if (responseBox && !allResponseLoaed) {
+				const responses = await storyStore.getResponseByStoryId({ storyId }, page);
+				responses && setResponses((state) => [...(state ?? []), ...responses]);
+				if (responses?.length === 0) {
+					setAllResponseLoaded(true);
+				}
 			}
 		})();
-	}, [storyId, responseBox]);
+	}, [storyId, responseBox, page]);
 
+	// Pagination logic
+	const handleScroll = () => {
+		const scrollContainer = scrollContainerRef.current;
+		if (scrollContainer) {
+			const scrollHeight = scrollContainer.scrollHeight;
+			const scrollTop = scrollContainer.scrollTop;
+			const clientHeight = scrollContainer.clientHeight;
+
+			if (scrollTop + clientHeight >= scrollHeight) {
+				setPage((prevPage) => prevPage + 1);
+			}
+		}
+	};
+
+	// scroll event
+	useEffect(() => {
+		if (scrollContainerRef.current) {
+			scrollContainerRef.current.addEventListener("scroll", handleScroll);
+		}
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+		};
+	}, []);
+
+	// repond form height auto adjustment
 	useEffect(() => {
 		const responseConetnt = document.getElementById("responseConetnt") as HTMLTextAreaElement;
 
@@ -73,6 +105,7 @@ const ResponseBox = ({
 
 	return (
 		<div
+			ref={scrollContainerRef}
 			className={`ResponseBox h-screen w-screen sm:w-[400px] fixed top-0 ${
 				responseBox ? "right-0" : "right-[-100vw] sm:right-[-430px]"
 			} z-10 duration-300  bg-white px-4 py-5 custom-box-shadow-2 overflow-y-auto`}
@@ -111,7 +144,11 @@ const ResponseBox = ({
 							onClick={() => formik.resetForm()}
 						/>
 						<RegularButton
-							text={`${storyStore.buttonLoading ? "Responding..." : "Respond"}`}
+							text={`${
+								storyStore.buttonLoading && formik.values.content != ""
+									? "Responding..."
+									: "Respond"
+							}`}
 							type="submit"
 							bgColor="green"
 							color="white"
@@ -131,7 +168,7 @@ const ResponseBox = ({
 					return <Response response={response} key={response.id} />;
 				})}
 
-			{!responses && storyStore.skeletonLoading && <ResponseSkeleton />}
+			{storyStore.skeletonLoading && <ResponseSkeleton />}
 		</div>
 	);
 };

@@ -19,6 +19,7 @@ const Response = ({ response }: { response: responseType }) => {
 	const [replyCount, setReplyCount] = useState<number>(response.replyCount || 0);
 	const storyStore = StoryStore();
 	const authStore = AuthStore();
+	const [page, setPage] = useState<number>(1);
 
 	const formik = useFormik({
 		initialValues: {
@@ -39,15 +40,25 @@ const Response = ({ response }: { response: responseType }) => {
 		formik.setFieldValue("responseId", response.id);
 	}, [response.id]);
 
+	// response data fetching
 	useEffect(() => {
 		(async () => {
 			if (replyBox && replies === undefined && replyCount !== 0) {
-				const res = await storyStore.getReplyByResponseId({ responseId: response.id });
+				const res = await storyStore.getReplyByResponseId({ responseId: response.id }, page);
 				if (res) setReplies((state) => [...(state || []), ...res]);
 			}
 		})();
 	}, [replyBox]);
+	useEffect(() => {
+		(async () => {
+			if (replyBox && replyCount !== 0) {
+				const res = await storyStore.getReplyByResponseId({ responseId: response.id }, page);
+				if (res) setReplies((state) => [...(state || []), ...res]);
+			}
+		})();
+	}, [page]);
 
+	// height auto adjustment for reply textarea
 	useEffect(() => {
 		const reply = document.getElementById("reply") as HTMLTextAreaElement;
 
@@ -121,7 +132,11 @@ const Response = ({ response }: { response: responseType }) => {
 								onClick={() => formik.resetForm()}
 							/>
 							<RegularButton
-								text={`${storyStore.buttonLoading ? "Responding..." : "Respond"}`}
+								text={`${
+									storyStore.buttonLoading && formik.values.content != ""
+										? "Responding..."
+										: "Respond"
+								}`}
 								type="submit"
 								bgColor="green"
 								color="white"
@@ -160,7 +175,12 @@ const Response = ({ response }: { response: responseType }) => {
 								</div>
 							);
 						})}
-						{!replies && storyStore.skeletonLoading && <ReplySkeleton />}
+						{storyStore.skeletonLoading && <ReplySkeleton />}
+						{replyCount - 4 * page > 0 && (
+							<button type="button" onClick={() => setPage((state) => state + 1)}>
+								Fetch {replyCount - 4 * page} more
+							</button>
+						)}
 						{!storyStore.skeletonLoading && !replies?.length && <div>No Replies Yet</div>}
 					</div>
 				)}

@@ -34,7 +34,6 @@ export default function App() {
 			<ResponseSkeleton />
 			<ResponseSkeleton />
 			<ResponseSkeleton />
-			<ResponseSkeleton />
 		</>
 	);
 }

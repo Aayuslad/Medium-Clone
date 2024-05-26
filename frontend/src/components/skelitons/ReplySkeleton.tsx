@@ -31,6 +31,7 @@ export default function App() {
 	return (
 		<>
 			<ResponseSkeleton />
+			<ResponseSkeleton />
 		</>
 	);
 }
