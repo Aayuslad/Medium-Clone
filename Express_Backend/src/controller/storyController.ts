@@ -23,6 +23,10 @@ export const createStory = async (req: Request, res: Response) => {
 	const body: createStorySchemaType = req.body;
 	const coverImg = req.file;
 
+	console.log("create: ", body);
+	console.log("coverImg: ", coverImg);
+	
+
 	try {
 		body.published = JSON.parse(req.body.published as string);
 		body.topics = req.body.topics.split(",");
@@ -93,6 +97,9 @@ export const upadateStory = async (req: Request, res: Response) => {
 	const body: updateStorySchemaType = req.body;
 	const coverImg = req.file;
 
+	console.log("update: ", body);
+	console.log("coverImg: ", coverImg);
+
 	try {
 		body.published = JSON.parse(req.body.published as string);
 		body.topics = req.body.topics.split(",");
@@ -161,7 +168,9 @@ export const upadateStory = async (req: Request, res: Response) => {
 			},
 		});
 		const currentCoverImage = existingPost?.coverImg;
-		const secure_url = coverImg ? await uploadImageCloudinary(coverImg) : currentCoverImage;
+		const secure_url = coverImg
+			? await uploadImageCloudinary(coverImg, currentCoverImage)
+			: currentCoverImage;
 
 		// updating the story
 		await prisma.story.update({

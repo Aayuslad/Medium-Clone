@@ -21,6 +21,8 @@ const createStory = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const user = req.user;
     const body = req.body;
     const coverImg = req.file;
+    console.log("create: ", body);
+    console.log("coverImg: ", coverImg);
     try {
         body.published = JSON.parse(req.body.published);
         body.topics = req.body.topics.split(",");
@@ -87,6 +89,8 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     const user = req.user;
     const body = req.body;
     const coverImg = req.file;
+    console.log("update: ", body);
+    console.log("coverImg: ", coverImg);
     try {
         body.published = JSON.parse(req.body.published);
         body.topics = req.body.topics.split(",");
@@ -146,7 +150,9 @@ const upadateStory = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             },
         });
         const currentCoverImage = existingPost === null || existingPost === void 0 ? void 0 : existingPost.coverImg;
-        const secure_url = coverImg ? yield (0, cloudinary_1.uploadImageCloudinary)(coverImg) : currentCoverImage;
+        const secure_url = coverImg
+            ? yield (0, cloudinary_1.uploadImageCloudinary)(coverImg, currentCoverImage)
+            : currentCoverImage;
         // updating the story
         yield prismaClient_1.prisma.story.update({
             where: {

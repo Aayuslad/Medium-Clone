@@ -78,7 +78,7 @@ const ComposeBlogPage = () => {
 		async function submitDebouncedValues() {
 			const formData = valueToFormData(debouncedValues as updateStorySchemaType);
 			formData.append("published", "false");
-			await storyStore.putStory(formData);
+			!storyStore.putStoryLoading && (await storyStore.putStory(formData));
 		}
 
 		if (debouncedValues) {

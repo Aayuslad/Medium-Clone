@@ -262,11 +262,11 @@ const ProfilePage = () => {
 										return (
 											<div
 												className="profile flex items-center gap-3 cursor-pointer"
-												onClick={() => navigate(`/user/${profile.id}`)}
+												onClick={() => navigate(`/user/${profile.id}/Home`)}
 											>
 												<div className="img h-7 w-7">
 													<img
-														src={profile.profileImg}
+														src={profile.profileImg || defaultProfile}
 														alt="profile image"
 														className="w-full aspect-square rounded-[50%]"
 													/>
