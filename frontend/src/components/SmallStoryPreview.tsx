@@ -77,7 +77,7 @@ const SmallStoryPreview = ({ story, index }: props) => {
 				<SaveButton storyId={story.id as string} />
 
 				<div className="-mr-2">
-					<MoreOptions />
+					<MoreOptions onClick={() => {}} />
 				</div>
 			</div>
 		</div>

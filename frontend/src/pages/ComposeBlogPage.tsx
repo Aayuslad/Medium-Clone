@@ -165,7 +165,7 @@ const ComposeBlogPage = () => {
 								onClick={() => setPriview(true)}
 							/>
 
-							<MoreOptions />
+							<MoreOptions onClick={() => {}}/>
 
 							<NotificationButton />
 

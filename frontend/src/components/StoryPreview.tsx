@@ -94,7 +94,7 @@ const StoryPreview = ({ story, version = "home" }: props) => {
 
 				{version === "home" && <RemoveButton id={story.id as string} />}
 
-				<MoreOptions />
+				<MoreOptions onClick={() => {}} />
 			</div>
 		</div>
 	);
