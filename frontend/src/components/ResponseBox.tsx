@@ -16,6 +16,7 @@ export type makeResponseSchemaType = {
 
 type props = {
 	storyId: string;
+	authorName: string;
 	responseBox: boolean;
 	responseCount: number;
 	setResponseCount: React.Dispatch<React.SetStateAction<number>>;
@@ -23,9 +24,10 @@ type props = {
 };
 
 const ResponseBox = ({
+	storyId,
+	authorName,
 	responseBox,
 	setResponseBox,
-	storyId,
 	responseCount = 0,
 	setResponseCount,
 }: props) => {
@@ -34,7 +36,7 @@ const ResponseBox = ({
 	const [responses, setResponses] = useState<responseType[]>();
 	const [page, setPage] = useState<number>(1);
 	const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-	const [allResponseLoaed, setAllResponseLoaded] = useState<boolean>(false);
+	const [allResponseLoaded, setAllResponseLoaded] = useState<boolean>(false);
 
 	const formik = useFormik<makeResponseSchemaType>({
 		initialValues: {
@@ -42,7 +44,6 @@ const ResponseBox = ({
 			storyId: "",
 		},
 		onSubmit: async (values) => {
-			console.log(values);
 			const response = await storyStore.makeResponse(values);
 			formik.resetForm();
 			if (response) {
@@ -59,7 +60,7 @@ const ResponseBox = ({
 	// response data fetching
 	useEffect(() => {
 		(async () => {
-			if (responseBox && !allResponseLoaed) {
+			if (responseBox && !allResponseLoaded) {
 				const responses = await storyStore.getResponseByStoryId({ storyId }, page);
 				responses && setResponses((state) => [...(state ?? []), ...responses]);
 				if (responses?.length === 0) {
@@ -67,7 +68,18 @@ const ResponseBox = ({
 				}
 			}
 		})();
-	}, [storyId, responseBox, page]);
+	}, [storyId, page]);
+	useEffect(() => {
+		(async () => {
+			if (responseBox && !responses) {
+				const responses = await storyStore.getResponseByStoryId({ storyId }, page);
+				responses && setResponses((state) => [...(state ?? []), ...responses]);
+				if (responses?.length === 0) {
+					setAllResponseLoaded(true);
+				}
+			}
+		})();
+	}, [storyId, responseBox]);
 
 	// Pagination logic
 	const handleScroll = () => {
@@ -165,7 +177,15 @@ const ResponseBox = ({
 
 			{(responses || storyStore.skeletonLoading) &&
 				responses?.map((response) => {
-					return <Response response={response} key={response.id} />;
+					return (
+						<Response
+							response={response}
+							key={response.id}
+							authorName={authorName}
+							setResponses={setResponses}
+							setResponseCount={setResponseCount}
+						/>
+					);
 				})}
 
 			{storyStore.skeletonLoading && <ResponseSkeleton />}

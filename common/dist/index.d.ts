@@ -201,4 +201,26 @@ export declare const makeReplyToResponseSchema: zod.ZodObject<{
     responseId: string;
 }>;
 export type makeReplyToResponseSchemaType = zod.infer<typeof makeReplyToResponseSchema>;
+export declare const editResponseSchema: zod.ZodObject<{
+    responseId: zod.ZodString;
+    content: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    content: string;
+    responseId: string;
+}, {
+    content: string;
+    responseId: string;
+}>;
+export type editResponseSchemaType = zod.infer<typeof editResponseSchema>;
+export declare const editReplySchema: zod.ZodObject<{
+    responseId: zod.ZodString;
+    content: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    content: string;
+    responseId: string;
+}, {
+    content: string;
+    responseId: string;
+}>;
+export type editReplySchemaType = zod.infer<typeof editReplySchema>;
 export {};

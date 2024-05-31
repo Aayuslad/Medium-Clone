@@ -154,9 +154,26 @@ export const makeResponseSchema = zod.object({
 
 export type makeResponseSchemaType = zod.infer<typeof makeResponseSchema>;
 
+//
 export const makeReplyToResponseSchema = zod.object({
 	content: zod.string(),
 	responseId: zod.string(),
 });
 
 export type makeReplyToResponseSchemaType = zod.infer<typeof makeReplyToResponseSchema>;
+
+//
+export const editResponseSchema = zod.object({
+	responseId: zod.string(),
+	content: zod.string(),
+});
+
+export type editResponseSchemaType = zod.infer<typeof editResponseSchema>;
+
+//
+export const editReplySchema = zod.object({
+	responseId: zod.string(),
+	content: zod.string(),
+});
+
+export type editReplySchemaType = zod.infer<typeof editReplySchema>;

@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@aayushlad/medium-clone-common": "^1.0.42",
+    "@aayushlad/medium-clone-common": "^1.0.43",
     "axios": "^1.6.8",
     "formik": "^2.4.5",
     "react": "^18.2.0",

@@ -8,9 +8,9 @@ const BlogsSkelitons = () => {
             <BlogsSkeliton />
             <BlogsSkeliton />
             <BlogsSkeliton />
-            <BlogsSkeliton />
-            <BlogsSkeliton />
-            <BlogsSkeliton />
+            {/* <BlogsSkeliton /> */}
+            {/* <BlogsSkeliton /> */}
+            {/* <BlogsSkeliton /> */}
         </>
     )
 }

@@ -1,7 +1,10 @@
+type props = {
+	onClick: () => void;
+};
 
-const MoreOptions = () => {
+const MoreOptions = ({ onClick }: props) => {
 	return (
-		<div className="more mx-2">
+		<button type="button" className="more mx-2" onClick={onClick}>
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
 				<path
 					fillRule="evenodd"
@@ -10,7 +13,7 @@ const MoreOptions = () => {
 					fill="currentColor"
 				></path>
 			</svg>
-		</div>
+		</button>
 	);
 };
 

@@ -82,7 +82,7 @@ const ReadStoryPage = () => {
 
 						<SaveButton storyId={story?.id as string} />
 
-						<MoreOptions />
+						<MoreOptions onClick={() => {}}/>
 					</div>
 
 					{story?.coverImg && (
@@ -118,7 +118,7 @@ const ReadStoryPage = () => {
 
 							<SaveButton storyId={story?.id as string} />
 
-							<MoreOptions />
+							<MoreOptions onClick={() => {}} />
 						</div>
 					</div>
 				</div>
@@ -163,6 +163,7 @@ const ReadStoryPage = () => {
 
 			<ResponseBox
 				responseBox={responseBox}
+				authorName={story?.author.userName as string}
 				responseCount={responseCount}
 				storyId={story?.id as string}
 				setResponseCount={setResponseCount}

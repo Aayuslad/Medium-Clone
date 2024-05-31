@@ -13,6 +13,7 @@ import TopicPage from "./pages/TopicPage";
 import RefineRecommendations from "./pages/RefineRecomandations";
 import StoriesPage from "./pages/StoriesPage";
 import NotificationsPage from "./pages/NotificationsPage";
+import ScrollToTop from "./components/scrollTop.";
 
 export default function App() {
 	const authStore = AuthStore();
@@ -23,6 +24,7 @@ export default function App() {
 
 	return (
 		<BrowserRouter>
+			<ScrollToTop />
 			<Routes>
 				<Route path="/" element={authStore.loading ? <LoadingPage /> : <HomePage />} />
 				<Route path="/:nav" element={authStore.loading ? <LoadingPage /> : <HomePage />} />

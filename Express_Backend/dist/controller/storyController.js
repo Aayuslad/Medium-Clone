@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReplyByResponseId = exports.makeReplyToResponse = exports.getResponseByStoryId = exports.makeResponse = exports.followTopic = exports.getTopic = exports.getReadingHistory = exports.getSavedStories = exports.deleteStory = exports.saveStory = exports.clapStory = exports.getStoriesByAuthor = exports.getStoriesByTopics = exports.getAllStories = exports.getStory = exports.upadateStory = exports.createStory = void 0;
+exports.deleteReply = exports.editReply = exports.getReplyByResponseId = exports.makeReplyToResponse = exports.deleteResponse = exports.editResponse = exports.getResponseByStoryId = exports.makeResponse = exports.followTopic = exports.getTopic = exports.getReadingHistory = exports.getSavedStories = exports.deleteStory = exports.saveStory = exports.clapStory = exports.getStoriesByAuthor = exports.getStoriesByTopics = exports.getAllStories = exports.getStory = exports.upadateStory = exports.createStory = void 0;
 const medium_clone_common_1 = require("@aayushlad/medium-clone-common");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prismaClient_1 = require("../db/prismaClient");
@@ -809,6 +809,7 @@ const makeResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
             },
         });
+        res.json(newResponse);
         // updating responseCount in story
         yield prismaClient_1.prisma.story.update({
             where: {
@@ -820,7 +821,7 @@ const makeResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
             },
         });
-        return res.json(newResponse);
+        return;
     }
     catch (error) {
         console.log(error);
@@ -868,7 +869,91 @@ const getResponseByStoryId = (req, res) => __awaiter(void 0, void 0, void 0, fun
 });
 exports.getResponseByStoryId = getResponseByStoryId;
 // edit a response
+const editResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const body = req.body;
+    try {
+        const { success } = medium_clone_common_1.editResponseSchema.safeParse(body);
+        if (!success) {
+            res.status(400);
+            return res.json({ message: "Invalid request parameters" });
+        }
+        // updating response
+        const response = yield prismaClient_1.prisma.response.update({
+            where: {
+                id: body.responseId,
+                userId: user === null || user === void 0 ? void 0 : user.id,
+            },
+            data: {
+                content: body.content,
+            },
+        });
+        const updatedResponse = yield prismaClient_1.prisma.response.findFirst({
+            where: {
+                id: response.id,
+            },
+            select: {
+                id: true,
+                content: true,
+                postedAt: true,
+                replyCount: true,
+                user: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                    },
+                },
+            },
+        });
+        return res.json(updatedResponse);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error editing response" });
+    }
+});
+exports.editResponse = editResponse;
 // delete a response
+const deleteResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const responseId = req.params.responseId;
+    try {
+        // deleting subresponses
+        yield prismaClient_1.prisma.subResponse.deleteMany({
+            where: {
+                responseId: responseId,
+            },
+        });
+        // deleting the response
+        const response = yield prismaClient_1.prisma.response.delete({
+            where: {
+                id: responseId,
+                userId: user === null || user === void 0 ? void 0 : user.id,
+            },
+        });
+        res.status(204).json({ message: "response deleted" });
+        // updating responseCount in story
+        yield prismaClient_1.prisma.story.update({
+            where: {
+                id: response.storyId,
+            },
+            data: {
+                responseCount: {
+                    decrement: 1,
+                },
+            },
+        });
+        return;
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error deleting response" });
+    }
+});
+exports.deleteResponse = deleteResponse;
 // make a reply to subresponse
 const makeReplyToResponse = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
@@ -958,9 +1043,86 @@ const getReplyByResponseId = (req, res) => __awaiter(void 0, void 0, void 0, fun
     catch (error) {
         console.log(error);
         res.status(400);
-        return res.json({ message: "Error fetching response" });
+        return res.json({ message: "Error fetching reply" });
     }
 });
 exports.getReplyByResponseId = getReplyByResponseId;
 // edit a reply to response
+const editReply = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const body = req.body;
+    try {
+        const { success } = medium_clone_common_1.editReplySchema.safeParse(body);
+        if (!success) {
+            res.status(400);
+            return res.json({ message: "Invalid request parameters" });
+        }
+        // creating new subresponse record
+        const reply = yield prismaClient_1.prisma.subResponse.update({
+            where: {
+                id: body.responseId,
+                userId: user === null || user === void 0 ? void 0 : user.id,
+            },
+            data: {
+                content: body.content,
+            },
+        });
+        const updatedReply = yield prismaClient_1.prisma.subResponse.findFirst({
+            where: {
+                id: reply.id,
+            },
+            select: {
+                id: true,
+                content: true,
+                postedAt: true,
+                user: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                    },
+                },
+            },
+        });
+        return res.json(updatedReply);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error editing reply" });
+    }
+});
+exports.editReply = editReply;
 // dekete a response
+const deleteReply = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const replyId = req.params.replyId;
+    try {
+        // deleting the response
+        const response = yield prismaClient_1.prisma.subResponse.delete({
+            where: {
+                id: replyId,
+                userId: user === null || user === void 0 ? void 0 : user.id,
+            },
+        });
+        res.status(204).json({ message: "reply deleted" });
+        // updating replyCount in reply
+        yield prismaClient_1.prisma.response.update({
+            where: {
+                id: response.responseId,
+            },
+            data: {
+                replyCount: {
+                    decrement: 1,
+                },
+            },
+        });
+        return;
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error deleting reply" });
+    }
+});
+exports.deleteReply = deleteReply;

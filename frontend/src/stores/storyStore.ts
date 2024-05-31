@@ -1,5 +1,7 @@
 import {
 	clapStorySchemaType,
+	editReplySchemaType,
+	editResponseSchemaType,
 	makeReplyToResponseSchemaType,
 	responseType,
 	storyType,
@@ -43,11 +45,15 @@ type storyStoreType = {
 		page: number,
 		pageSize?: number,
 	) => Promise<responseType[] | undefined>;
+	editResponse: (values: editResponseSchemaType) => Promise<responseType | undefined>;
+	deleteResponse: (responseId: string) => Promise<boolean>;
 	makeReplyToResponse: (values: makeReplyToResponseSchemaType) => Promise<responseType | undefined>;
 	getReplyByResponseId: (
 		values: { responseId: string },
 		page: number,
 	) => Promise<responseType[] | undefined>;
+	editReply: (values: editReplySchemaType) => Promise<responseType | undefined>;
+	deleteReply: (responseId: string) => Promise<void>;
 };
 
 export const StoryStore = create<storyStoreType>((set) => ({
@@ -115,18 +121,22 @@ export const StoryStore = create<storyStoreType>((set) => ({
 					.map((story) => {
 						if (story.topic === "For you") {
 							return {
-								...story,
+								topic: story.topic,
 								stories: [...story.stories, ...res.data],
 							};
 						}
 						return story;
 					})
-					.concat([
-						{
-							topic: "For you",
-							stories: res.data,
-						},
-					]),
+					.concat(
+						state.feedStories.every((story) => story.topic !== "For you")
+							? [
+									{
+										topic: "For you",
+										stories: res.data,
+									},
+							  ]
+							: [],
+					),
 			}));
 			if (res.data.length < pageSize) {
 				setAllStoriesLoaded(true);
@@ -304,6 +314,34 @@ export const StoryStore = create<storyStoreType>((set) => ({
 		}
 	},
 
+	editResponse: async (values) => {
+		try {
+			set({ buttonLoading: true });
+			const res = await axios.put("/api/v1/story/editResponse", values);
+			return res.data;
+		} catch (error) {
+			toast.error("Error while editing response!");
+		} finally {
+			set({ buttonLoading: false });
+		}
+	},
+
+	deleteResponse: async (responseId) => {
+		let flag = false;
+
+		try {
+			set({ buttonLoading: true });
+			await axios.delete(`/api/v1/story/deleteResponse/${responseId}`);
+			toast.success("Response deleted");
+			flag = true;
+		} catch (error) {
+			toast.error("Error while deleting response!");
+		} finally {
+			set({ buttonLoading: false });
+			return flag;
+		}
+	},
+
 	makeReplyToResponse: async (values) => {
 		try {
 			set({ buttonLoading: true });
@@ -325,6 +363,29 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			toast.error("Error while fetching replies!");
 		} finally {
 			set({ skeletonLoading: false });
+		}
+	},
+
+	editReply: async (values) => {
+		try {
+			set({ buttonLoading: true });
+			const res = await axios.put("/api/v1/story/editResponse", values);
+			return res.data;
+		} catch (error) {
+			toast.error("Error while editing response!");
+		} finally {
+			set({ buttonLoading: false });
+		}
+	},
+
+	deleteReply: async (responseId) => {
+		try {
+			set({ buttonLoading: true });
+			await axios.delete(`/api/v1/story/deleteResponse/${responseId}`);
+		} catch (error) {
+			toast.error("Error while deleting response!");
+		} finally {
+			set({ buttonLoading: false });
 		}
 	},
 }));

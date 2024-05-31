@@ -22,7 +22,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 		const userId: string = decodedPayload.id;
 
 		// Find user and attach to request
-		const user = await prisma.user.findUnique({
+		const user = await prisma.user.findUnique({	
 			where: {
 				id: userId,
 			},

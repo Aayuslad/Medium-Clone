@@ -2,7 +2,11 @@ import { Router } from "express";
 import {
 	clapStory,
 	createStory,
+	deleteReply,
+	deleteResponse,
 	deleteStory,
+	editReply,
+	editResponse,
 	followTopic,
 	getAllStories,
 	getReadingHistory,
@@ -38,6 +42,10 @@ router.post("/save", authMiddleware, saveStory);
 router.post("/followTopic", authMiddleware, followTopic);
 router.post("/makeResponse", authMiddleware, makeResponse);
 router.post("/makeReplyToResponse", authMiddleware, makeReplyToResponse);
+router.put("/editResponse", authMiddleware, editResponse);
+router.put("/editReply", authMiddleware, editReply);
+router.delete("/deleteResponse/:responseId", authMiddleware, deleteResponse);
+router.delete("/deleteReply/:replyId", authMiddleware, deleteReply);
 router.delete("/:id", authMiddleware, deleteStory);
 
 export default router;

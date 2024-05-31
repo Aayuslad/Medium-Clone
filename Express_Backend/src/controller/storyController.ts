@@ -3,6 +3,10 @@ import {
 	clapStorySchemaType,
 	createStorySchema,
 	createStorySchemaType,
+	editReplySchema,
+	editReplySchemaType,
+	editResponseSchema,
+	editResponseSchemaType,
 	followTopicSchema,
 	followTopicSchemaType,
 	makeReplyToResponseSchema,
@@ -25,7 +29,6 @@ export const createStory = async (req: Request, res: Response) => {
 
 	console.log("create: ", body);
 	console.log("coverImg: ", coverImg);
-	
 
 	try {
 		body.published = JSON.parse(req.body.published as string);
@@ -893,6 +896,8 @@ export const makeResponse = async (req: Request, res: Response) => {
 			},
 		});
 
+		res.json(newResponse);
+
 		// updating responseCount in story
 		await prisma.story.update({
 			where: {
@@ -905,7 +910,7 @@ export const makeResponse = async (req: Request, res: Response) => {
 			},
 		});
 
-		return res.json(newResponse);
+		return;
 	} catch (error) {
 		console.log(error);
 		res.status(400);
@@ -953,8 +958,97 @@ export const getResponseByStoryId = async (req: Request, res: Response) => {
 };
 
 // edit a response
+export const editResponse = async (req: Request, res: Response) => {
+	const user = req.user;
+	const body: editResponseSchemaType = req.body;
+
+	try {
+		const { success } = editResponseSchema.safeParse(body);
+		if (!success) {
+			res.status(400);
+			return res.json({ message: "Invalid request parameters" });
+		}
+
+		// updating response
+		const response = await prisma.response.update({
+			where: {
+				id: body.responseId,
+				userId: user?.id as string,
+			},
+			data: {
+				content: body.content,
+			},
+		});
+
+		const updatedResponse = await prisma.response.findFirst({
+			where: {
+				id: response.id,
+			},
+			select: {
+				id: true,
+				content: true,
+				postedAt: true,
+				replyCount: true,
+				user: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+					},
+				},
+			},
+		});
+
+		return res.json(updatedResponse);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error editing response" });
+	}
+};
 
 // delete a response
+export const deleteResponse = async (req: Request, res: Response) => {
+	const user = req.user;
+	const responseId = req.params.responseId;
+
+	try {
+		// deleting subresponses
+		await prisma.subResponse.deleteMany({
+			where: {
+				responseId: responseId,
+			},
+		});
+
+		// deleting the response
+		const response = await prisma.response.delete({
+			where: {
+				id: responseId,
+				userId: user?.id as string,
+			},
+		});
+
+		res.status(204).json({ message: "response deleted" });
+
+		// updating responseCount in story
+		await prisma.story.update({
+			where: {
+				id: response.storyId,
+			},
+			data: {
+				responseCount: {
+					decrement: 1,
+				},
+			},
+		});
+
+		return;
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error deleting response" });
+	}
+};
 
 // make a reply to subresponse
 export const makeReplyToResponse = async (req: Request, res: Response) => {
@@ -1051,10 +1145,91 @@ export const getReplyByResponseId = async (req: Request, res: Response) => {
 	} catch (error) {
 		console.log(error);
 		res.status(400);
-		return res.json({ message: "Error fetching response" });
+		return res.json({ message: "Error fetching reply" });
 	}
 };
 
 // edit a reply to response
+export const editReply = async (req: Request, res: Response) => {
+	const user = req.user;
+	const body: editReplySchemaType = req.body;
+
+	try {
+		const { success } = editReplySchema.safeParse(body);
+		if (!success) {
+			res.status(400);
+			return res.json({ message: "Invalid request parameters" });
+		}
+
+		// creating new subresponse record
+		const reply = await prisma.subResponse.update({
+			where: {
+				id: body.responseId,
+				userId: user?.id as string,
+			},
+			data: {
+				content: body.content,
+			},
+		});
+
+		const updatedReply = await prisma.subResponse.findFirst({
+			where: {
+				id: reply.id,
+			},
+			select: {
+				id: true,
+				content: true,
+				postedAt: true,
+				user: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+					},
+				},
+			},
+		});
+
+		return res.json(updatedReply);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error editing reply" });
+	}
+};
 
 // dekete a response
+export const deleteReply = async (req: Request, res: Response) => {
+	const user = req.user;
+	const replyId = req.params.replyId;
+
+	try {
+		// deleting the response
+		const response = await prisma.subResponse.delete({
+			where: {
+				id: replyId,
+				userId: user?.id as string,
+			},
+		});
+
+		res.status(204).json({ message: "reply deleted" });
+
+		// updating replyCount in reply
+		await prisma.response.update({
+			where: {
+				id: response.responseId,
+			},
+			data: {
+				replyCount: {
+					decrement: 1,
+				},
+			},
+		});
+
+		return;
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error deleting reply" });
+	}
+};

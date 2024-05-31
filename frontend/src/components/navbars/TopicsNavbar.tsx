@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import AddTopicButton from "../buttons/AddTopicbutton";
 import { AuthStore } from "../../stores/authStore";
-// import { StoryStore } from "../../stores/storyStore";
 import { useNavigate } from "react-router-dom";
 
 type Props = {
@@ -15,14 +14,11 @@ const TopicsNavbar = ({ currentNav, setCurrentNav }: Props) => {
 	const navRef = useRef<HTMLDivElement>(null);
 	const navigate = useNavigate();
 	const authStore = AuthStore();
-	// const storyStore = StoryStore();
 
 	const handleScroll = () => {
 		if (navRef.current) {
 			const target = navRef.current;
 			setIsAtStart(target.scrollLeft === 0);
-			console.log(target.scrollLeft + target.clientWidth, target.scrollWidth);
-
 			setIsAtEnd(target.scrollLeft + target.clientWidth >= target.scrollWidth);
 		}
 	};
@@ -53,19 +49,7 @@ const TopicsNavbar = ({ currentNav, setCurrentNav }: Props) => {
 						key={index}
 						onClick={() => {
 							navigate(`/${nav}`);
-
 							setCurrentNav(nav);
-
-							// const existingTopics = storyStore.feedStories.map((story) => story.topic);
-
-							// if (nav == "Following" && !existingTopics.includes(nav)) {
-							// 	storyStore.getStoriesByAuthor();
-							// 	return;
-							// }
-
-							// if (!existingTopics.includes(nav)) {
-							// 	storyStore.getStoriesByTopics({ topics: [nav] });
-							// }
 						}}
 						className={`cursor-pointer text-nowrap py-4 text-[14px] border-black ${
 							currentNav === nav ? "border-b" : ""

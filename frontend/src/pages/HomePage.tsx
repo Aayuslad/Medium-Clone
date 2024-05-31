@@ -13,29 +13,52 @@ import { useParams } from "react-router-dom";
 const HomePage = () => {
 	const storyStore = StoryStore();
 	const scrollDirection = useScrollDirection();
-	const { nav } = useParams<{ nav: string }>();
-	const [currentNav, setCurrentNav] = useState<string>("");
-	const [page, setPage] = useState<number>(1);
+	const { nav } = useParams<{ nav: string | undefined }>();
+	const [currentNav, setCurrentNav] = useState<string>(nav || "For you");
+	const [pageNumbers, setPageNumbers] = useState<{ [key: string]: number }>();
 	const mainContainerRef = useRef<HTMLDivElement | null>(null);
 	const [allStoriesLoaded, setAllStoriesLoaded] = useState<boolean>(false);
+
+	useEffect(() => {
+		if (nav === undefined) setCurrentNav("For you");
+	}, [nav]);
+
+	useEffect(() => {
+		function updatepageNumbers() {
+			setPageNumbers((prevPageNumbers) => ({
+				...(prevPageNumbers || {}),
+				[currentNav]: prevPageNumbers?.[currentNav] || 1,
+			}));
+		}
+
+		updatepageNumbers();
+	}, [currentNav]);
 
 	// data fetching
 	useEffect(() => {
 		const existingTopics = storyStore.feedStories.map((story) => story.topic);
-		if (nav === "For you" || (nav === undefined && !allStoriesLoaded)) {
-			storyStore.getStories(page, setAllStoriesLoaded);
-		} else if (nav === "Following" && !existingTopics.includes("Following")) {
+		const currentPage = pageNumbers?.[currentNav] || 1;
+
+		if (currentNav === "For you" && !allStoriesLoaded && !storyStore.skeletonLoading) {
+			console.log("fetching stories for you");
+
+			storyStore.getStories(currentPage, setAllStoriesLoaded);
+		} else if (
+			currentNav === "Following" &&
+			!existingTopics.includes("Following") &&
+			!storyStore.skeletonLoading
+		) {
 			storyStore.getStoriesByAuthor();
 		} else if (
-			nav !== "Following" &&
-			nav !== "For you" &&
-			nav !== undefined &&
-			!existingTopics.includes(nav as string)
+			currentNav !== "Following" &&
+			currentNav !== "For you" &&
+			currentNav !== undefined &&
+			!existingTopics.includes(currentNav as string) &&
+			!storyStore.skeletonLoading
 		) {
-			storyStore.getStoriesByTopics({ topics: [nav as string] });
+			storyStore.getStoriesByTopics({ topics: [currentNav as string] });
 		}
-		setCurrentNav(nav || "For you");
-	}, [nav, page]);
+	}, [currentNav, pageNumbers]);
 
 	// pagination logic
 	const handleScroll = () => {
@@ -45,7 +68,10 @@ const HomePage = () => {
 			const scrollPosition = window.pageYOffset + window.innerHeight;
 
 			if (scrollPosition >= containerBottom - 1) {
-				setPage((prevPage) => prevPage + 1);
+				setPageNumbers((prevPageNumbers) => ({
+					...prevPageNumbers,
+					[currentNav]: (prevPageNumbers?.[currentNav] || 1) + 1,
+				}));
 			}
 		}
 	};
@@ -56,8 +82,9 @@ const HomePage = () => {
 		return () => {
 			window.removeEventListener("scroll", handleScroll);
 		};
-	}, []);
+	}, [currentNav]);
 
+	console.log(storyStore.feedStories);
 	return (
 		<div className="HomePage" style={{ cursor: storyStore.cursorLoading ? "wait" : "default" }}>
 			<Header />

@@ -112,7 +112,7 @@ model Response {
   story        Story         @relation(fields: [storyId], references: [id])
   storyId      String // Foreign key to Story
   replyCount   Int           @default(0)
-  subResponses SubResponse[]
+  subResponses SubResponse[] 
 }
 
 model SubResponse {
