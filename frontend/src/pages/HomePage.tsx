@@ -39,9 +39,13 @@ const HomePage = () => {
 		const existingTopics = storyStore.feedStories.map((story) => story.topic);
 		const currentPage = pageNumbers?.[currentNav] || 1;
 
-		if (currentNav === "For you" && !allStoriesLoaded && !storyStore.skeletonLoading) {
-			console.log("fetching stories for you");
+		if (
+			storyStore.feedStories.find((story) => story.topic === currentNav)?.stories.length ===
+			(pageNumbers?.[currentNav] || 0) * 5
+		)
+			return;
 
+		if (currentNav === "For you" && !allStoriesLoaded && !storyStore.skeletonLoading) {
 			storyStore.getStories(currentPage, setAllStoriesLoaded);
 		} else if (
 			currentNav === "Following" &&
@@ -58,7 +62,7 @@ const HomePage = () => {
 		) {
 			storyStore.getStoriesByTopics({ topics: [currentNav as string] });
 		}
-	}, [currentNav, pageNumbers]);
+	}, [pageNumbers]);
 
 	// pagination logic
 	const handleScroll = () => {
@@ -84,7 +88,6 @@ const HomePage = () => {
 		};
 	}, [currentNav]);
 
-	console.log(storyStore.feedStories);
 	return (
 		<div className="HomePage" style={{ cursor: storyStore.cursorLoading ? "wait" : "default" }}>
 			<Header />
