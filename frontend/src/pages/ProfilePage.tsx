@@ -53,6 +53,9 @@ const ProfilePage = () => {
 				const user = await usersStore.getAnotherUser({ id });
 				formik.setValues({ about: user.about as string });
 				setUser(user);
+				setStories([]);
+				setAllStoriesLoaded(false)
+				setPage(1);
 			}
 		})();
 	}, [id]);
