@@ -21,8 +21,6 @@ const createStory = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const user = req.user;
     const body = req.body;
     const coverImg = req.file;
-    console.log("create: ", body);
-    console.log("coverImg: ", coverImg);
     try {
         body.published = JSON.parse(req.body.published);
         body.topics = req.body.topics.split(",");
@@ -303,7 +301,7 @@ const getStory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.getStory = getStory;
 const getAllStories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const page = parseInt(req.query.page) || 1;
-    const pageSize = parseInt(req.query.pageSize) || 10;
+    const pageSize = parseInt(req.query.pageSize) || 5;
     try {
         const stories = yield prismaClient_1.prisma.story.findMany({
             skip: (page - 1) * pageSize,
@@ -346,8 +344,12 @@ const getAllStories = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.getAllStories = getAllStories;
 const getStoriesByTopics = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const topics = req.params.topics;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
     try {
         const stories = yield prismaClient_1.prisma.story.findMany({
+            skip: (page - 1) * pageSize,
+            take: pageSize,
             where: {
                 published: true,
                 topics: {
@@ -396,6 +398,8 @@ const getStoriesByTopics = (req, res) => __awaiter(void 0, void 0, void 0, funct
 exports.getStoriesByTopics = getStoriesByTopics;
 const getStoriesByAuthor = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 5;
     try {
         const followdAuthors = yield prismaClient_1.prisma.user.findFirst({
             where: {
@@ -410,6 +414,8 @@ const getStoriesByAuthor = (req, res) => __awaiter(void 0, void 0, void 0, funct
             },
         });
         const stories = yield prismaClient_1.prisma.story.findMany({
+            skip: (page - 1) * pageSize,
+            take: pageSize,
             where: {
                 published: true,
                 author: {

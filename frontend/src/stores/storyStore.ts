@@ -29,8 +29,8 @@ type storyStoreType = {
 		page: number,
 		setAllStoriesLoaded: React.Dispatch<React.SetStateAction<boolean>>,
 	) => Promise<void>;
-	getStoriesByTopics: (values: { topics: string[] }) => Promise<void>;
-	getStoriesByAuthor: () => Promise<void>;
+	getStoriesByTopics: (values: { topics: string[]; currentPage: number }) => Promise<void>;
+	getStoriesByAuthor: (values: { currentPage: number }) => Promise<void>;
 	deleteStory: (value: { id: string }) => void;
 	clapStory: (value: clapStorySchemaType) => void;
 	saveStory: (value: clapStorySchemaType) => void;
@@ -151,15 +151,39 @@ export const StoryStore = create<storyStoreType>((set) => ({
 	getStoriesByTopics: async (values) => {
 		try {
 			set({ skeletonLoading: true });
-			const res = await axios.get(`/api/v1/story/getStoriesByTopics/${values.topics}`);
+			const res = await axios.get(
+				`/api/v1/story/getStoriesByTopics/${values.topics}?page=${values.currentPage}`,
+			);
+			// set((state) => ({
+			// 	feedStories: [
+			// 		...state.feedStories,
+			// 		{
+			// 			topic: res.data.topic,
+			// 			stories: res.data.stories,
+			// 		},
+			// 	],
+			// }));
 			set((state) => ({
-				feedStories: [
-					...state.feedStories,
-					{
-						topic: res.data.topic,
-						stories: res.data.stories,
-					},
-				],
+				feedStories: state.feedStories
+					.map((story) => {
+						if (story.topic === res.data.topic) {
+							return {
+								topic: story.topic,
+								stories: [...story.stories, ...res.data.stories],
+							};
+						}
+						return story;
+					})
+					.concat(
+						state.feedStories.every((story) => story.topic !== res.data.topic)
+							? [
+									{
+										topic: res.data.topic,
+										stories: res.data.stories,
+									},
+							  ]
+							: [],
+					),
 			}));
 		} catch (error) {
 			console.log(error);
@@ -170,18 +194,41 @@ export const StoryStore = create<storyStoreType>((set) => ({
 		}
 	},
 
-	getStoriesByAuthor: async () => {
+	getStoriesByAuthor: async ({ currentPage }) => {
 		try {
 			set({ skeletonLoading: true });
-			const res = await axios.get(`/api/v1/story/getStoriesByAuthor`);
+			const res = await axios.get(`/api/v1/story/getStoriesByAuthor?page=${currentPage}`);
+			// set((state) => ({
+			// 	feedStories: [
+			// 		...state.feedStories,
+			// 		{
+			// 			topic: res.data.topic,
+			// 			stories: res.data.stories,
+			// 		},
+			// 	],
+			// }));
+
 			set((state) => ({
-				feedStories: [
-					...state.feedStories,
-					{
-						topic: res.data.topic,
-						stories: res.data.stories,
-					},
-				],
+				feedStories: state.feedStories
+					.map((story) => {
+						if (story.topic === res.data.topic) {
+							return {
+								topic: story.topic,
+								stories: [...story.stories, ...res.data.stories],
+							};
+						}
+						return story;
+					})
+					.concat(
+						state.feedStories.every((story) => story.topic !== res.data.topic)
+							? [
+									{
+										topic: res.data.topic,
+										stories: res.data.stories,
+									},
+							  ]
+							: [],
+					),
 			}));
 		} catch (error) {
 			toast.error("Error while fetching Story!");

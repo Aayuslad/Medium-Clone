@@ -20,15 +20,11 @@ import { Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { prisma } from "../db/prismaClient";
 import { uploadImageCloudinary } from "../utils/cloudinary";
-import zod from "zod";
 
 export const createStory = async (req: Request, res: Response) => {
 	const user = req.user;
 	const body: createStorySchemaType = req.body;
 	const coverImg = req.file;
-
-	console.log("create: ", body);
-	console.log("coverImg: ", coverImg);
 
 	try {
 		body.published = JSON.parse(req.body.published as string);
@@ -336,7 +332,7 @@ export const getStory = async (req: Request, res: Response) => {
 
 export const getAllStories = async (req: Request, res: Response) => {
 	const page = parseInt(req.query.page as string) || 1;
-	const pageSize = parseInt(req.query.pageSize as string) || 10;
+	const pageSize = parseInt(req.query.pageSize as string) || 5;
 
 	try {
 		const stories = await prisma.story.findMany({
@@ -384,9 +380,13 @@ export const getAllStories = async (req: Request, res: Response) => {
 
 export const getStoriesByTopics = async (req: Request, res: Response) => {
 	const topics = req.params.topics;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 10;
 
 	try {
 		const stories = await prisma.story.findMany({
+			skip: (page - 1) * pageSize,
+			take: pageSize,
 			where: {
 				published: true,
 				topics: {
@@ -439,6 +439,8 @@ export const getStoriesByTopics = async (req: Request, res: Response) => {
 
 export const getStoriesByAuthor = async (req: Request, res: Response) => {
 	const user = req.user;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 5;
 
 	try {
 		const followdAuthors = await prisma.user.findFirst({
@@ -455,6 +457,8 @@ export const getStoriesByAuthor = async (req: Request, res: Response) => {
 		});
 
 		const stories = await prisma.story.findMany({
+			skip: (page - 1) * pageSize,
+			take: pageSize,
 			where: {
 				published: true,
 				author: {

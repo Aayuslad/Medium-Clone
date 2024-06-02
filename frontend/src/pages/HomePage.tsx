@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import StoryPreview from "../components/StoryPreview";
+import { useParams } from "react-router-dom";
 import Header from "../components/Header";
+import StoryPreview from "../components/StoryPreview";
+import TopicsNavbar from "../components/navbars/TopicsNavbar";
 import StorySkeletons from "../components/skelitons/StorySkeletons";
+import LeftContainer from "../components/wrapperComponents/LeftContainer";
+import MainConntainer from "../components/wrapperComponents/MainContainer";
+import RightContainer from "../components/wrapperComponents/RightContainer";
 import useScrollDirection from "../hooks/useScrollDirection";
 import { StoryStore } from "../stores/storyStore";
-import MainConntainer from "../components/wrapperComponents/MainContainer";
-import LeftContainer from "../components/wrapperComponents/LeftContainer";
-import RightContainer from "../components/wrapperComponents/RightContainer";
-import TopicsNavbar from "../components/navbars/TopicsNavbar";
-import { useParams } from "react-router-dom";
 
 const HomePage = () => {
 	const storyStore = StoryStore();
@@ -34,7 +34,7 @@ const HomePage = () => {
 		updatepageNumbers();
 	}, [currentNav]);
 
-	// data fetching
+	// data fetching logic
 	useEffect(() => {
 		const existingTopics = storyStore.feedStories.map((story) => story.topic);
 		const currentPage = pageNumbers?.[currentNav] || 1;
@@ -42,25 +42,24 @@ const HomePage = () => {
 		if (
 			storyStore.feedStories.find((story) => story.topic === currentNav)?.stories.length ===
 			(pageNumbers?.[currentNav] || 0) * 5
-		)
+		) {
 			return;
+		}
 
-		if (currentNav === "For you" && !allStoriesLoaded && !storyStore.skeletonLoading) {
-			storyStore.getStories(currentPage, setAllStoriesLoaded);
-		} else if (
-			currentNav === "Following" &&
-			!existingTopics.includes("Following") &&
-			!storyStore.skeletonLoading
-		) {
-			storyStore.getStoriesByAuthor();
-		} else if (
-			currentNav !== "Following" &&
-			currentNav !== "For you" &&
-			currentNav !== undefined &&
-			!existingTopics.includes(currentNav as string) &&
-			!storyStore.skeletonLoading
-		) {
-			storyStore.getStoriesByTopics({ topics: [currentNav as string] });
+		if (storyStore.skeletonLoading) return;
+
+		switch (currentNav) {
+			case "For you":
+				if (!allStoriesLoaded) storyStore.getStories(currentPage, setAllStoriesLoaded);
+				break;
+
+			case "Following":
+				storyStore.getStoriesByAuthor({ currentPage });
+				break;
+
+			default:
+				if (currentNav !== undefined && !existingTopics.includes(currentNav))
+					storyStore.getStoriesByTopics({ topics: [currentNav], currentPage });
 		}
 	}, [pageNumbers]);
 
