@@ -3,6 +3,7 @@ import {
     followUser,
     getUser,
     getUserProfile,
+    getUserStories,
     signInUser,
     signOutUser,
     signUpUser,
@@ -18,6 +19,7 @@ router.post("/signin", signInUser);
 router.post("/signOut", signOutUser);
 router.get("/", authMiddleware, getUser);
 router.get("/userProfile/:id", getUserProfile);
+router.get("/userStories/:id", getUserStories);
 router.put("/", authMiddleware, upload.single("profileImg"), updateUser);
 router.put("/aboutSection", authMiddleware, updateUserAboutSection);
 router.post("/followUser", authMiddleware, followUser);

@@ -13,6 +13,7 @@ router.post("/signin", userController_1.signInUser);
 router.post("/signOut", userController_1.signOutUser);
 router.get("/", authMiddleware_1.default, userController_1.getUser);
 router.get("/userProfile/:id", userController_1.getUserProfile);
+router.get("/userStories/:id", userController_1.getUserStories);
 router.put("/", authMiddleware_1.default, multerMiddleware_1.upload.single("profileImg"), userController_1.updateUser);
 router.put("/aboutSection", authMiddleware_1.default, userController_1.updateUserAboutSection);
 router.post("/followUser", authMiddleware_1.default, userController_1.followUser);

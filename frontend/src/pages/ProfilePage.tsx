@@ -1,4 +1,4 @@
-import { userType } from "@aayushlad/medium-clone-common";
+import { storyType, userType } from "@aayushlad/medium-clone-common";
 import { useFormik } from "formik";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -10,6 +10,7 @@ import BigFollowFollowingButton from "../components/buttons/BigFollowFollowingBu
 import RegularButton from "../components/buttons/RegularButton";
 import RegularLeftContainerNavbar from "../components/navbars/RegularLeftContainerNavbar";
 import ProfilePgaeSkeliton from "../components/skelitons/ProfilePageSkeleton";
+import BlogsSkelitons from "../components/skelitons/StorySkeletons";
 import LeftContainer from "../components/wrapperComponents/LeftContainer";
 import MainConntainer from "../components/wrapperComponents/MainContainer";
 import RightContainer from "../components/wrapperComponents/RightContainer";
@@ -23,10 +24,14 @@ const ProfilePage = () => {
 	const navigate = useNavigate();
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const [user, setUser] = useState<userType>();
+	const [stories, setStories] = useState<storyType[]>();
+	const [allStoriesLoaded, setAllStoriesLoaded] = useState<boolean>(false);
 	const [profileEdit, setProfileEdit] = useState<boolean>(false);
 	const [aboutFormState, setAboutFormState] = useState<boolean>(true);
 	const [currentNav, setCurrentNav] = useState<string>("");
 	const { nav } = useParams<{ nav: string }>();
+	const mainContainerRef = useRef<HTMLDivElement | null>(null);
+	const [page, setPage] = useState<number>(1);
 
 	const formik = useFormik({
 		initialValues: {
@@ -52,6 +57,16 @@ const ProfilePage = () => {
 		})();
 	}, [id]);
 
+	//fetching user stories
+	useEffect(() => {
+		(async () => {
+			if (user && id && !allStoriesLoaded) {
+				const stories = await usersStore.getUserStories({ id, page, setAllStoriesLoaded });
+				stories && setStories((state) => [...(state || []), ...stories]);
+			}
+		})();
+	}, [page, user]);
+
 	// changing textaria height according to content
 	useEffect(() => {
 		const content = document.getElementById("about") as HTMLTextAreaElement;
@@ -76,12 +91,32 @@ const ProfilePage = () => {
 		setCurrentNav(nav || "Home");
 	}, []);
 
+	const handleScroll = () => {
+		if (mainContainerRef.current) {
+			const mainContainer = mainContainerRef.current;
+			const containerBottom = mainContainer.offsetTop + mainContainer.offsetHeight;
+			const scrollPosition = window.pageYOffset + window.innerHeight;
+
+			if (scrollPosition >= containerBottom - 1) {
+				setPage((state) => state + 1);
+			}
+		}
+	};
+
+	// scroll event
+	useEffect(() => {
+		window.addEventListener("scroll", handleScroll);
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+		};
+	}, [currentNav]);
+
 	return (
 		<div className="ProfilePage">
 			<Header />
 
-			{!usersStore.skeletonLoading && (
-				<MainConntainer>
+			{(user || !usersStore.skeletonLoading) && (
+				<MainConntainer ref={mainContainerRef}>
 					<LeftContainer>
 						{/* Profile */}
 						<div className="profile lg:hidden flex items-center gap-6 pt-8 pb-4 px-1">
@@ -137,9 +172,11 @@ const ProfilePage = () => {
 						{/* User stories */}
 						{currentNav === "Home" && (
 							<div className="stories">
-								{user?.stories?.map((story, index) => (
+								{stories?.map((story, index) => (
 									<StoryPreview story={story} key={index} version="profile" />
 								))}
+
+								{usersStore.skeletonLoading && <BlogsSkelitons />}
 							</div>
 						)}
 
@@ -216,8 +253,8 @@ const ProfilePage = () => {
 
 					<RightContainer>
 						{/* Profile */}
-						<div className="Profile flex items-center justify-between">
-							<div className="profile-img w-20 pt-10 pb-3">
+						<div className="Profile flex items-center justify-between mt-16 mb-4">
+							<div className="profile-img h-[80px] w-[80px] rounded-full aspect-square flex items-center justify-center overflow-hidden">
 								<img
 									src={(user?.profileImg as string) || defaultProfile}
 									alt=""
@@ -228,7 +265,7 @@ const ProfilePage = () => {
 							{user?.id === authStore.user?.id && (
 								<button
 									type="button"
-									className="text-sm font-semibold text-green-600 p-2"
+									className="text-sm font-semibold text-green-600 "
 									onClick={() => setProfileEdit(true)}
 								>
 									Edit Profile
@@ -284,7 +321,7 @@ const ProfilePage = () => {
 				</MainConntainer>
 			)}
 
-			{usersStore.skeletonLoading && <ProfilePgaeSkeliton />}
+			{!user && usersStore.skeletonLoading && <ProfilePgaeSkeliton />}
 
 			{/* Edit user profile compoent */}
 			{profileEdit && <EditProfile onCloseClick={() => setProfileEdit(false)} />}

@@ -17,14 +17,6 @@ import { prisma } from "../db/prismaClient";
 import { uploadImageCloudinary } from "../utils/cloudinary";
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// const signUpUserSchema = zod.object({
-// 	userName: zod.string().regex(/^\S*$/),
-// 	email: zod.string().email(),
-// 	password: zod.string().min(6),
-// });
-
-// type signUpUserSchemaType = zod.infer<typeof signUpUserSchema>;
-
 export const signUpUser = async (req: Request, res: Response) => {
 	const body: signUpUserSchemaType = req.body;
 
@@ -232,31 +224,31 @@ export const getUserProfile = async (req: Request, res: Response) => {
 					},
 					take: 5,
 				},
-				stories: {
-					select: {
-						id: true,
-						title: true,
-						description: true,
-						postedOn: true,
-						clapsCount: true,
-						responseCount: true,
-						topics: {
-							select: {
-								topic: true,
-							},
-						},
-						coverImg: true,
-						author: {
-							select: {
-								id: true,
-								userName: true,
-								bio: true,
-								email: true,
-								profileImg: true,
-							},
-						},
-					},
-				},
+				// stories: {
+				// 	select: {
+				// 		id: true,
+				// 		title: true,
+				// 		description: true,
+				// 		postedOn: true,
+				// 		clapsCount: true,
+				// 		responseCount: true,
+				// 		topics: {
+				// 			select: {
+				// 				topic: true,
+				// 			},
+				// 		},
+				// 		coverImg: true,
+				// 		author: {
+				// 			select: {
+				// 				id: true,
+				// 				userName: true,
+				// 				bio: true,
+				// 				email: true,
+				// 				profileImg: true,
+				// 			},
+				// 		},
+				// 	},
+				// },
 			},
 		});
 
@@ -267,8 +259,6 @@ export const getUserProfile = async (req: Request, res: Response) => {
 
 		// function that fetches user data
 		async function fetchUser(id: string) {
-			console.log(id);
-
 			const res = await prisma.user.findUnique({
 				where: {
 					id: id,
@@ -286,10 +276,10 @@ export const getUserProfile = async (req: Request, res: Response) => {
 
 		const transformedUser = {
 			...user,
-			stories: user?.stories.map((story) => ({
-				...story,
-				topics: story.topics.map((topic) => topic.topic),
-			})),
+			// stories: user?.stories.map((story) => ({
+			// 	...story,
+			// 	topics: story.topics.map((topic) => topic.topic),
+			// })),
 			topFiveFollowing: await Promise.all(
 				user.following.map(async (following) => await fetchUser(following.followingId)),
 			),
@@ -304,9 +294,59 @@ export const getUserProfile = async (req: Request, res: Response) => {
 	}
 };
 
+export const getUserStories = async (req: Request, res: Response) => {
+	const id = req.params.id;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 5;
+
+	try {
+		const stories = await prisma.story.findMany({
+			skip: (page - 1) * pageSize,
+			take: pageSize,
+			where: {
+				authorId: id,
+				published: true,
+			},
+			select: {
+				id: true,
+				title: true,
+				description: true,
+				postedOn: true,
+				clapsCount: true,
+				responseCount: true,
+				topics: {
+					select: {
+						topic: true,
+					},
+				},
+				coverImg: true,
+				author: {
+					select: {
+						id: true,
+						userName: true,
+						bio: true,
+						email: true,
+						profileImg: true,
+					},
+				},
+			},
+		});
+
+		const modifiedStories = stories.map((story) => ({
+			...story,
+			topics: story.topics.map((topic) => topic.topic),
+		}));
+
+		return res.json(modifiedStories);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error while fetching user data" });
+	}
+};
+
 export const updateUser = async (req: Request, res: Response) => {
 	const user = req.user;
-
 	const body: updateUserSchemaType = req.body;
 	const profileImg = req.file;
 

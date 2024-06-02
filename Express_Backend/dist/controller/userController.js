@@ -12,19 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.followUser = exports.updateUserAboutSection = exports.updateUser = exports.getUserProfile = exports.getUser = exports.signOutUser = exports.signInUser = exports.signUpUser = void 0;
+exports.followUser = exports.updateUserAboutSection = exports.updateUser = exports.getUserStories = exports.getUserProfile = exports.getUser = exports.signOutUser = exports.signInUser = exports.signUpUser = void 0;
 const medium_clone_common_1 = require("@aayushlad/medium-clone-common");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prismaClient_1 = require("../db/prismaClient");
 const cloudinary_1 = require("../utils/cloudinary");
 const JWT_SECRET = process.env.JWT_SECRET;
-// const signUpUserSchema = zod.object({
-// 	userName: zod.string().regex(/^\S*$/),
-// 	email: zod.string().email(),
-// 	password: zod.string().min(6),
-// });
-// type signUpUserSchemaType = zod.infer<typeof signUpUserSchema>;
 const signUpUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const body = req.body;
     try {
@@ -212,31 +206,31 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     },
                     take: 5,
                 },
-                stories: {
-                    select: {
-                        id: true,
-                        title: true,
-                        description: true,
-                        postedOn: true,
-                        clapsCount: true,
-                        responseCount: true,
-                        topics: {
-                            select: {
-                                topic: true,
-                            },
-                        },
-                        coverImg: true,
-                        author: {
-                            select: {
-                                id: true,
-                                userName: true,
-                                bio: true,
-                                email: true,
-                                profileImg: true,
-                            },
-                        },
-                    },
-                },
+                // stories: {
+                // 	select: {
+                // 		id: true,
+                // 		title: true,
+                // 		description: true,
+                // 		postedOn: true,
+                // 		clapsCount: true,
+                // 		responseCount: true,
+                // 		topics: {
+                // 			select: {
+                // 				topic: true,
+                // 			},
+                // 		},
+                // 		coverImg: true,
+                // 		author: {
+                // 			select: {
+                // 				id: true,
+                // 				userName: true,
+                // 				bio: true,
+                // 				email: true,
+                // 				profileImg: true,
+                // 			},
+                // 		},
+                // 	},
+                // },
             },
         });
         if (!user) {
@@ -246,7 +240,6 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
         // function that fetches user data
         function fetchUser(id) {
             return __awaiter(this, void 0, void 0, function* () {
-                console.log(id);
                 const res = yield prismaClient_1.prisma.user.findUnique({
                     where: {
                         id: id,
@@ -261,7 +254,12 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 return res;
             });
         }
-        const transformedUser = Object.assign(Object.assign({}, user), { stories: user === null || user === void 0 ? void 0 : user.stories.map((story) => (Object.assign(Object.assign({}, story), { topics: story.topics.map((topic) => topic.topic) }))), topFiveFollowing: yield Promise.all(user.following.map((following) => __awaiter(void 0, void 0, void 0, function* () { return yield fetchUser(following.followingId); }))), following: "" });
+        const transformedUser = Object.assign(Object.assign({}, user), { 
+            // stories: user?.stories.map((story) => ({
+            // 	...story,
+            // 	topics: story.topics.map((topic) => topic.topic),
+            // })),
+            topFiveFollowing: yield Promise.all(user.following.map((following) => __awaiter(void 0, void 0, void 0, function* () { return yield fetchUser(following.followingId); }))), following: "" });
         return res.json(transformedUser);
     }
     catch (error) {
@@ -271,6 +269,52 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.getUserProfile = getUserProfile;
+const getUserStories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.params.id;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 5;
+    try {
+        const stories = yield prismaClient_1.prisma.story.findMany({
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+            where: {
+                authorId: id,
+                published: true,
+            },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                postedOn: true,
+                clapsCount: true,
+                responseCount: true,
+                topics: {
+                    select: {
+                        topic: true,
+                    },
+                },
+                coverImg: true,
+                author: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        bio: true,
+                        email: true,
+                        profileImg: true,
+                    },
+                },
+            },
+        });
+        const modifiedStories = stories.map((story) => (Object.assign(Object.assign({}, story), { topics: story.topics.map((topic) => topic.topic) })));
+        return res.json(modifiedStories);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error while fetching user data" });
+    }
+});
+exports.getUserStories = getUserStories;
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     const body = req.body;
