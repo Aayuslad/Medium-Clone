@@ -16,7 +16,7 @@ const TopicPage = () => {
 			await storyStore.getTopic(topic as string);
 		})();
 		(async function () {
-			await storyStore.getStoriesByTopics({ topics: [topic as string] });
+			await storyStore.getStoriesByTopics({ topics: [topic as string], currentPage: 1 });
 		})();
 	}, [topic]);
 
@@ -47,7 +47,7 @@ const TopicPage = () => {
 										<StoryPreview key={story.id} story={story} version="profile" />
 									))}
 							</div>
-							
+
 							<div className="stories hidden md:flex flex-wrap items-stretch justify-around gap-x-8">
 								{storyStore.feedStories
 									.find((story) => story.topic === topic)
