@@ -345,7 +345,7 @@ exports.getAllStories = getAllStories;
 const getStoriesByTopics = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const topics = req.params.topics;
     const page = parseInt(req.query.page) || 1;
-    const pageSize = parseInt(req.query.pageSize) || 10;
+    const pageSize = parseInt(req.query.pageSize) || 5;
     try {
         const stories = yield prismaClient_1.prisma.story.findMany({
             skip: (page - 1) * pageSize,

@@ -25,12 +25,31 @@ type storyStoreType = {
 	postStory: (value: FormData) => Promise<string>;
 	putStory: (value: FormData) => Promise<boolean>;
 	getStory: (value: { id: string }) => Promise<storyType | undefined>;
-	getStories: (
-		page: number,
-		setAllStoriesLoaded: React.Dispatch<React.SetStateAction<boolean>>,
-	) => Promise<void>;
-	getStoriesByTopics: (values: { topics: string[]; currentPage: number }) => Promise<void>;
-	getStoriesByAuthor: (values: { currentPage: number }) => Promise<void>;
+	getStories: (values: {
+		currentPage: number;
+		setIsAllStoriesLoaded: React.Dispatch<
+			React.SetStateAction<{
+				[key: string]: Boolean;
+			}>
+		>;
+	}) => Promise<void>;
+	getStoriesByTopics: (values: {
+		topics: string[];
+		currentPage: number;
+		setIsAllStoriesLoaded: React.Dispatch<
+			React.SetStateAction<{
+				[key: string]: Boolean;
+			}>
+		>;
+	}) => Promise<void>;
+	getStoriesByAuthor: (values: {
+		currentPage: number;
+		setIsAllStoriesLoaded: React.Dispatch<
+			React.SetStateAction<{
+				[key: string]: Boolean;
+			}>
+		>;
+	}) => Promise<void>;
 	deleteStory: (value: { id: string }) => void;
 	clapStory: (value: clapStorySchemaType) => void;
 	saveStory: (value: clapStorySchemaType) => void;
@@ -112,10 +131,10 @@ export const StoryStore = create<storyStoreType>((set) => ({
 		}
 	},
 
-	getStories: async (page = 1, setAllStoriesLoaded, pageSize = 5) => {
+	getStories: async (values) => {
 		try {
 			set({ skeletonLoading: true });
-			const res = await axios.get(`/api/v1/story/bulk?page=${page}&pageSize=${pageSize}`);
+			const res = await axios.get(`/api/v1/story/bulk?page=${values.currentPage}`);
 			set((state) => ({
 				feedStories: state.feedStories
 					.map((story) => {
@@ -138,8 +157,8 @@ export const StoryStore = create<storyStoreType>((set) => ({
 							: [],
 					),
 			}));
-			if (res.data.length < pageSize) {
-				setAllStoriesLoaded(true);
+			if (res.data.length < 5) {
+				values.setIsAllStoriesLoaded({ "For you": true });
 			}
 		} catch (error) {
 			toast.error("Error while fetching Story!");
@@ -154,15 +173,6 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			const res = await axios.get(
 				`/api/v1/story/getStoriesByTopics/${values.topics}?page=${values.currentPage}`,
 			);
-			// set((state) => ({
-			// 	feedStories: [
-			// 		...state.feedStories,
-			// 		{
-			// 			topic: res.data.topic,
-			// 			stories: res.data.stories,
-			// 		},
-			// 	],
-			// }));
 			set((state) => ({
 				feedStories: state.feedStories
 					.map((story) => {
@@ -185,29 +195,22 @@ export const StoryStore = create<storyStoreType>((set) => ({
 							: [],
 					),
 			}));
+
+			if (res.data.stories.length < 5) {
+				values.setIsAllStoriesLoaded({ [res.data.topic]: true });
+			}
 		} catch (error) {
 			console.log(error);
-
 			toast.error("Error while fetching Story!");
 		} finally {
 			set({ skeletonLoading: false });
 		}
 	},
 
-	getStoriesByAuthor: async ({ currentPage }) => {
+	getStoriesByAuthor: async (values) => {
 		try {
 			set({ skeletonLoading: true });
-			const res = await axios.get(`/api/v1/story/getStoriesByAuthor?page=${currentPage}`);
-			// set((state) => ({
-			// 	feedStories: [
-			// 		...state.feedStories,
-			// 		{
-			// 			topic: res.data.topic,
-			// 			stories: res.data.stories,
-			// 		},
-			// 	],
-			// }));
-
+			const res = await axios.get(`/api/v1/story/getStoriesByAuthor?page=${values.currentPage}`);
 			set((state) => ({
 				feedStories: state.feedStories
 					.map((story) => {
@@ -230,6 +233,10 @@ export const StoryStore = create<storyStoreType>((set) => ({
 							: [],
 					),
 			}));
+
+			if (res.data.stories.length < 5) {
+				values.setIsAllStoriesLoaded({ Following: true });
+			}
 		} catch (error) {
 			toast.error("Error while fetching Story!");
 		} finally {

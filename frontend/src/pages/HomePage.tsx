@@ -13,11 +13,11 @@ import { StoryStore } from "../stores/storyStore";
 const HomePage = () => {
 	const storyStore = StoryStore();
 	const scrollDirection = useScrollDirection();
+	const mainContainerRef = useRef<HTMLDivElement | null>(null);
 	const { nav } = useParams<{ nav: string | undefined }>();
 	const [currentNav, setCurrentNav] = useState<string>(nav || "For you");
 	const [pageNumbers, setPageNumbers] = useState<{ [key: string]: number }>();
-	const mainContainerRef = useRef<HTMLDivElement | null>(null);
-	const [allStoriesLoaded, setAllStoriesLoaded] = useState<boolean>(false);
+	const [isAllStoriesLoded, setIsAllStoriesLoaded] = useState<{ [key: string]: Boolean }>({});
 
 	useEffect(() => {
 		if (nav === undefined) setCurrentNav("For you");
@@ -34,9 +34,14 @@ const HomePage = () => {
 		updatepageNumbers();
 	}, [currentNav]);
 
+	useEffect(() => {
+		if (!(currentNav in isAllStoriesLoded)) {
+			isAllStoriesLoded[currentNav] = false;
+		}
+	}, [currentNav]);
+
 	// data fetching logic
 	useEffect(() => {
-		const existingTopics = storyStore.feedStories.map((story) => story.topic);
 		const currentPage = pageNumbers?.[currentNav] || 1;
 
 		if (
@@ -50,16 +55,22 @@ const HomePage = () => {
 
 		switch (currentNav) {
 			case "For you":
-				if (!allStoriesLoaded) storyStore.getStories(currentPage, setAllStoriesLoaded);
+				if (!isAllStoriesLoded?.["For you"])
+					storyStore.getStories({ currentPage, setIsAllStoriesLoaded });
 				break;
 
 			case "Following":
-				storyStore.getStoriesByAuthor({ currentPage });
+				if (!isAllStoriesLoded?.["Following"])
+					storyStore.getStoriesByAuthor({ currentPage, setIsAllStoriesLoaded });
 				break;
 
 			default:
-				if (currentNav !== undefined && !existingTopics.includes(currentNav))
-					storyStore.getStoriesByTopics({ topics: [currentNav], currentPage });
+				if (currentNav !== undefined && !isAllStoriesLoded?.[currentNav])
+					storyStore.getStoriesByTopics({
+						topics: [currentNav],
+						currentPage,
+						setIsAllStoriesLoaded,
+					});
 		}
 	}, [pageNumbers]);
 

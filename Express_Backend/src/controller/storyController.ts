@@ -381,7 +381,7 @@ export const getAllStories = async (req: Request, res: Response) => {
 export const getStoriesByTopics = async (req: Request, res: Response) => {
 	const topics = req.params.topics;
 	const page = parseInt(req.query.page as string) || 1;
-	const pageSize = parseInt(req.query.pageSize as string) || 10;
+	const pageSize = parseInt(req.query.pageSize as string) || 5;
 
 	try {
 		const stories = await prisma.story.findMany({
