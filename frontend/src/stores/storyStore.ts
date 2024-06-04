@@ -36,7 +36,7 @@ type storyStoreType = {
 	getStoriesByTopics: (values: {
 		topics: string[];
 		currentPage: number;
-		setIsAllStoriesLoaded: React.Dispatch<
+		setIsAllStoriesLoaded?: React.Dispatch<
 			React.SetStateAction<{
 				[key: string]: Boolean;
 			}>
@@ -210,7 +210,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 					),
 			}));
 
-			if (res.data.stories.length < 5) {
+			if (res.data.stories.length < 5 && values.setIsAllStoriesLoaded) {
 				values.setIsAllStoriesLoaded({ [res.data.topic]: true });
 			}
 		} catch (error) {
@@ -304,7 +304,6 @@ export const StoryStore = create<storyStoreType>((set) => ({
 				savedStories: [...state.savedStories, ...res.data],
 			}));
 			if (res.data.length < 5) {
-				
 				values.setIsAllStoriesLoaded((state) => ({ ...state, "Saved stories": true }));
 			}
 		} catch (error) {
