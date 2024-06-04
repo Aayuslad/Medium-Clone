@@ -53,8 +53,22 @@ type storyStoreType = {
 	deleteStory: (value: { id: string }) => void;
 	clapStory: (value: clapStorySchemaType) => void;
 	saveStory: (value: clapStorySchemaType) => void;
-	getSavedStories: () => Promise<void>;
-	getReadingHistory: () => Promise<void>;
+	getSavedStories: (values: {
+		currentPage: number;
+		setIsAllStoriesLoaded: React.Dispatch<
+			React.SetStateAction<{
+				[key: string]: Boolean;
+			}>
+		>;
+	}) => Promise<void>;
+	getReadingHistory: (values: {
+		currentPage: number;
+		setIsAllStoriesLoaded: React.Dispatch<
+			React.SetStateAction<{
+				[key: string]: Boolean;
+			}>
+		>;
+	}) => Promise<void>;
 	removeStoryFromFeed: (id: string) => void;
 	getTopic: (topic: string) => Promise<void>;
 	followTopic: (values: { topicId: string }) => Promise<void>;
@@ -281,11 +295,18 @@ export const StoryStore = create<storyStoreType>((set) => ({
 		}
 	},
 
-	getSavedStories: async () => {
+	getSavedStories: async (values) => {
 		try {
 			set({ skeletonLoading: true });
-			const res = await axios.get("/api/v1/story/savedStories");
-			set({ savedStories: res.data });
+			const res = await axios.get(`/api/v1/story/savedStories?page=${values.currentPage}`);
+			set((state) => ({
+				...state,
+				savedStories: [...state.savedStories, ...res.data],
+			}));
+			if (res.data.length < 5) {
+				
+				values.setIsAllStoriesLoaded((state) => ({ ...state, "Saved stories": true }));
+			}
 		} catch (error) {
 			toast.error("Error while fetching Story!");
 		} finally {
@@ -293,12 +314,17 @@ export const StoryStore = create<storyStoreType>((set) => ({
 		}
 	},
 
-	getReadingHistory: async () => {
+	getReadingHistory: async (values) => {
 		try {
 			set({ skeletonLoading: true });
-			const res = await axios.get("/api/v1/story/readingHistory");
-			console.log(res.data);
-			set({ readingHistory: res.data });
+			const res = await axios.get(`/api/v1/story/readingHistory?page=${values.currentPage}`);
+			set((state) => ({
+				...state,
+				readingHistory: [...state.readingHistory, ...res.data],
+			}));
+			if (res.data.length < 5) {
+				values.setIsAllStoriesLoaded((state) => ({ ...state, "Reading History": true }));
+			}
 		} catch (error) {
 			toast.error("Error while fetching Story!");
 		} finally {

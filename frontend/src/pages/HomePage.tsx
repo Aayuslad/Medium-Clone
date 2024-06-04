@@ -20,10 +20,6 @@ const HomePage = () => {
 	const [isAllStoriesLoded, setIsAllStoriesLoaded] = useState<{ [key: string]: Boolean }>({});
 
 	useEffect(() => {
-		if (nav === undefined) setCurrentNav("For you");
-	}, [nav]);
-
-	useEffect(() => {
 		function updatepageNumbers() {
 			setPageNumbers((prevPageNumbers) => ({
 				...(prevPageNumbers || {}),
@@ -34,24 +30,18 @@ const HomePage = () => {
 		updatepageNumbers();
 	}, [currentNav]);
 
-	useEffect(() => {
-		if (!(currentNav in isAllStoriesLoded)) {
-			isAllStoriesLoded[currentNav] = false;
-		}
-	}, [currentNav]);
-
 	// data fetching logic
 	useEffect(() => {
 		const currentPage = pageNumbers?.[currentNav] || 1;
 
 		if (
 			storyStore.feedStories.find((story) => story.topic === currentNav)?.stories.length ===
-			(pageNumbers?.[currentNav] || 0) * 5
+			currentPage * 5
 		) {
 			return;
 		}
 
-		if (storyStore.skeletonLoading) return;
+		if (pageNumbers === undefined) return;
 
 		switch (currentNav) {
 			case "For you":
@@ -81,7 +71,11 @@ const HomePage = () => {
 			const containerBottom = mainContainer.offsetTop + mainContainer.offsetHeight;
 			const scrollPosition = window.pageYOffset + window.innerHeight;
 
-			if (scrollPosition >= containerBottom - 1) {
+			if (
+				scrollPosition >= containerBottom - 1 &&
+				!storyStore.skeletonLoading &&
+				(isAllStoriesLoded?.[currentNav] || true)
+			) {
 				setPageNumbers((prevPageNumbers) => ({
 					...prevPageNumbers,
 					[currentNav]: (prevPageNumbers?.[currentNav] || 1) + 1,

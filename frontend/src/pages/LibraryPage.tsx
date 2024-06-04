@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import Header from "../components/Header";
 import StoryPreview from "../components/StoryPreview";
@@ -10,29 +10,75 @@ import RightContainer from "../components/wrapperComponents/RightContainer";
 import { StoryStore } from "../stores/storyStore";
 
 const LibraryPage = () => {
-	const [currentNav, setCurrentNav] = useState<string>("");
 	const storyStore = StoryStore();
+	const mainContainerRef = useRef<HTMLDivElement | null>(null);
 	const { nav } = useParams<{ nav: string }>();
+	const [currentNav, setCurrentNav] = useState<string>(nav || "Saved stories");
+	const [pageNumbers, setPageNumbers] = useState<{ [key: string]: number }>();
+	const [isAllStoriesLoded, setIsAllStoriesLoaded] = useState<{ [key: string]: Boolean }>({});
 
 	useEffect(() => {
-		if (currentNav === "Saved stories" && storyStore.savedStories.length === 0)
-			storyStore.getSavedStories();
+		function updatepageNumbers() {
+			setPageNumbers((prevPageNumbers) => ({
+				...(prevPageNumbers || {}),
+				[currentNav]: prevPageNumbers?.[currentNav] || 1,
+			}));
+		}
+		updatepageNumbers();
 	}, [currentNav]);
 
 	useEffect(() => {
-		if (currentNav === "Reading History" && storyStore.readingHistory.length === 0)
-			storyStore.getReadingHistory();
-	}, [currentNav]);
+		const currentPage = pageNumbers?.[currentNav] || 1;
 
+		if (pageNumbers === undefined) return;
+
+		switch (currentNav) {
+			case "Saved stories":
+				if (storyStore.savedStories.length === currentPage * 5 || isAllStoriesLoded[currentNav])
+					return;
+				storyStore.getSavedStories({ currentPage, setIsAllStoriesLoaded });
+				break;
+			case "Reading History":
+				if (storyStore.readingHistory.length === currentPage * 5 || isAllStoriesLoded?.[currentNav])
+					return;
+				storyStore.getReadingHistory({ currentPage, setIsAllStoriesLoaded });
+				break;
+		}
+	}, [pageNumbers]);
+
+	// pagination logic
+	const handleScroll = () => {
+		if (mainContainerRef.current) {
+			const mainContainer = mainContainerRef.current;
+			const containerBottom = mainContainer.offsetTop + mainContainer.offsetHeight;
+			const scrollPosition = window.pageYOffset + window.innerHeight;
+
+			if (
+				scrollPosition >= containerBottom - 1 &&
+				!storyStore.skeletonLoading &&
+				(isAllStoriesLoded?.[currentNav] || true)
+			) {
+				setPageNumbers((prevPageNumbers) => ({
+					...prevPageNumbers,
+					[currentNav]: (prevPageNumbers?.[currentNav] || 1) + 1,
+				}));
+			}
+		}
+	};
+
+	// scroll event
 	useEffect(() => {
-		setCurrentNav(nav || "Saved stories");
-	}, []);
+		window.addEventListener("scroll", handleScroll);
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+		};
+	}, [currentNav]);
 
 	return (
 		<div className="LibraryPage">
 			<Header />
 
-			<MainConntainer>
+			<MainConntainer ref={mainContainerRef}>
 				<LeftContainer>
 					<h2 className="text-5xl font-semibold py-12">Your Library</h2>
 
@@ -43,7 +89,7 @@ const LibraryPage = () => {
 						setCurrentNav={setCurrentNav}
 					/>
 
-					{currentNav === "Saved stories" && !storyStore.skeletonLoading && (
+					{currentNav === "Saved stories" && (
 						<>
 							{storyStore.savedStories.map((story, index) => (
 								<StoryPreview story={story} key={index} version="profile" />
@@ -51,7 +97,7 @@ const LibraryPage = () => {
 						</>
 					)}
 
-					{currentNav === "Reading History" && !storyStore.skeletonLoading && (
+					{currentNav === "Reading History" && (
 						<>
 							{storyStore.readingHistory.map((story, index) => (
 								<StoryPreview story={story} key={index} version="profile" />

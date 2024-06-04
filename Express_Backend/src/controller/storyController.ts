@@ -302,24 +302,24 @@ export const getStory = async (req: Request, res: Response) => {
 				},
 			});
 
-			// if (existingReadingHistory) {
-			// 	await prisma.readingHistory.update({
-			// 		where: {
-			// 			id: existingReadingHistory.id,
-			// 		},
-			// 		data: {
-			// 			readAt: new Date(),
-			// 		},
-			// 	});
-			// 	console.log("Story already exists in reading history");
-			// } else {
-			// 	await prisma.readingHistory.create({
-			// 		data: {
-			// 			storyId: id,
-			// 			userId: decodedToken?.id as string,
-			// 		},
-			// 	});
-			// }
+			if (existingReadingHistory) {
+				await prisma.readingHistory.update({
+					where: {
+						id: existingReadingHistory.id,
+					},
+					data: {
+						readAt: new Date(),
+					},
+				});
+				console.log("Story already exists in reading history");
+			} else {
+				await prisma.readingHistory.create({
+					data: {
+						storyId: id,
+						userId: decodedToken?.id as string,
+					},
+				});
+			}
 		}
 
 		return;
@@ -647,42 +647,38 @@ export const deleteStory = async (req: Request, res: Response) => {
 // get svaed stories
 export const getSavedStories = async (req: Request, res: Response) => {
 	const user = req.user;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 5;
 
 	try {
-		const savedStoryIds = await prisma.savedStory.findMany({
+		const stories = await prisma.savedStory.findMany({
+			skip: (page - 1) * pageSize,
+			take: pageSize,
 			where: {
 				userId: user?.id,
 			},
 			select: {
-				storyId: true,
-			},
-		});
-
-		const stories = await prisma.story.findMany({
-			where: {
-				id: {
-					in: savedStoryIds.map((savedStory) => savedStory.storyId),
-				},
-				published: true,
-			},
-			select: {
-				id: true,
-				title: true,
-				description: true,
-				postedOn: true,
-				clapsCount: true,
-				responseCount: true,
-				topics: {
-					select: {
-						topic: true,
-					},
-				},
-				coverImg: true,
-				author: {
+				story: {
 					select: {
 						id: true,
-						userName: true,
-						profileImg: true,
+						title: true,
+						description: true,
+						postedOn: true,
+						clapsCount: true,
+						responseCount: true,
+						topics: {
+							select: {
+								topic: true,
+							},
+						},
+						coverImg: true,
+						author: {
+							select: {
+								id: true,
+								userName: true,
+								profileImg: true,
+							},
+						},
 					},
 				},
 			},
@@ -690,8 +686,8 @@ export const getSavedStories = async (req: Request, res: Response) => {
 
 		// Map over stories to transform topics to an array of strings
 		const transformedStries = stories.map((story) => ({
-			...story,
-			topics: story.topics.map((topicObj) => topicObj.topic),
+			...story.story,
+			topics: story.story.topics.map((topicObj) => topicObj.topic),
 		}));
 
 		return res.json(transformedStries);
@@ -705,9 +701,13 @@ export const getSavedStories = async (req: Request, res: Response) => {
 // get reading history
 export const getReadingHistory = async (req: Request, res: Response) => {
 	const user = req.user;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 5;
 
 	try {
-		const readingHistoryIds = await prisma.readingHistory.findMany({
+		const stories = await prisma.readingHistory.findMany({
+			skip: (page - 1) * pageSize,
+			take: pageSize,
 			where: {
 				userId: user?.id,
 			},
@@ -715,42 +715,27 @@ export const getReadingHistory = async (req: Request, res: Response) => {
 				readAt: "desc",
 			},
 			select: {
-				storyId: true,
-			},
-		});
-
-		if (!readingHistoryIds.length) {
-			return res.json([]);
-		}
-
-		const stories = await prisma.story.findMany({
-			where: {
-				id: {
-					in: readingHistoryIds.map((readingHistory) => readingHistory.storyId),
-				},
-				published: true,
-			},
-			orderBy: {
-				id: "desc",
-			},
-			select: {
-				id: true,
-				title: true,
-				description: true,
-				postedOn: true,
-				clapsCount: true,
-				responseCount: true,
-				topics: {
-					select: {
-						topic: true,
-					},
-				},
-				coverImg: true,
-				author: {
+				story: {
 					select: {
 						id: true,
-						userName: true,
-						profileImg: true,
+						title: true,
+						description: true,
+						postedOn: true,
+						clapsCount: true,
+						responseCount: true,
+						topics: {
+							select: {
+								topic: true,
+							},
+						},
+						coverImg: true,
+						author: {
+							select: {
+								id: true,
+								userName: true,
+								profileImg: true,
+							},
+						},
 					},
 				},
 			},
@@ -758,8 +743,8 @@ export const getReadingHistory = async (req: Request, res: Response) => {
 
 		// Map over stories to transform topics to an array of strings
 		const transformedStries = stories.map((story) => ({
-			...story,
-			topics: story.topics.map((topicObj) => topicObj.topic),
+			...story.story,
+			topics: story.story.topics.map((topicObj) => topicObj.topic),
 		}));
 
 		return res.json(transformedStries);
