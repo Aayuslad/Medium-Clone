@@ -9,7 +9,6 @@ import ClapsButton from "./buttons/ClapsButton";
 import CommentsButton from "./buttons/CommentsButton";
 import TopicButton from "./buttons/TopicButton";
 import { useState } from "react";
-import { UsersStore } from "../stores/usersStore";
 import SmallFollowFollowingButton from "./buttons/SmallFollowFollowingButton";
 import AuthorMuteUnmuteButton from "./buttons/AuthorMuteUnmuteButton";
 
@@ -20,7 +19,6 @@ type props = {
 
 const StoryPreview = ({ story, version = "home" }: props) => {
 	const navigate = useNavigate();
-	const usersStore = UsersStore();
 	const [moreOptionsDropdown, setMoreOptionsDropdown] = useState<boolean>(false);
 
 	return (
