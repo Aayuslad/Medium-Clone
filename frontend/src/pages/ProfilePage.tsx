@@ -77,7 +77,7 @@ const ProfilePage = () => {
 			content.style.height = "auto";
 			content.style.height = `${content.scrollHeight}px`;
 		}
-	}, [formik.values.about, currentNav]);
+	}, [currentNav, document.getElementById("about")]);
 
 	// on auto focus, cursor must be at the end of text.
 	useEffect(() => {

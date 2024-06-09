@@ -1,14 +1,19 @@
 import { Router } from "express";
 import {
-    followUser,
-    getUser,
-    getUserProfile,
-    getUserStories,
-    signInUser,
-    signOutUser,
-    signUpUser,
-    updateUser,
-    updateUserAboutSection,
+	followUser,
+	getRandomAuthors,
+	getRandomTopics,
+	getUser,
+	getUserFollowingAuthors,
+	getUserMutedAuthors,
+	getUserProfile,
+	getUserStories,
+	muteAuthor,
+	signInUser,
+	signOutUser,
+	signUpUser,
+	updateUser,
+	updateUserAboutSection,
 } from "../controller/userController";
 import authMiddleware from "../middleware/authMiddleware";
 const router = Router();
@@ -22,6 +27,11 @@ router.get("/userProfile/:id", getUserProfile);
 router.get("/userStories/:id", getUserStories);
 router.put("/", authMiddleware, upload.single("profileImg"), updateUser);
 router.put("/aboutSection", authMiddleware, updateUserAboutSection);
+router.get("/getUserFollowingAuthors", authMiddleware, getUserFollowingAuthors);
+router.get("/getUserMutedAuthors", authMiddleware, getUserMutedAuthors);
+router.get("/getRandomAuthors", getRandomAuthors);
+router.get("/getRandomTopics", getRandomTopics);
 router.post("/followUser", authMiddleware, followUser);
+router.post("/muteAuthor/:authorId", authMiddleware, muteAuthor);
 
 export default router;

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.followUser = exports.updateUserAboutSection = exports.updateUser = exports.getUserStories = exports.getUserProfile = exports.getUser = exports.signOutUser = exports.signInUser = exports.signUpUser = void 0;
+exports.getRandomTopics = exports.getRandomAuthors = exports.getUserMutedAuthors = exports.getUserFollowingAuthors = exports.muteAuthor = exports.followUser = exports.updateUserAboutSection = exports.updateUser = exports.getUserStories = exports.getUserProfile = exports.getUser = exports.signOutUser = exports.signInUser = exports.signUpUser = void 0;
 const medium_clone_common_1 = require("@aayushlad/medium-clone-common");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -165,6 +165,11 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                         followingId: true,
                     },
                 },
+                mutedAuthors: {
+                    select: {
+                        authorId: true,
+                    },
+                },
             },
         });
         if (!userData) {
@@ -174,7 +179,7 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const transformedUser = Object.assign(Object.assign({}, userData), { savedStories: userData === null || userData === void 0 ? void 0 : userData.savedStories.map((story) => story.storyId), claps: userData.claps.map((clap) => clap.storyId), following: userData.following.map((user) => user.followingId), followedTopics: userData.followedTopics.map((topic) => ({
                 topic: topic.topic.topic,
                 id: topic.topic.id,
-            })) });
+            })), mutedAuthors: userData.mutedAuthors.map((author) => author.authorId) });
         return res.json(transformedUser);
     }
     catch (error) {
@@ -206,31 +211,6 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
                     },
                     take: 5,
                 },
-                // stories: {
-                // 	select: {
-                // 		id: true,
-                // 		title: true,
-                // 		description: true,
-                // 		postedOn: true,
-                // 		clapsCount: true,
-                // 		responseCount: true,
-                // 		topics: {
-                // 			select: {
-                // 				topic: true,
-                // 			},
-                // 		},
-                // 		coverImg: true,
-                // 		author: {
-                // 			select: {
-                // 				id: true,
-                // 				userName: true,
-                // 				bio: true,
-                // 				email: true,
-                // 				profileImg: true,
-                // 			},
-                // 		},
-                // 	},
-                // },
             },
         });
         if (!user) {
@@ -254,12 +234,7 @@ const getUserProfile = (req, res) => __awaiter(void 0, void 0, void 0, function*
                 return res;
             });
         }
-        const transformedUser = Object.assign(Object.assign({}, user), { 
-            // stories: user?.stories.map((story) => ({
-            // 	...story,
-            // 	topics: story.topics.map((topic) => topic.topic),
-            // })),
-            topFiveFollowing: yield Promise.all(user.following.map((following) => __awaiter(void 0, void 0, void 0, function* () { return yield fetchUser(following.followingId); }))), following: "" });
+        const transformedUser = Object.assign(Object.assign({}, user), { topFiveFollowing: yield Promise.all(user.following.map((following) => __awaiter(void 0, void 0, void 0, function* () { return yield fetchUser(following.followingId); }))), following: "" });
         return res.json(transformedUser);
     }
     catch (error) {
@@ -473,7 +448,156 @@ const followUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.followUser = followUser;
+// mute an author for user
+const muteAuthor = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const authorId = req.params.authorId;
+    try {
+        const existingMutedAuthor = yield prismaClient_1.prisma.mutedAuthors.findFirst({
+            where: {
+                userId: user === null || user === void 0 ? void 0 : user.id,
+                authorId: authorId,
+            },
+        });
+        if (existingMutedAuthor) {
+            yield prismaClient_1.prisma.mutedAuthors.delete({
+                where: {
+                    id: existingMutedAuthor.id,
+                },
+            });
+            return res.json({ message: "Author unmuted successfully" });
+        }
+        else {
+            yield prismaClient_1.prisma.mutedAuthors.create({
+                data: {
+                    userId: (user === null || user === void 0 ? void 0 : user.id) || "",
+                    authorId: authorId,
+                },
+            });
+            return res.json({ message: "Author muted successfully" });
+        }
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error while muting author" });
+    }
+});
+exports.muteAuthor = muteAuthor;
 // get user following authors
+const getUserFollowingAuthors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 12;
+    try {
+        const followingAuthors = yield prismaClient_1.prisma.follow.findMany({
+            take: pageSize,
+            skip: (page - 1) * pageSize,
+            where: {
+                followerId: user === null || user === void 0 ? void 0 : user.id,
+            },
+            select: {
+                following: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                        bio: true,
+                        followersCount: true,
+                    },
+                },
+            },
+        });
+        const modifiedData = followingAuthors.map((author) => author.following);
+        return res.json(modifiedData);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error while getting user following authors" });
+    }
+});
+exports.getUserFollowingAuthors = getUserFollowingAuthors;
 // get user muted authors
+const getUserMutedAuthors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 12;
+    try {
+        const mutedAuthors = yield prismaClient_1.prisma.mutedAuthors.findMany({
+            take: pageSize,
+            skip: (page - 1) * pageSize,
+            where: {
+                userId: user === null || user === void 0 ? void 0 : user.id,
+            },
+            select: {
+                author: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                        bio: true,
+                        followersCount: true,
+                    },
+                },
+            },
+        });
+        const modifiedData = mutedAuthors.map((author) => author.author);
+        return res.json(modifiedData);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error while getting user muted authors" });
+    }
+});
+exports.getUserMutedAuthors = getUserMutedAuthors;
 // get random authors
+const getRandomAuthors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 12;
+    try {
+        const randomAuthors = yield prismaClient_1.prisma.user.findMany({
+            take: pageSize,
+            skip: (page - 1) * pageSize,
+            select: {
+                id: true,
+                bio: true,
+                userName: true,
+                profileImg: true,
+                followersCount: true,
+            },
+        });
+        return res.json(randomAuthors);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error getting random authors" });
+    }
+});
+exports.getRandomAuthors = getRandomAuthors;
 // get random topics
+const getRandomTopics = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 12;
+    try {
+        const topics = yield prismaClient_1.prisma.topics.findMany({
+            take: pageSize,
+            skip: (page - 1) * pageSize,
+            select: {
+                id: true,
+                topic: true,
+                followersCount: true,
+                storiesCount: true,
+            },
+        });
+        return res.json(topics);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error while getting user muted authors" });
+    }
+});
+exports.getRandomTopics = getRandomTopics;

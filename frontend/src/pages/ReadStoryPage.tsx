@@ -60,7 +60,7 @@ const ReadStoryPage = () => {
 						<div className="info flex flex-col">
 							<div className="user-name font-semibold flex gap-3">
 								{story?.author?.userName}
-								<SmallFollowFollowingButton id={story?.author.id as string} />
+								<SmallFollowFollowingButton id={story?.author.id as string} colorfull={true} />
 							</div>
 							<div className="publish-date">{formatDate(story?.postedOn as string)}</div>
 						</div>

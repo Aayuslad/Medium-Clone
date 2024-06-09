@@ -70,6 +70,7 @@ export const AuthStore = create<authStoreType>((set) => ({
 				success: "Signed out!",
 				error: "Error signing out!",
 			});
+			set({ user: undefined });
 			set({ isLoggedIn: false });
 		} catch (error) {
 			console.log("Error signing out");

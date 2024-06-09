@@ -174,6 +174,11 @@ export const getUser = async (req: Request, res: Response) => {
 						followingId: true,
 					},
 				},
+				mutedAuthors: {
+					select: {
+						authorId: true,
+					},
+				},
 			},
 		});
 
@@ -191,6 +196,7 @@ export const getUser = async (req: Request, res: Response) => {
 				topic: topic.topic.topic,
 				id: topic.topic.id,
 			})),
+			mutedAuthors: userData.mutedAuthors.map((author) => author.authorId),
 		};
 
 		return res.json(transformedUser);
@@ -224,31 +230,6 @@ export const getUserProfile = async (req: Request, res: Response) => {
 					},
 					take: 5,
 				},
-				// stories: {
-				// 	select: {
-				// 		id: true,
-				// 		title: true,
-				// 		description: true,
-				// 		postedOn: true,
-				// 		clapsCount: true,
-				// 		responseCount: true,
-				// 		topics: {
-				// 			select: {
-				// 				topic: true,
-				// 			},
-				// 		},
-				// 		coverImg: true,
-				// 		author: {
-				// 			select: {
-				// 				id: true,
-				// 				userName: true,
-				// 				bio: true,
-				// 				email: true,
-				// 				profileImg: true,
-				// 			},
-				// 		},
-				// 	},
-				// },
 			},
 		});
 
@@ -276,10 +257,6 @@ export const getUserProfile = async (req: Request, res: Response) => {
 
 		const transformedUser = {
 			...user,
-			// stories: user?.stories.map((story) => ({
-			// 	...story,
-			// 	topics: story.topics.map((topic) => topic.topic),
-			// })),
 			topFiveFollowing: await Promise.all(
 				user.following.map(async (following) => await fetchUser(following.followingId)),
 			),
@@ -524,10 +501,163 @@ export const followUser = async (req: Request, res: Response) => {
 	}
 };
 
+// mute an author for user
+export const muteAuthor = async (req: Request, res: Response) => {
+	const user = req.user;
+	const authorId = req.params.authorId;
+
+	try {
+		const existingMutedAuthor = await prisma.mutedAuthors.findFirst({
+			where: {
+				userId: user?.id,
+				authorId: authorId,
+			},
+		});
+
+		if (existingMutedAuthor) {
+			await prisma.mutedAuthors.delete({
+				where: {
+					id: existingMutedAuthor.id,
+				},
+			});
+
+			return res.json({ message: "Author unmuted successfully" });
+		} else {
+			await prisma.mutedAuthors.create({
+				data: {
+					userId: user?.id || "",
+					authorId: authorId,
+				},
+			});
+
+			return res.json({ message: "Author muted successfully" });
+		}
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error while muting author" });
+	}
+};
+
 // get user following authors
+export const getUserFollowingAuthors = async (req: Request, res: Response) => {
+	const user = req.user;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 12;
+
+	try {
+		const followingAuthors = await prisma.follow.findMany({
+			take: pageSize,
+			skip: (page - 1) * pageSize,
+			where: {
+				followerId: user?.id,
+			},
+			select: {
+				following: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+						bio: true,
+						followersCount: true,
+					},
+				},
+			},
+		});
+
+		const modifiedData = followingAuthors.map((author) => author.following);
+
+		return res.json(modifiedData);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error while getting user following authors" });
+	}
+};
 
 // get user muted authors
+export const getUserMutedAuthors = async (req: Request, res: Response) => {
+	const user = req.user;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 12;
+
+	try {
+		const mutedAuthors = await prisma.mutedAuthors.findMany({
+			take: pageSize,
+			skip: (page - 1) * pageSize,
+			where: {
+				userId: user?.id,
+			},
+			select: {
+				author: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+						bio: true,
+						followersCount: true,
+					},
+				},
+			},
+		});
+
+		const modifiedData = mutedAuthors.map((author) => author.author);
+
+		return res.json(modifiedData);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error while getting user muted authors" });
+	}
+};
 
 // get random authors
+export const getRandomAuthors = async (req: Request, res: Response) => {
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 12;
+
+	try {
+		const randomAuthors = await prisma.user.findMany({
+			take: pageSize,
+			skip: (page - 1) * pageSize,
+			select: {
+				id: true,
+				bio: true,
+				userName: true,
+				profileImg: true,
+				followersCount: true,
+			},
+		});
+
+		return res.json(randomAuthors);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error getting random authors" });
+	}
+};
 
 // get random topics
+export const getRandomTopics = async (req: Request, res: Response) => {
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 12;
+
+	try {
+		const topics = await prisma.topics.findMany({
+			take: pageSize,
+			skip: (page - 1) * pageSize,
+			select: {
+				id: true,
+				topic: true,
+				followersCount: true,
+				storiesCount: true,
+			},
+		});
+
+		return res.json(topics);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error while getting user muted authors" });
+	}
+};

@@ -18,7 +18,10 @@ const RegularButton = ({ type, text, onClick, bgColor, color, borderColor, disab
 				color: color ? color : "",
 				border: borderColor ? `1px solid ${borderColor}` : "",
 			}}
-			onClick={onClick}
+			onClick={(e) => {
+				e.stopPropagation();
+				onClick?.();
+			}}
 			disabled={disabled != undefined ? disabled : false}
 		>
 			{text}

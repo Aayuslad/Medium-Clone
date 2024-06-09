@@ -22,6 +22,7 @@ export type userType = {
         bio: string;
     }[];
     stories?: storyType[];
+    mutedAuthors?: string[];
 };
 export type storyType = {
     id: string;

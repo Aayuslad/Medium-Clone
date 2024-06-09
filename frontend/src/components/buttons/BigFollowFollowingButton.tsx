@@ -7,7 +7,7 @@ import { userType } from "@aayushlad/medium-clone-common";
 
 type props = {
 	user: userType;
-	setUser: React.Dispatch<React.SetStateAction<userType | undefined>>;
+	setUser?: React.Dispatch<React.SetStateAction<userType | undefined>>;
 };
 
 const BigFollowFollowingButton = ({ user, setUser }: props) => {
@@ -41,12 +41,12 @@ const BigFollowFollowingButton = ({ user, setUser }: props) => {
 				: [...(authStore.user.following || []), user.id],
 		});
 
-		if (!isFollowing && user?.followersCount) {
+		if (setUser && !isFollowing && user?.followersCount) {
 			setUser({
 				...user,
 				followersCount: user.followersCount + 1,
 			});
-		} else if (isFollowing && user?.followersCount) {
+		} else if (setUser && isFollowing && user?.followersCount) {
 			setUser({
 				...user,
 				followersCount: user.followersCount - 1,
@@ -78,6 +78,21 @@ const BigFollowFollowingButton = ({ user, setUser }: props) => {
 						onClick={onClickHandler}
 					/>
 				))}
+
+			{isFollowing === undefined && (
+				<RegularButton
+					text="Follow"
+					color="white"
+					bgColor="green"
+					borderColor="green"
+					disabled={usersStore.buttonLoading}
+					onClick={() => {
+						if (user?.id && authStore.user?.id === user?.id)
+							toast.error("You can't follow yourself");
+						else toast.error("signin to follow");
+					}}
+				/>
+			)}
 		</div>
 	);
 };

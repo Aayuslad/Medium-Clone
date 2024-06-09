@@ -5,9 +5,12 @@ import toast from "react-hot-toast";
 
 type props = {
 	id: string;
+	colorfull?: boolean;
+	followButtonText?: string;
+	unfollowButtonText?: string;
 };
 
-const SmallFollowFollowingButton = ({ id }: props) => {
+const SmallFollowFollowingButton = ({ id, colorfull, followButtonText, unfollowButtonText }: props) => {
 	const [isFollowing, setIsFollowing] = useState<boolean | undefined>(undefined);
 	const usersStore = UsersStore();
 	const authStore = AuthStore();
@@ -23,11 +26,14 @@ const SmallFollowFollowingButton = ({ id }: props) => {
 		}
 	}, [id, authStore.user]);
 
-	function onClickHandler() {
+	function onClickHandler(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+		e.stopPropagation();
+
 		if (!authStore.user) {
 			toast.error("Signin to follow");
 			return;
 		}
+
 		usersStore.followUser({ userIdToFollow: id as string });
 		setIsFollowing((state) => !state);
 	}
@@ -37,23 +43,36 @@ const SmallFollowFollowingButton = ({ id }: props) => {
 			{isFollowing !== undefined &&
 				(!isFollowing ? (
 					<button
-						className="text-green-600"
+						className={`${colorfull ? "text-green-600" : "text-black"}`}
 						disabled={usersStore.buttonLoading}
 						onClick={onClickHandler}
 					>
-						Follow
+						{followButtonText ? followButtonText : "Follow"}
 					</button>
 				) : (
 					<button
-						className="text-green-600"
+						className={`${colorfull ? "text-red-600" : "text-black"}`}
 						disabled={usersStore.buttonLoading}
 						onClick={onClickHandler}
 					>
-						Unfollow
+						{unfollowButtonText ? unfollowButtonText : "Unfollow"}
 					</button>
 				))}
+			{isFollowing === undefined && (
+				<button
+					className={`${colorfull ? "text-red-600" : "text-black"}`}
+					disabled={usersStore.buttonLoading}
+					onClick={(e) => {
+						e.stopPropagation();
+						if (id && authStore.user?.id === id) toast.error("You cannot follow yourself");
+						else toast.error("signin to follow");
+					}}
+				>
+					{followButtonText ? followButtonText : "Follow"}
+				</button>
+			)}
 		</div>
 	);
 };
 
-export default SmallFollowFollowingButton;	
+export default SmallFollowFollowingButton;

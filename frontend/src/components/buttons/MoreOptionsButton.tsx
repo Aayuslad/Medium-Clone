@@ -4,7 +4,14 @@ type props = {
 
 const MoreOptions = ({ onClick }: props) => {
 	return (
-		<button type="button" className="more mx-2" onClick={onClick}>
+		<button
+			type="button"
+			className="more mx-2"
+			onClick={(e) => {
+				e.stopPropagation();
+				onClick();
+			}}
+		>
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
 				<path
 					fillRule="evenodd"

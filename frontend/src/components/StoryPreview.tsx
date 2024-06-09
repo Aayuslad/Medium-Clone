@@ -8,6 +8,10 @@ import { formatDate } from "../helper/formatDate";
 import ClapsButton from "./buttons/ClapsButton";
 import CommentsButton from "./buttons/CommentsButton";
 import TopicButton from "./buttons/TopicButton";
+import { useState } from "react";
+import { UsersStore } from "../stores/usersStore";
+import SmallFollowFollowingButton from "./buttons/SmallFollowFollowingButton";
+import AuthorMuteUnmuteButton from "./buttons/AuthorMuteUnmuteButton";
 
 type props = {
 	story: storyType;
@@ -16,6 +20,8 @@ type props = {
 
 const StoryPreview = ({ story, version = "home" }: props) => {
 	const navigate = useNavigate();
+	const usersStore = UsersStore();
+	const [moreOptionsDropdown, setMoreOptionsDropdown] = useState<boolean>(false);
 
 	return (
 		<div
@@ -40,7 +46,7 @@ const StoryPreview = ({ story, version = "home" }: props) => {
 					className="username"
 					onClick={(e) => {
 						e.stopPropagation();
-						navigate(`/user/${story.author?.id}`);
+						navigate(`/user/${story.author?.id}/Home`);
 					}}
 				>
 					{story.author?.userName}
@@ -94,7 +100,24 @@ const StoryPreview = ({ story, version = "home" }: props) => {
 
 				{version === "home" && <RemoveButton id={story.id as string} />}
 
-				<MoreOptions onClick={() => {}} />
+				<MoreOptions
+					onClick={() => {
+						setMoreOptionsDropdown((state) => !state);
+					}}
+				/>
+				<div className="relative">
+					{moreOptionsDropdown && (
+						<div className="setMoreOptionsDropdown w-40 z-10 bg-white py-4 px-5 absolute -bottom-[145px] right-[0px] lg:right-[-60px] flex flex-col gap-2 custom-box-shadow rounded">
+							<SmallFollowFollowingButton
+								id={story.author.id}
+								followButtonText="Follow author"
+								unfollowButtonText="Unfollow author"
+							/>
+							<AuthorMuteUnmuteButton authorId={story.author.id} />
+							<div className="text-red-700">Report Story...</div>
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	);

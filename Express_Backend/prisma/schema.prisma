@@ -32,6 +32,8 @@ model User {
   followedTopics FollowedTopic[]
   responses      Response[]
   subResponses   SubResponse[]
+  mutedAuthors   MutedAuthors[]   @relation("UserMutedAuthors")
+  mutedBy        MutedAuthors[]   @relation("AuthorMutedBy")
 }
 
 model Story {
@@ -86,12 +88,21 @@ model SavedStory {
   storyId String // Foreign key to story
 }
 
+model MutedAuthors {
+  id       String @id @default(uuid())
+  user     User   @relation("UserMutedAuthors", fields: [userId], references: [id])
+  userId   String // Foreign key to User
+  author   User   @relation("AuthorMutedBy", fields: [authorId], references: [id])
+  authorId String // Foreign key to User
+}
+
 model Follow {
   id          String @id @default(uuid())
   follower    User   @relation("UserFollowing", fields: [followerId], references: [id])
   followerId  String // Foreign key to User
   following   User   @relation("UserFollowers", fields: [followingId], references: [id])
   followingId String // Foreign key to User
+  createdAt   DateTime @default(now())
 }
 
 model ReadingHistory {
@@ -112,7 +123,7 @@ model Response {
   story        Story         @relation(fields: [storyId], references: [id])
   storyId      String // Foreign key to Story
   replyCount   Int           @default(0)
-  subResponses SubResponse[] 
+  subResponses SubResponse[]
 }
 
 model SubResponse {
