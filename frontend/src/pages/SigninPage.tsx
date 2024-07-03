@@ -8,7 +8,6 @@ import { BlackButton } from "../components/buttons/BlackButton";
 import { sinInValidation } from "../helper/inputValidation";
 import { AuthStore } from "../stores/authStore";
 
-
 function signin() {
 	const authStore = AuthStore();
 	const navigate = useNavigate();

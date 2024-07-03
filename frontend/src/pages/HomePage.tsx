@@ -9,7 +9,6 @@ import MainConntainer from "../components/wrapperComponents/MainContainer";
 import RightContainer from "../components/wrapperComponents/RightContainer";
 import useScrollDirection from "../hooks/useScrollDirection";
 import { StoryStore } from "../stores/storyStore";
-import RegularButton from "../components/buttons/RegularButton";
 
 const HomePage = () => {
 	const storyStore = StoryStore();
