@@ -79,24 +79,30 @@ export declare const signUpUserSchema: zod.ZodObject<{
     userName: zod.ZodString;
     email: zod.ZodString;
     password: zod.ZodString;
+    token: zod.ZodString;
 }, "strip", zod.ZodTypeAny, {
     userName: string;
     email: string;
     password: string;
+    token: string;
 }, {
     userName: string;
     email: string;
     password: string;
+    token: string;
 }>;
 export type signUpUserSchemaType = zod.infer<typeof signUpUserSchema>;
 export declare const signinUserSchema: zod.ZodObject<{
     emailOrName: zod.ZodString;
     password: zod.ZodString;
+    token: zod.ZodString;
 }, "strip", zod.ZodTypeAny, {
     password: string;
+    token: string;
     emailOrName: string;
 }, {
     password: string;
+    token: string;
     emailOrName: string;
 }>;
 export type signinUserSchemaType = zod.infer<typeof signinUserSchema>;

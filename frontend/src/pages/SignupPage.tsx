@@ -7,16 +7,20 @@ import { Input } from "../components/Input";
 import { BlackButton } from "../components/buttons/BlackButton";
 import { sinUpValidation } from "../helper/inputValidation";
 import { AuthStore } from "../stores/authStore";
+import { useEffect, useState } from "react";
+import TurnstileWidget from "../helper/cloudflareTurnstile";
 
 function signup() {
 	const navigate = useNavigate();
 	const authStore = AuthStore();
+	const [token, setToken] = useState<string>("");
 
 	const formik = useFormik<signUpUserSchemaType>({
 		initialValues: {
 			userName: "",
 			email: "",
 			password: "",
+			token: "",
 		},
 		validateOnBlur: false,
 		validateOnChange: false,
@@ -25,6 +29,12 @@ function signup() {
 			authStore.signup(values, navigate);
 		},
 	});
+
+	useEffect(() => {
+		if (token) {
+			formik.setValues({ ...formik.values, token: token });
+		}
+	}, [token]);
 
 	return (
 		<>
@@ -74,6 +84,8 @@ function signup() {
 								required={true}
 								field={formik.getFieldProps("password")}
 							/>
+
+							<TurnstileWidget setToken={setToken} />
 
 							<BlackButton type={"submit"}>Sign up</BlackButton>
 

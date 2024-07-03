@@ -28,7 +28,20 @@ const signUpUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             res.status(400);
             return res.json({ message: "Invalid request parameters" });
         }
-        // check for repitative email
+        // cheking token of cloudflare turnstyle
+        const formData = new FormData();
+        formData.append("secret", process.env.TURNSTILE_SECRET_KEY);
+        formData.append("response", body.token);
+        const result = yield fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+            body: formData,
+            method: "POST",
+        });
+        const isChalangeSuccess = (yield result.json()).success;
+        if (!isChalangeSuccess) {
+            res.status(400);
+            return res.json({ message: "Invalid captcha" });
+        }
+        // check for repitative email and username
         const repeatEmail = yield prismaClient_1.prisma.user.findUnique({
             where: {
                 email: body.email,
@@ -37,6 +50,15 @@ const signUpUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (repeatEmail) {
             res.status(400);
             return res.json({ message: "User alredy exist with this email" });
+        }
+        const repeatUsername = yield prismaClient_1.prisma.user.findUnique({
+            where: {
+                userName: body.userName,
+            },
+        });
+        if (repeatUsername) {
+            res.status(400);
+            return res.json({ message: "User alredy exist with this username" });
         }
         // hashing password
         const salt = yield bcrypt_1.default.genSalt(10);
@@ -74,6 +96,19 @@ const signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             res.status(400);
             return res.json({ message: "Invalid request parameters" });
         }
+        // cheking token of cloudflare turnstyle
+        const formData = new FormData();
+        formData.append("secret", process.env.TURNSTILE_SECRET_KEY);
+        formData.append("response", body.token);
+        const result = yield fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+            body: formData,
+            method: "POST",
+        });
+        const isChalangeSuccess = (yield result.json()).success;
+        if (!isChalangeSuccess) {
+            res.status(400);
+            return res.json({ message: "Invalid captcha" });
+        }
         // find user
         const user = yield prismaClient_1.prisma.user.findFirst({
             where: {
@@ -92,8 +127,8 @@ const signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             return res.json({ message: "User does not exist" });
         }
         // cheking password
-        const result = yield bcrypt_1.default.compare(body.password, user.password);
-        if (!result) {
+        const passwordresult = yield bcrypt_1.default.compare(body.password, user.password);
+        if (!passwordresult) {
             res.status(401);
             return res.json({ message: "Incorrect password" });
         }

@@ -10,11 +10,13 @@ exports.signUpUserSchema = zod_1.default.object({
     userName: zod_1.default.string().regex(/^\S*$/),
     email: zod_1.default.string().email(),
     password: zod_1.default.string().min(6),
+    token: zod_1.default.string(),
 });
 //
 exports.signinUserSchema = zod_1.default.object({
     emailOrName: zod_1.default.string(),
     password: zod_1.default.string().min(6),
+    token: zod_1.default.string(),
 });
 //
 exports.updateUserSchema = zod_1.default.object({

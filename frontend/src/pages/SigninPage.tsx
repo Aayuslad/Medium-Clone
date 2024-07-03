@@ -7,15 +7,19 @@ import { Input } from "../components/Input";
 import { BlackButton } from "../components/buttons/BlackButton";
 import { sinInValidation } from "../helper/inputValidation";
 import { AuthStore } from "../stores/authStore";
+import TurnstileWidget from "../helper/cloudflareTurnstile";
+import { useEffect, useState } from "react";
 
 function signin() {
 	const authStore = AuthStore();
 	const navigate = useNavigate();
+	const [token, setToken] = useState<string>("");
 
 	const formik = useFormik<signinUserSchemaType>({
 		initialValues: {
 			password: "",
 			emailOrName: "",
+			token: "",
 		},
 		validateOnBlur: false,
 		validateOnChange: false,
@@ -24,6 +28,12 @@ function signin() {
 			authStore.signin(values, navigate);
 		},
 	});
+
+	useEffect(() => {
+		if (token) {
+			formik.setFieldValue("token", token);
+		}
+	}, [token]);
 
 	return (
 		<>
@@ -66,6 +76,8 @@ function signin() {
 								required={true}
 								field={formik.getFieldProps("password")}
 							/>
+
+							<TurnstileWidget setToken={setToken} />
 
 							<BlackButton type={"submit"}>Sign in</BlackButton>
 

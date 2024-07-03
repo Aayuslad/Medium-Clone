@@ -28,7 +28,21 @@ export const signUpUser = async (req: Request, res: Response) => {
 			return res.json({ message: "Invalid request parameters" });
 		}
 
-		// check for repitative email
+		// cheking token of cloudflare turnstyle
+		const formData = new FormData();
+		formData.append("secret", process.env.TURNSTILE_SECRET_KEY as string);
+		formData.append("response", body.token);
+		const result = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+			body: formData,
+			method: "POST",
+		});
+		const isChalangeSuccess = (await result.json()).success;
+		if (!isChalangeSuccess) {
+			res.status(400);
+			return res.json({ message: "Invalid captcha" });
+		}
+
+		// check for repitative email and username
 		const repeatEmail = await prisma.user.findUnique({
 			where: {
 				email: body.email,
@@ -37,6 +51,15 @@ export const signUpUser = async (req: Request, res: Response) => {
 		if (repeatEmail) {
 			res.status(400);
 			return res.json({ message: "User alredy exist with this email" });
+		}
+		const repeatUsername = await prisma.user.findUnique({
+			where: {
+				userName: body.userName,
+			},
+		});
+		if (repeatUsername) {
+			res.status(400);
+			return res.json({ message: "User alredy exist with this username" });
 		}
 
 		// hashing password
@@ -79,6 +102,20 @@ export const signInUser = async (req: Request, res: Response) => {
 			return res.json({ message: "Invalid request parameters" });
 		}
 
+		// cheking token of cloudflare turnstyle
+		const formData = new FormData();
+		formData.append("secret", process.env.TURNSTILE_SECRET_KEY as string);
+		formData.append("response", body.token);
+		const result = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+			body: formData,
+			method: "POST",
+		});
+		const isChalangeSuccess = (await result.json()).success;
+		if (!isChalangeSuccess) {
+			res.status(400);
+			return res.json({ message: "Invalid captcha" });
+		}
+
 		// find user
 		const user = await prisma.user.findFirst({
 			where: {
@@ -99,8 +136,8 @@ export const signInUser = async (req: Request, res: Response) => {
 		}
 
 		// cheking password
-		const result = await bcrypt.compare(body.password, user.password);
-		if (!result) {
+		const passwordresult = await bcrypt.compare(body.password, user.password);
+		if (!passwordresult) {
 			res.status(401);
 			return res.json({ message: "Incorrect password" });
 		}

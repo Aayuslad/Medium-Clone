@@ -87,6 +87,7 @@ export const signUpUserSchema = zod.object({
 	userName: zod.string().regex(/^\S*$/),
 	email: zod.string().email(),
 	password: zod.string().min(6),
+	token: zod.string(),
 });
 
 export type signUpUserSchemaType = zod.infer<typeof signUpUserSchema>;
@@ -95,6 +96,7 @@ export type signUpUserSchemaType = zod.infer<typeof signUpUserSchema>;
 export const signinUserSchema = zod.object({
 	emailOrName: zod.string(),
 	password: zod.string().min(6),
+	token: zod.string(),
 });
 
 export type signinUserSchemaType = zod.infer<typeof signinUserSchema>;

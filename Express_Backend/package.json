@@ -12,7 +12,7 @@
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
-		"@aayushlad/medium-clone-common": "^1.0.45",
+		"@aayushlad/medium-clone-common": "^1.0.47",
 		"@prisma/client": "^5.13.0",
 		"@prisma/extension-accelerate": "^1.0.0",
 		"bcrypt": "^5.1.1",
