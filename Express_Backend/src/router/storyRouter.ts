@@ -17,6 +17,9 @@ import {
 	getStoriesByTopics,
 	getStory,
 	getTopic,
+	getUserReplies,
+	getUserResponses,
+	getUsersDrafts,
 	makeReplyToResponse,
 	makeResponse,
 	saveStory,
@@ -36,6 +39,9 @@ router.get("/readingHistory", authMiddleware, getReadingHistory);
 router.get("/topic/:topic", getTopic);
 router.get("/responses/:storyId", getResponseByStoryId);
 router.get("/replies/:responseId", getReplyByResponseId);
+router.get("/getUsersDrafts", authMiddleware, getUsersDrafts);
+router.get("/getUserResponses", authMiddleware, getUserResponses);
+router.get("/getUserReplies", authMiddleware, getUserReplies);
 router.get("/:id", getStory);
 router.post("/clap", authMiddleware, clapStory);
 router.post("/save", authMiddleware, saveStory);

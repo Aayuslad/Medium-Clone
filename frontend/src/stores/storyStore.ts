@@ -1,8 +1,10 @@
 import {
 	clapStorySchemaType,
+	draftType,
 	editReplySchemaType,
 	editResponseSchemaType,
 	makeReplyToResponseSchemaType,
+	replyType,
 	responseType,
 	storyType,
 	topicType,
@@ -20,6 +22,13 @@ type storyStoreType = {
 	feedStories: { topic: string; stories: storyType[] }[] | [];
 	savedStories: storyType[] | [];
 	readingHistory: storyType[] | [];
+	yourStoriesPage: {
+		Drafts: draftType[];
+		Published: storyType[];
+		Responses: responseType[];
+		Replies: replyType[];
+		Spam: any[];
+	};
 	topic: topicType | undefined;
 	setTopic: (topic: topicType) => void;
 	postStory: (value: FormData) => Promise<string>;
@@ -87,6 +96,39 @@ type storyStoreType = {
 	) => Promise<responseType[] | undefined>;
 	editReply: (values: editReplySchemaType) => Promise<responseType | undefined>;
 	deleteReply: (responseId: string) => Promise<void>;
+	getUsersDrafts: (values: {
+		currentPage: number;
+		setIsAllDataLoaded: React.Dispatch<
+			React.SetStateAction<{
+				[key: string]: Boolean;
+			}>
+		>;
+	}) => Promise<void>;
+	getUserResponses: (values: {
+		currentPage: number;
+		setIsAllDataLoaded: React.Dispatch<
+			React.SetStateAction<{
+				[key: string]: Boolean;
+			}>
+		>;
+	}) => Promise<void>;
+	getUserReplies: (values: {
+		currentPage: number;
+		setIsAllDataLoaded: React.Dispatch<
+			React.SetStateAction<{
+				[key: string]: Boolean;
+			}>
+		>;
+	}) => Promise<void>;
+	getUserStories: (values: {
+		userId: string;
+		currentPage: number;
+		setIsAllDataLoaded: React.Dispatch<
+			React.SetStateAction<{
+				[key: string]: Boolean;
+			}>
+		>;
+	}) => Promise<void>;
 };
 
 export const StoryStore = create<storyStoreType>((set) => ({
@@ -100,6 +142,13 @@ export const StoryStore = create<storyStoreType>((set) => ({
 	topic: undefined,
 	setTopic: (topic) => {
 		set({ topic });
+	},
+	yourStoriesPage: {
+		Drafts: [],
+		Published: [],
+		Responses: [],
+		Replies: [],
+		Spam: [],
 	},
 
 	postStory: async (values) => {
@@ -261,7 +310,9 @@ export const StoryStore = create<storyStoreType>((set) => ({
 	deleteStory: async (values) => {
 		try {
 			await axios.delete(`/api/v1/story/${values.id}`);
+			toast.success("Story Deleted");
 		} catch (error) {
+			toast.error("Error while deleting Story!");
 		} finally {
 			return;
 		}
@@ -465,6 +516,88 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			toast.error("Error while deleting response!");
 		} finally {
 			set({ buttonLoading: false });
+		}
+	},
+
+	getUsersDrafts: async (values) => {
+		try {
+			set({ skeletonLoading: true });
+			const res = await axios.get(`/api/v1/story/getUsersDrafts?page=${values.currentPage}`);
+			set((state) => ({
+				yourStoriesPage: {
+					...state.yourStoriesPage,
+					Drafts: [...(state.yourStoriesPage?.Drafts || []), ...res.data],
+				},
+			}));
+			if (res.data.length < 6) {
+				values.setIsAllDataLoaded((state) => ({ ...state, Drafts: true }));
+			}
+		} catch (error) {
+			toast.error("Error while fetching drafts!");
+		} finally {
+			set({ skeletonLoading: false });
+		}
+	},
+
+	getUserResponses: async (values) => {
+		try {
+			set({ skeletonLoading: true });
+			const res = await axios.get(`/api/v1/story/getUserResponses?page=${values.currentPage}`);
+			set((state) => ({
+				yourStoriesPage: {
+					...state.yourStoriesPage,
+					Responses: [...(state.yourStoriesPage?.Responses || []), ...res.data],
+				},
+			}));
+			if (res.data.length < 6) {
+				values.setIsAllDataLoaded((state) => ({ ...state, Responses: true }));
+			}
+		} catch (error) {
+			toast.error("Error while fetching drafts!");
+		} finally {
+			set({ skeletonLoading: false });
+		}
+	},
+
+	getUserReplies: async (values) => {
+		try {
+			set({ skeletonLoading: true });
+			const res = await axios.get(`/api/v1/story/getUserReplies?page=${values.currentPage}`);
+			set((state) => ({
+				yourStoriesPage: {
+					...state.yourStoriesPage,
+					Replies: [...(state.yourStoriesPage?.Replies || []), ...res.data],
+				},
+			}));
+			if (res.data.length < 6) {
+				values.setIsAllDataLoaded((state) => ({ ...state, Replies: true }));
+			}
+		} catch (error) {
+			toast.error("Error while fetching drafts!");
+		} finally {
+			set({ skeletonLoading: false });
+		}
+	},
+
+	getUserStories: async function (values) {
+		try {
+			set({ skeletonLoading: true });
+			const res = await axios.get(
+				`/api/v1/user/userStories/${values.userId}?page=${values.currentPage}`,
+			);
+			set((state) => ({
+				yourStoriesPage: {
+					...state.yourStoriesPage,
+					Published: [...(state.yourStoriesPage?.Published || []), ...res.data],
+				},
+			}));
+			if (res.data.length < 6) {
+				values.setIsAllDataLoaded((state) => ({ ...state, Published: true }));
+			}
+		} catch (error) {
+			console.error(error);
+		} finally {
+			set({ skeletonLoading: false });
 		}
 	},
 }));

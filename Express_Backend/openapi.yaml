@@ -1,0 +1,294 @@
+openapi: 3.0.0
+info:
+  title: Medium Clone API
+  version: 1.0.0
+paths:
+  /signup:
+    post:
+      summary: Sign up a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpUser'
+      responses:
+        '200':
+          description: User signed up successfully
+        '400':
+          description: Error while signing up
+  /signin:
+    post:
+      summary: Sign in a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignInUser'
+      responses:
+        '200':
+          description: User signed in successfully
+        '400':
+          description: Error while signing in
+  /signout:
+    post:
+      summary: Sign out a user
+      responses:
+        '200':
+          description: User signed out successfully
+        '400':
+          description: Error while signing out
+  /user:
+    get:
+      summary: Get current user data
+      responses:
+        '200':
+          description: User data retrieved successfully
+        '400':
+          description: Error while fetching user data
+  /user/profile/{id}:
+    get:
+      summary: Get user profile by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User profile retrieved successfully
+        '400':
+          description: Error while fetching user profile
+  /user/stories/{id}:
+    get:
+      summary: Get stories by user ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 5
+      responses:
+        '200':
+          description: User stories retrieved successfully
+        '400':
+          description: Error while fetching user stories
+  /user:
+    put:
+      summary: Update user data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+      responses:
+        '200':
+          description: User data updated successfully
+        '400':
+          description: Error while updating user data
+  /user/about:
+    put:
+      summary: Update user about section
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserAboutSection'
+      responses:
+        '200':
+          description: User about section updated successfully
+        '400':
+          description: Error while updating user about section
+  /user/follow:
+    post:
+      summary: Follow or unfollow a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FollowUser'
+      responses:
+        '200':
+          description: User followed/unfollowed successfully
+        '400':
+          description: Error while following/unfollowing user
+  /user/mute/{authorId}:
+    post:
+      summary: Mute or unmute an author
+      parameters:
+        - name: authorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Author muted/unmuted successfully
+        '400':
+          description: Error while muting/unmuting author
+  /user/following:
+    get:
+      summary: Get following authors for current user
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 12
+      responses:
+        '200':
+          description: Following authors retrieved successfully
+        '400':
+          description: Error while fetching following authors
+  /user/muted:
+    get:
+      summary: Get muted authors for current user
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 12
+      responses:
+        '200':
+          description: Muted authors retrieved successfully
+        '400':
+          description: Error while fetching muted authors
+  /authors/random:
+    get:
+      summary: Get random authors
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 12
+      responses:
+        '200':
+          description: Random authors retrieved successfully
+        '400':
+          description: Error while fetching random authors
+  /topics/random:
+    get:
+      summary: Get random topics
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 12
+      responses:
+        '200':
+          description: Random topics retrieved successfully
+        '400':
+          description: Error while fetching random topics
+  /search:
+    get:
+      summary: Global search
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search results retrieved successfully
+        '400':
+          description: Error while fetching search results
+components:
+  schemas:
+    SignUpUser:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        userName:
+          type: string
+      required:
+        - email
+        - password
+        - userName
+    SignInUser:
+      type: object
+      properties:
+        emailOrName:
+          type: string
+        password:
+          type: string
+      required:
+        - emailOrName
+        - password
+    UpdateUser:
+      type: object
+      properties:
+        userName:
+          type: string
+        bio:
+          type: string
+        profileImg:
+          type: string
+      required:
+        - userName
+        - bio
+    UpdateUserAboutSection:
+      type: object
+      properties:
+        about:
+          type: string
+      required:
+        - about
+    FollowUser:
+      type: object
+      properties:
+        userIdToFollow:
+          type: string
+      required:
+        - userIdToFollow

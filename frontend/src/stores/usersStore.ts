@@ -7,6 +7,7 @@ import {
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { create } from "zustand";
+import { resultType } from "../components/SearchBox";
 
 type authStoreType = {
 	skeletonLoading: boolean;
@@ -16,6 +17,23 @@ type authStoreType = {
 		Muted: userType[];
 		"Discover Authors": userType[];
 		"Discover Topics": topicType[];
+	};
+	userRecomendations: {
+		recommendedTopics: {
+			topic: string;
+		}[];
+		whoToFollow: {
+			id: string;
+			userName: string;
+			profileImg: string;
+			bio: string;
+		}[];
+		recentlySaved: {
+			id: string;
+			title: string;
+			author: string;
+			authorProfileImg: string;
+		}[];
 	};
 	getAnotherUser: (values: { id: string }) => Promise<userType>;
 	getUserStories: (values: {
@@ -59,12 +77,19 @@ type authStoreType = {
 			}>
 		>;
 	}) => void;
+	globalSearch: (values: { searchQuery: string }) => Promise<resultType>;
+	getUserRecomendations: (values: { userId?: string }) => Promise<void>;
 };
 
 export const UsersStore = create<authStoreType>((set) => ({
 	skeletonLoading: false,
 	buttonLoading: false,
 	refineReconmandations: { Following: [], Muted: [], "Discover Authors": [], "Discover Topics": [] },
+	userRecomendations: {
+		recommendedTopics: [],
+		whoToFollow: [],
+		recentlySaved: [],
+	},
 
 	getAnotherUser: async function (values) {
 		try {
@@ -232,6 +257,26 @@ export const UsersStore = create<authStoreType>((set) => ({
 			toast.error("Error while getting random topics!");
 		} finally {
 			set({ skeletonLoading: false });
+		}
+	},
+
+	globalSearch: async (values) => {
+		try {
+			const res = await axios.get(`api/v1/user/search?query=${values.searchQuery}`);
+			return res.data;
+		} catch (error) {
+			toast.error("Error while searching!");
+		} finally {
+		}
+	},
+
+	getUserRecomendations: async (values) => {
+		try {
+			const res = await axios.get(`api/v1/user/getUserRecomendations?userId=${values.userId}`);
+			set({ userRecomendations: res.data });
+		} catch (error) {
+			toast.error("Error while getting recomendations!");
+		} finally {
 		}
 	},
 }));

@@ -76,15 +76,15 @@ model Clap {
   id      String @id @default(uuid())
   user    User   @relation(fields: [userId], references: [id])
   userId  String // Foreign key to User
-  story   Story  @relation(fields: [storyId], references: [id])
-  storyId String // Foreign key to Story
+  story   Story  @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  storyId String
 }
 
 model SavedStory {
   id      String @id @default(uuid())
   user    User   @relation(fields: [userId], references: [id])
   userId  String // Foreign key to User
-  story   Story  @relation(fields: [storyId], references: [id])
+  story   Story  @relation(fields: [storyId], references: [id], onDelete: Cascade)
   storyId String // Foreign key to story
 }
 
@@ -107,9 +107,9 @@ model Follow {
 
 model ReadingHistory {
   id      String   @id @default(uuid())
-  user    User     @relation(fields: [userId], references: [id])
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId  String // Foreign key to User
-  story   Story    @relation(fields: [storyId], references: [id])
+  story   Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
   storyId String // Foreign key to Story
   readAt  DateTime @default(now())
 }
@@ -120,7 +120,7 @@ model Response {
   postedAt     DateTime      @default(now())
   user         User          @relation(fields: [userId], references: [id])
   userId       String // Foreign key to User
-  story        Story         @relation(fields: [storyId], references: [id])
+  story        Story         @relation(fields: [storyId], references: [id], onDelete: Cascade)
   storyId      String // Foreign key to Story
   replyCount   Int           @default(0)
   subResponses SubResponse[]
@@ -132,6 +132,6 @@ model SubResponse {
   postedAt   DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id])
   userId     String // Foreign key to User
-  response   Response @relation(fields: [responseId], references: [id])
+  response   Response @relation(fields: [responseId], references: [id], onDelete: Cascade)
   responseId String // Foreign key to Response
 }

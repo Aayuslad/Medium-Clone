@@ -14,6 +14,7 @@ import RefineRecommendations from "./pages/RefineRecomandations";
 import StoriesPage from "./pages/StoriesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ScrollToTop from "./components/scrollTop.";
+import SearchResultPage from "./pages/SearchResultPage";
 
 export default function App() {
 	const authStore = AuthStore();
@@ -49,6 +50,10 @@ export default function App() {
 				<Route
 					path="/notifications/:nav"
 					element={authStore.loading ? <LoadingPage /> : <NotificationsPage />}
+				/>
+				<Route
+					path="/SearchResult/:searchQuery/:nav"
+					element={authStore.loading ? <LoadingPage /> : <SearchResultPage />}
 				/>
 			</Routes>
 		</BrowserRouter>

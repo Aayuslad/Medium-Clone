@@ -620,13 +620,6 @@ export const deleteStory = async (req: Request, res: Response) => {
 	const id = req.params.id;
 
 	try {
-		// Find and delete any related SavedStory records
-		await prisma.savedStory.deleteMany({
-			where: {
-				storyId: id,
-			},
-		});
-
 		// deleting delete
 		await prisma.story.delete({
 			where: {
@@ -1220,5 +1213,118 @@ export const deleteReply = async (req: Request, res: Response) => {
 		console.log(error);
 		res.status(400);
 		return res.json({ message: "Error deleting reply" });
+	}
+};
+
+// get users drafts of stories
+export const getUsersDrafts = async (req: Request, res: Response) => {
+	const user = req.user;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 6;
+
+	try {
+		const drafts = await prisma.story.findMany({
+			skip: (page - 1) * pageSize,
+			take: pageSize,
+			orderBy: {
+				postedOn: "desc",
+			},
+			where: {
+				authorId: user?.id as string,
+				published: false,
+			},
+			select: {
+				id: true,
+				title: true,
+				description: true,
+				postedOn: true,
+				coverImg: true,
+			},
+		});
+
+		return res.json(drafts);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error fetching drafts" });
+	}
+};
+
+// get user responses
+export const getUserResponses = async (req: Request, res: Response) => {
+	const user = req.user;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 6;
+
+	try {
+		const responses = await prisma.response.findMany({
+			take: pageSize,
+			skip: (page - 1) * pageSize,
+			where: {
+				userId: user?.id as string,
+			},
+			orderBy: {
+				postedAt: "desc",
+			},
+			select: {
+				id: true,
+				content: true,
+				postedAt: true,
+				storyId: true,
+			},
+		});
+
+		return res.json(responses);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error fetching responses" });
+	}
+};
+
+// get user replies
+export const getUserReplies = async (req: Request, res: Response) => {
+	const user = req.user;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 6;
+
+	try {
+		const replies = await prisma.subResponse.findMany({
+			take: pageSize,
+			skip: (page - 1) * pageSize,
+			where: {
+				userId: user?.id as string,
+			},
+			orderBy: {
+				postedAt: "desc",
+			},
+			select: {
+				id: true,
+				content: true,
+				postedAt: true,
+				response: {
+					select: {
+						id: true,
+						storyId: true,
+					},
+				},
+			},
+		});
+
+		const modifiedReplies = replies.map((reply) => {
+			return {
+				id: reply.id,
+				content: reply.content,
+				postedAt: reply.postedAt,
+				responseId: reply.response.id,
+				storyId: reply.response.storyId,
+			};
+		});
+
+		return res.json(modifiedReplies);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error fetching responses" });
 	}
 };

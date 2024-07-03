@@ -81,9 +81,7 @@ const ComposeBlogPage = () => {
 			!storyStore.putStoryLoading && (await storyStore.putStory(formData));
 		}
 
-		if (debouncedValues) {
-			submitDebouncedValues();
-		}
+		if (debouncedValues) submitDebouncedValues();
 	}, [debouncedValues]);
 
 	// image upload logic
@@ -129,7 +127,6 @@ const ComposeBlogPage = () => {
 		if (title && content) {
 			title.style.height = "auto"; // Reset height to auto to recalculate scrollHeight
 			title.style.height = `${title.scrollHeight}px`; // Set height to scrollHeight
-			content.style.height = "auto"; // Reset height to auto to recalculate scrollHeight
 			content.style.height = `${content.scrollHeight}px`; // Set height to scrollHeight
 		}
 	}, [formik.values.title, formik.values.content, preview]);
@@ -165,7 +162,7 @@ const ComposeBlogPage = () => {
 								onClick={() => setPriview(true)}
 							/>
 
-							<MoreOptions onClick={() => {}}/>
+							<MoreOptions onClick={() => {}} />
 
 							<NotificationButton />
 
@@ -178,23 +175,25 @@ const ComposeBlogPage = () => {
 							</div>
 						</div>
 
-						<div className="main-container min-h-screen h-auto px-2 w-full max-w-3xl flex flex-col pt-14">
-							<textarea
-								id="title"
-								rows={1}
-								placeholder="Title"
-								className="resize-none outline-none px-2 pt-10 pb-3 text-4xl leading-[3rem] border-b border-slate-200 overflow-hidden font-Merriweather font-semibold"
-								{...formik.getFieldProps("title")}
-							></textarea>
+						{!storyStore.skeletonLoading && (
+							<div className="main-container min-h-screen h-auto px-2 w-full max-w-3xl flex flex-col pt-14">
+								<textarea
+									id="title"
+									rows={1}
+									placeholder="Title"
+									className="resize-none outline-none px-2 pt-10 pb-3 text-4xl leading-[3rem] border-b border-slate-200 overflow-hidden font-Merriweather font-semibold"
+									{...formik.getFieldProps("title")}
+								></textarea>
 
-							<textarea
-								id="content"
-								rows={1}
-								placeholder="content"
-								className="resize-none outline-none px-2 py-3 pt-8 mb-20 text-xl overflow-hidden text-gray-900 font-Merriweather font-light leading-9"
-								{...formik.getFieldProps("content")}
-							></textarea>
-						</div>
+								<textarea
+									id="content"
+									rows={1}
+									placeholder="content"
+									className="resize-none outline-none px-2 pt-8 mb-[300px] text-xl overflow-hidden text-gray-900 font-Merriweather font-light leading-9"
+									{...formik.getFieldProps("content")}
+								></textarea>
+							</div>
+						)}
 					</>
 				) : (
 					<div className="preview w-screen h-screen flex justify-center pt-20">

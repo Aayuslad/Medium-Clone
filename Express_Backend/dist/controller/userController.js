@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRandomTopics = exports.getRandomAuthors = exports.getUserMutedAuthors = exports.getUserFollowingAuthors = exports.muteAuthor = exports.followUser = exports.updateUserAboutSection = exports.updateUser = exports.getUserStories = exports.getUserProfile = exports.getUser = exports.signOutUser = exports.signInUser = exports.signUpUser = void 0;
+exports.getUserRecomendations = exports.globalSearch = exports.getRandomTopics = exports.getRandomAuthors = exports.getUserMutedAuthors = exports.getUserFollowingAuthors = exports.muteAuthor = exports.followUser = exports.updateUserAboutSection = exports.updateUser = exports.getUserStories = exports.getUserProfile = exports.getUser = exports.signOutUser = exports.signInUser = exports.signUpUser = void 0;
 const medium_clone_common_1 = require("@aayushlad/medium-clone-common");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -373,10 +373,6 @@ const updateUserAboutSection = (req, res) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.updateUserAboutSection = updateUserAboutSection;
-// const followUserSchema = zod.object({
-// 	userIdToFollow: zod.string(),
-// });
-// type followUserSchemaType = zod.infer<typeof followUserSchema>;
 const followUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     const body = req.body;
@@ -601,3 +597,184 @@ const getRandomTopics = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.getRandomTopics = getRandomTopics;
+// global search route
+const globalSearch = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const query = req.query.query;
+    try {
+        const [storiesStartsWith, authorsStartsWith, topicsStartsWith] = yield prismaClient_1.prisma.$transaction([
+            prismaClient_1.prisma.story.findMany({
+                take: 3,
+                where: {
+                    title: {
+                        startsWith: query,
+                        mode: "insensitive",
+                    },
+                },
+                select: {
+                    id: true,
+                    title: true,
+                },
+            }),
+            prismaClient_1.prisma.user.findMany({
+                take: 3,
+                where: {
+                    userName: {
+                        startsWith: query,
+                        mode: "insensitive",
+                    },
+                },
+                select: {
+                    id: true,
+                    userName: true,
+                    profileImg: true,
+                },
+            }),
+            prismaClient_1.prisma.topics.findMany({
+                take: 3,
+                where: {
+                    topic: {
+                        startsWith: query,
+                        mode: "insensitive",
+                    },
+                },
+                select: {
+                    topic: true,
+                },
+            }),
+        ]);
+        const storiesCount = storiesStartsWith.length;
+        const authorsCount = authorsStartsWith.length;
+        const topicsCount = topicsStartsWith.length;
+        const additionalStories = storiesCount < 3
+            ? yield prismaClient_1.prisma.story.findMany({
+                take: 3 - storiesCount,
+                where: {
+                    title: {
+                        contains: query,
+                        mode: "insensitive",
+                    },
+                    NOT: {
+                        id: {
+                            in: storiesStartsWith.map((story) => story.id),
+                        },
+                    },
+                },
+                select: {
+                    id: true,
+                    title: true,
+                },
+            })
+            : [];
+        const additionalAuthors = authorsCount < 3
+            ? yield prismaClient_1.prisma.user.findMany({
+                take: 3 - authorsCount,
+                where: {
+                    userName: {
+                        contains: query,
+                        mode: "insensitive",
+                    },
+                    NOT: {
+                        id: {
+                            in: authorsStartsWith.map((author) => author.id),
+                        },
+                    },
+                },
+                select: {
+                    id: true,
+                    userName: true,
+                    profileImg: true,
+                },
+            })
+            : [];
+        const additionalTopics = topicsCount < 3
+            ? yield prismaClient_1.prisma.topics.findMany({
+                take: 3 - topicsCount,
+                where: {
+                    topic: {
+                        contains: query,
+                        mode: "insensitive",
+                    },
+                    NOT: {
+                        topic: {
+                            in: topicsStartsWith.map((topic) => topic.topic),
+                        },
+                    },
+                },
+                select: {
+                    topic: true,
+                },
+            })
+            : [];
+        const stories = [...storiesStartsWith, ...additionalStories];
+        const authors = [...authorsStartsWith, ...additionalAuthors];
+        const topics = [...topicsStartsWith, ...additionalTopics];
+        return res.json({
+            stories,
+            authors,
+            topics,
+        });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error while getting search results" });
+    }
+});
+exports.globalSearch = globalSearch;
+// get right container data
+const getUserRecomendations = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.query.userId;
+    try {
+        const recommendedTopics = yield prismaClient_1.prisma.topics.findMany({
+            take: 7,
+            select: {
+                topic: true,
+            },
+        });
+        const whoToFollow = yield prismaClient_1.prisma.user.findMany({
+            take: 3,
+            select: {
+                id: true,
+                userName: true,
+                profileImg: true,
+                bio: true,
+            },
+        });
+        const recentlySaved = userId
+            ? yield prismaClient_1.prisma.savedStory.findMany({
+                take: 4,
+                where: {
+                    userId: userId,
+                },
+                select: {
+                    story: {
+                        select: {
+                            id: true,
+                            title: true,
+                            author: {
+                                select: {
+                                    userName: true,
+                                    profileImg: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            })
+            : [];
+        const modifiedRecentlySaved = recentlySaved.map((story) => {
+            return {
+                id: story.story.id,
+                title: story.story.title,
+                author: story.story.author.userName,
+                authorProfileImg: story.story.author.profileImg,
+            };
+        });
+        return res.json({ recommendedTopics, whoToFollow, recentlySaved: modifiedRecentlySaved });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+});
+exports.getUserRecomendations = getUserRecomendations;

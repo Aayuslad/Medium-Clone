@@ -18,6 +18,9 @@ router.get("/readingHistory", authMiddleware_1.default, storyController_1.getRea
 router.get("/topic/:topic", storyController_1.getTopic);
 router.get("/responses/:storyId", storyController_1.getResponseByStoryId);
 router.get("/replies/:responseId", storyController_1.getReplyByResponseId);
+router.get("/getUsersDrafts", authMiddleware_1.default, storyController_1.getUsersDrafts);
+router.get("/getUserResponses", authMiddleware_1.default, storyController_1.getUserResponses);
+router.get("/getUserReplies", authMiddleware_1.default, storyController_1.getUserReplies);
 router.get("/:id", storyController_1.getStory);
 router.post("/clap", authMiddleware_1.default, storyController_1.clapStory);
 router.post("/save", authMiddleware_1.default, storyController_1.saveStory);

@@ -413,12 +413,6 @@ export const updateUserAboutSection = async (req: Request, res: Response) => {
 	}
 };
 
-// const followUserSchema = zod.object({
-// 	userIdToFollow: zod.string(),
-// });
-
-// type followUserSchemaType = zod.infer<typeof followUserSchema>;
-
 export const followUser = async (req: Request, res: Response) => {
 	const user = req.user;
 
@@ -659,5 +653,199 @@ export const getRandomTopics = async (req: Request, res: Response) => {
 		console.log(error);
 		res.status(400);
 		return res.json({ message: "Error while getting user muted authors" });
+	}
+};
+
+// global search route
+export const globalSearch = async (req: Request, res: Response) => {
+	const query = req.query.query as string;
+
+	try {
+		const [storiesStartsWith, authorsStartsWith, topicsStartsWith] = await prisma.$transaction([
+			prisma.story.findMany({
+				take: 3,
+				where: {
+					title: {
+						startsWith: query,
+						mode: "insensitive",
+					},
+				},
+				select: {
+					id: true,
+					title: true,
+				},
+			}),
+			prisma.user.findMany({
+				take: 3,
+				where: {
+					userName: {
+						startsWith: query,
+						mode: "insensitive",
+					},
+				},
+				select: {
+					id: true,
+					userName: true,
+					profileImg: true,
+				},
+			}),
+			prisma.topics.findMany({
+				take: 3,
+				where: {
+					topic: {
+						startsWith: query,
+						mode: "insensitive",
+					},
+				},
+				select: {
+					topic: true,
+				},
+			}),
+		]);
+
+		const storiesCount = storiesStartsWith.length;
+		const authorsCount = authorsStartsWith.length;
+		const topicsCount = topicsStartsWith.length;
+
+		const additionalStories =
+			storiesCount < 3
+				? await prisma.story.findMany({
+						take: 3 - storiesCount,
+						where: {
+							title: {
+								contains: query,
+								mode: "insensitive",
+							},
+							NOT: {
+								id: {
+									in: storiesStartsWith.map((story) => story.id),
+								},
+							},
+						},
+						select: {
+							id: true,
+							title: true,
+						},
+				  })
+				: [];
+
+		const additionalAuthors =
+			authorsCount < 3
+				? await prisma.user.findMany({
+						take: 3 - authorsCount,
+						where: {
+							userName: {
+								contains: query,
+								mode: "insensitive",
+							},
+							NOT: {
+								id: {
+									in: authorsStartsWith.map((author) => author.id),
+								},
+							},
+						},
+						select: {
+							id: true,
+							userName: true,
+							profileImg: true,
+						},
+				  })
+				: [];
+
+		const additionalTopics =
+			topicsCount < 3
+				? await prisma.topics.findMany({
+						take: 3 - topicsCount,
+						where: {
+							topic: {
+								contains: query,
+								mode: "insensitive",
+							},
+							NOT: {
+								topic: {
+									in: topicsStartsWith.map((topic) => topic.topic),
+								},
+							},
+						},
+						select: {
+							topic: true,
+						},
+				  })
+				: [];
+
+		const stories = [...storiesStartsWith, ...additionalStories];
+		const authors = [...authorsStartsWith, ...additionalAuthors];
+		const topics = [...topicsStartsWith, ...additionalTopics];
+
+		return res.json({
+			stories,
+			authors,
+			topics,
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error while getting search results" });
+	}
+};
+
+// get right container data
+export const getUserRecomendations = async (req: Request, res: Response) => {
+	const userId = req.query.userId as string;
+
+	try {
+		const recommendedTopics = await prisma.topics.findMany({
+			take: 7,
+			select: {
+				topic: true,
+			},
+		});
+
+		const whoToFollow = await prisma.user.findMany({
+			take: 3,
+			select: {
+				id: true,
+				userName: true,
+				profileImg: true,
+				bio: true,
+			},
+		});
+
+		const recentlySaved = userId
+			? await prisma.savedStory.findMany({
+					take: 4,
+					where: {
+						userId: userId,
+					},
+					select: {
+						story: {
+							select: {
+								id: true,
+								title: true,
+								author: {
+									select: {
+										userName: true,
+										profileImg: true,
+									},
+								},
+							},
+						},
+					},
+			  })
+			: [];
+
+		const modifiedRecentlySaved = recentlySaved.map((story) => {
+			return {
+				id: story.story.id,
+				title: story.story.title,
+				author: story.story.author.userName,
+				authorProfileImg: story.story.author.profileImg,
+			};
+		});
+
+		return res.json({ recommendedTopics, whoToFollow, recentlySaved: modifiedRecentlySaved });
+	} catch (error) {
+		console.error(error);
+		return res.status(500).json({ message: "Internal server error" });
 	}
 };

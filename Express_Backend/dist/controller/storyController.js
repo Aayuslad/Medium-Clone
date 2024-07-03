@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteReply = exports.editReply = exports.getReplyByResponseId = exports.makeReplyToResponse = exports.deleteResponse = exports.editResponse = exports.getResponseByStoryId = exports.makeResponse = exports.followTopic = exports.getTopic = exports.getReadingHistory = exports.getSavedStories = exports.deleteStory = exports.saveStory = exports.clapStory = exports.getStoriesByAuthor = exports.getStoriesByTopics = exports.getAllStories = exports.getStory = exports.upadateStory = exports.createStory = void 0;
+exports.getUserReplies = exports.getUserResponses = exports.getUsersDrafts = exports.deleteReply = exports.editReply = exports.getReplyByResponseId = exports.makeReplyToResponse = exports.deleteResponse = exports.editResponse = exports.getResponseByStoryId = exports.makeResponse = exports.followTopic = exports.getTopic = exports.getReadingHistory = exports.getSavedStories = exports.deleteStory = exports.saveStory = exports.clapStory = exports.getStoriesByAuthor = exports.getStoriesByTopics = exports.getAllStories = exports.getStory = exports.upadateStory = exports.createStory = void 0;
 const medium_clone_common_1 = require("@aayushlad/medium-clone-common");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prismaClient_1 = require("../db/prismaClient");
@@ -563,12 +563,6 @@ const deleteStory = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const user = req.user;
     const id = req.params.id;
     try {
-        // Find and delete any related SavedStory records
-        yield prismaClient_1.prisma.savedStory.deleteMany({
-            where: {
-                storyId: id,
-            },
-        });
         // deleting delete
         yield prismaClient_1.prisma.story.delete({
             where: {
@@ -1121,3 +1115,112 @@ const deleteReply = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.deleteReply = deleteReply;
+// get users drafts of stories
+const getUsersDrafts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 6;
+    try {
+        const drafts = yield prismaClient_1.prisma.story.findMany({
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+            orderBy: {
+                postedOn: "desc",
+            },
+            where: {
+                authorId: user === null || user === void 0 ? void 0 : user.id,
+                published: false,
+            },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                postedOn: true,
+                coverImg: true,
+            },
+        });
+        return res.json(drafts);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error fetching drafts" });
+    }
+});
+exports.getUsersDrafts = getUsersDrafts;
+// get user responses
+const getUserResponses = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 6;
+    try {
+        const responses = yield prismaClient_1.prisma.response.findMany({
+            take: pageSize,
+            skip: (page - 1) * pageSize,
+            where: {
+                userId: user === null || user === void 0 ? void 0 : user.id,
+            },
+            orderBy: {
+                postedAt: "desc",
+            },
+            select: {
+                id: true,
+                content: true,
+                postedAt: true,
+                storyId: true,
+            },
+        });
+        return res.json(responses);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error fetching responses" });
+    }
+});
+exports.getUserResponses = getUserResponses;
+// get user replies
+const getUserReplies = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 6;
+    try {
+        const replies = yield prismaClient_1.prisma.subResponse.findMany({
+            take: pageSize,
+            skip: (page - 1) * pageSize,
+            where: {
+                userId: user === null || user === void 0 ? void 0 : user.id,
+            },
+            orderBy: {
+                postedAt: "desc",
+            },
+            select: {
+                id: true,
+                content: true,
+                postedAt: true,
+                response: {
+                    select: {
+                        id: true,
+                        storyId: true,
+                    },
+                },
+            },
+        });
+        const modifiedReplies = replies.map((reply) => {
+            return {
+                id: reply.id,
+                content: reply.content,
+                postedAt: reply.postedAt,
+                responseId: reply.response.id,
+                storyId: reply.response.storyId,
+            };
+        });
+        return res.json(modifiedReplies);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error fetching responses" });
+    }
+});
+exports.getUserReplies = getUserReplies;

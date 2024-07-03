@@ -58,7 +58,22 @@ export type responseType = {
     id: string;
     content: string;
     postedAt: string;
+    storyId: string;
     replyCount?: number;
+};
+export type replyType = {
+    id: string;
+    content: string;
+    postedAt: string;
+    responseId: string;
+    storyId: string;
+};
+export type draftType = {
+    id: string;
+    title: string;
+    description: string;
+    postedOn: string;
+    coverImg: string;
 };
 export declare const signUpUserSchema: zod.ZodObject<{
     userName: zod.ZodString;
