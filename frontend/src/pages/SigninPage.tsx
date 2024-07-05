@@ -7,8 +7,9 @@ import { Input } from "../components/Input";
 import { BlackButton } from "../components/buttons/BlackButton";
 import { sinInValidation } from "../helper/inputValidation";
 import { AuthStore } from "../stores/authStore";
-import TurnstileWidget from "../helper/cloudflareTurnstile";
+// import TurnstileWidget from "../helper/cloudflareTurnstile";
 import { useEffect, useState } from "react";
+import ReCAPTCHAWidget from "../helper/GoogleReCAPTCHA";
 
 function signin() {
 	const authStore = AuthStore();
@@ -77,7 +78,8 @@ function signin() {
 								field={formik.getFieldProps("password")}
 							/>
 
-							<TurnstileWidget setToken={setToken} />
+							{/* <TurnstileWidget setToken={setToken} /> */}
+							<ReCAPTCHAWidget setToken={setToken} />
 
 							<BlackButton type={"submit"}>Sign in</BlackButton>
 

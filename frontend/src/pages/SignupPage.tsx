@@ -8,7 +8,8 @@ import { BlackButton } from "../components/buttons/BlackButton";
 import { sinUpValidation } from "../helper/inputValidation";
 import { AuthStore } from "../stores/authStore";
 import { useEffect, useState } from "react";
-import TurnstileWidget from "../helper/cloudflareTurnstile";
+// import TurnstileWidget from "../helper/cloudflareTurnstile";
+import ReCAPTCHAWidget from "../helper/GoogleReCAPTCHA";
 
 function signup() {
 	const navigate = useNavigate();
@@ -85,7 +86,8 @@ function signup() {
 								field={formik.getFieldProps("password")}
 							/>
 
-							<TurnstileWidget setToken={setToken} />
+							{/* <TurnstileWidget setToken={setToken} /> */}
+							<ReCAPTCHAWidget setToken={setToken} />
 
 							<BlackButton type={"submit"}>Sign up</BlackButton>
 
