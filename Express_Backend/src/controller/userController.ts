@@ -37,10 +37,7 @@ export const signUpUser = async (req: Request, res: Response) => {
 			method: "POST",
 		});
 		const isChalangeSuccess = (await result.json()).success;
-		if (!isChalangeSuccess) {
-			res.status(400);
-			return res.json({ message: "Invalid captcha" });
-		}
+		if (!isChalangeSuccess) return res.status(400).json({ message: "Invalid captcha" });
 
 		// check for repitative email and username
 		const repeatEmail = await prisma.user.findUnique({

@@ -7,7 +7,6 @@ function TurnstileWidget({ setToken }: { setToken: React.Dispatch<React.SetState
 			sitekey="0x4AAAAAAAeTdEvT5c0r7avD"
 			onVerify={(token) => {
 				setToken(token);
-				console.log(token);
 			}}
 		/>
 	);
