@@ -30,9 +30,9 @@ export const signUpUser = async (req: Request, res: Response) => {
 
 		// cheking token of cloudflare turnstyle
 		const formData = new FormData();
-		formData.append("secret", process.env.TURNSTILE_SECRET_KEY as string);
+		formData.append("secret", process.env.ReCAPTCHA_SECRET_KEY as string);
 		formData.append("response", body.token);
-		const result = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+		const result = await fetch("https://www.google.com/recaptcha/api/siteverify", {
 			body: formData,
 			method: "POST",
 		});
@@ -101,9 +101,9 @@ export const signInUser = async (req: Request, res: Response) => {
 
 		// cheking token of cloudflare turnstyle
 		const formData = new FormData();
-		formData.append("secret", process.env.TURNSTILE_SECRET_KEY as string);
+		formData.append("secret", process.env.ReCAPTCHA_SECRET_KEY as string);
 		formData.append("response", body.token);
-		const result = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+		const result = await fetch("https://www.google.com/recaptcha/api/siteverify", {
 			body: formData,
 			method: "POST",
 		});

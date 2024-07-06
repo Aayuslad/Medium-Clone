@@ -30,17 +30,15 @@ const signUpUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         // cheking token of cloudflare turnstyle
         const formData = new FormData();
-        formData.append("secret", process.env.TURNSTILE_SECRET_KEY);
+        formData.append("secret", process.env.ReCAPTCHA_SECRET_KEY);
         formData.append("response", body.token);
-        const result = yield fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+        const result = yield fetch("https://www.google.com/recaptcha/api/siteverify", {
             body: formData,
             method: "POST",
         });
         const isChalangeSuccess = (yield result.json()).success;
-        if (!isChalangeSuccess) {
-            res.status(400);
-            return res.json({ message: "Invalid captcha" });
-        }
+        if (!isChalangeSuccess)
+            return res.status(400).json({ message: "Invalid captcha" });
         // check for repitative email and username
         const repeatEmail = yield prismaClient_1.prisma.user.findUnique({
             where: {
@@ -98,9 +96,9 @@ const signInUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         // cheking token of cloudflare turnstyle
         const formData = new FormData();
-        formData.append("secret", process.env.TURNSTILE_SECRET_KEY);
+        formData.append("secret", process.env.ReCAPTCHA_SECRET_KEY);
         formData.append("response", body.token);
-        const result = yield fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+        const result = yield fetch("https://www.google.com/recaptcha/api/siteverify", {
             body: formData,
             method: "POST",
         });
