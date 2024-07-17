@@ -35,6 +35,6 @@ app.get("/", (req, res) => {
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/story", storyRouter);
 
-const PORT = process.env.PORT || 8080;
+const PORT = 80;
 
 app.listen(PORT, () => console.log("server started"));
