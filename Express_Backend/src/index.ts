@@ -23,6 +23,10 @@ app.use(
 	}),
 );
 
+app.get("/", (req, res) => {
+	res.json({ message: "welcome 😊, I am Aayush" });
+});
+
 app.use(express.json());
 app.use(cookieParser());
 app.get("/", (req, res) => {
