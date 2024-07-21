@@ -206,8 +206,18 @@ const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             },
         });
         if (!userData) {
+            const topics = yield prismaClient_1.prisma.topics.findMany({
+                take: 10,
+                orderBy: {
+                    storiesCount: "desc",
+                },
+                select: {
+                    topic: true,
+                    id: true,
+                },
+            });
             res.status(404);
-            return res.json({ message: "User not found" });
+            return res.json({ message: "User not found", topics: topics });
         }
         const transformedUser = Object.assign(Object.assign({}, userData), { savedStories: userData === null || userData === void 0 ? void 0 : userData.savedStories.map((story) => story.storyId), claps: userData.claps.map((clap) => clap.storyId), following: userData.following.map((user) => user.followingId), followedTopics: userData.followedTopics.map((topic) => ({
                 topic: topic.topic.topic,

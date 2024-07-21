@@ -40,24 +40,45 @@ const TopicsNavbar = ({ currentNav, setCurrentNav }: Props) => {
 				className="nav flex gap-9 border-b max-w-fit sm:max-w-full lg:w-full border-slate-200 pl-4 pr-10 overflow-x-scroll no-scrollbar duration-300"
 			>
 				<AddTopicButton />
-				{[
-					"For you",
-					"Following",
-					...(authStore.user?.followedTopics?.map((topic) => topic.topic) || []),
-				].map((nav, index) => (
-					<div
-						key={index}
-						onClick={() => {
-							navigate(`/${nav}`);
-							setCurrentNav(nav);
-						}}
-						className={`cursor-pointer text-nowrap py-4 text-[14px] border-black ${
-							currentNav === nav ? "border-b" : ""
-						}`}
-					>
-						{nav}
-					</div>
-				))}
+				{authStore.isLoggedIn &&
+					[
+						"For you",
+						"Following",
+						...(authStore.user?.followedTopics?.map((topic) => topic.topic) || []),
+					].map((nav, index) => (
+						<div
+							key={index}
+							onClick={() => {
+								navigate(`/${nav}`);
+								setCurrentNav(nav);
+							}}
+							className={`cursor-pointer text-nowrap py-4 text-[14px] border-black ${
+								currentNav === nav ? "border-b" : ""
+							}`}
+						>
+							{nav}
+						</div>
+					))}
+
+				{!authStore.isLoggedIn &&
+					["For you", ...(authStore.topics?.map((topic) => topic.topic) || [])].map(
+						(nav, index) => {
+							return (
+								<div
+									key={index}
+									onClick={() => {
+										navigate(`/${nav}`);
+										setCurrentNav(nav);
+									}}
+									className={`cursor-pointer text-nowrap py-4 text-[14px] border-black ${
+										currentNav === nav ? "border-b" : ""
+									}`}
+								>
+									{nav}
+								</div>
+							);
+						},
+					)}
 			</div>
 			{!isAtStart && (
 				<button

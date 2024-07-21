@@ -19,15 +19,31 @@ const prismaClient_1 = require("../db/prismaClient");
 const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const token = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.Authorization;
+    let topics = [];
+    try {
+        topics = yield prismaClient_1.prisma.topics.findMany({
+            take: 10,
+            orderBy: {
+                storiesCount: "desc",
+            },
+            select: {
+                topic: true,
+                id: true,
+            },
+        });
+    }
+    catch (error) {
+        console.log("error fetching topics");
+    }
     if (!token) {
-        res.status(401).json({ message: "Sign in first" });
+        res.status(401).json({ message: "Sign in first", topics });
         return;
     }
     try {
         // Verify JWT token
         const decodedPayload = jsonwebtoken_1.default.verify(token, JWT_SECRET || "");
         if (typeof decodedPayload === "string") {
-            res.status(403).json({ error: "Error while decoding JWT token" });
+            res.status(403).json({ error: "Error while decoding JWT token", topics });
             return;
         }
         const userId = decodedPayload.id;
@@ -42,7 +58,7 @@ const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
     catch (e) {
         console.error(e);
-        return res.status(403).json({ error: "Error while user validation" });
+        return res.status(403).json({ error: "Error while user validation", topics });
     }
 });
 exports.default = authMiddleware;

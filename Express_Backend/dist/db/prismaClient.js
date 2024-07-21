@@ -10,3 +10,6 @@ exports.prisma = new client_1.PrismaClient({
         },
     },
 }).$extends((0, extension_accelerate_1.withAccelerate)());
+exports.prisma.$connect()
+    .then(() => console.log('Database connected successfully'))
+    .catch((error) => console.error('Failed to connect to database:', error));

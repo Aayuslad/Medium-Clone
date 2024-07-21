@@ -1,4 +1,9 @@
-import { signUpUserSchemaType, signinUserSchemaType, userType } from "@aayushlad/medium-clone-common";
+import {
+	signUpUserSchemaType,
+	signinUserSchemaType,
+	topicType,
+	userType,
+} from "@aayushlad/medium-clone-common";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { NavigateFunction } from "react-router-dom";
@@ -8,6 +13,7 @@ type authStoreType = {
 	loading: boolean;
 	isLoggedIn: boolean;
 	user: userType | undefined;
+	topics: topicType[] | [];
 	setUser: (user: userType) => void;
 	signup: (values: signUpUserSchemaType, navigate: NavigateFunction) => void;
 	signin: (values: signinUserSchemaType, navigate: NavigateFunction) => void;
@@ -19,6 +25,7 @@ export const AuthStore = create<authStoreType>((set) => ({
 	loading: true,
 	isLoggedIn: false,
 	user: undefined,
+	topics: [],
 	setUser: (user: userType) => {
 		set({ user });
 	},
@@ -82,7 +89,10 @@ export const AuthStore = create<authStoreType>((set) => ({
 			set({ loading: true });
 			const response = await axios.get("/api/v1/user");
 			set({ user: response.data, isLoggedIn: true });
-		} catch (error) {
+		} catch (error: any) {
+			console.log(error.response.data);
+			set({ isLoggedIn: false });
+			set({ topics: error.response.data.topics });
 		} finally {
 			set({ loading: false });
 		}

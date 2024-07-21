@@ -217,8 +217,19 @@ export const getUser = async (req: Request, res: Response) => {
 		});
 
 		if (!userData) {
+			const topics = await prisma.topics.findMany({
+				take: 10,
+				orderBy: {
+					storiesCount: "desc",
+				},
+				select: {
+					topic: true,
+					id: true,
+				},
+			});
+
 			res.status(404);
-			return res.json({ message: "User not found" });
+			return res.json({ message: "User not found", topics: topics });
 		}
 
 		const transformedUser = {

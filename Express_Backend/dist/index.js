@@ -21,6 +21,9 @@ app.use((0, cors_1.default)({
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
 }));
+app.get("/", (req, res) => {
+    res.json({ message: "welcome 😊, I am Aayush" });
+});
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 app.get("/", (req, res) => {
@@ -28,5 +31,5 @@ app.get("/", (req, res) => {
 });
 app.use("/api/v1/user", userRouter_1.default);
 app.use("/api/v1/story", storyRouter_1.default);
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 80;
 app.listen(PORT, () => console.log("server started"));

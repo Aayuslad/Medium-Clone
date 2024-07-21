@@ -6,9 +6,25 @@ import { prisma } from "../db/prismaClient";
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
 	const token: string | undefined = req.cookies?.Authorization;
+	let topics: { topic: string; id: string }[] = [];
+
+	try {
+		topics = await prisma.topics.findMany({
+			take: 10,
+			orderBy: {
+				storiesCount: "desc",
+			},
+			select: {
+				topic: true,
+				id: true,
+			},
+		});
+	} catch (error) {
+		console.log("error fetching topics");
+	}
 
 	if (!token) {
-		res.status(401).json({ message: "Sign in first" });
+		res.status(401).json({ message: "Sign in first", topics });
 		return;
 	}
 
@@ -16,13 +32,13 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 		// Verify JWT token
 		const decodedPayload: string | JwtPayload = jwt.verify(token, JWT_SECRET || "");
 		if (typeof decodedPayload === "string") {
-			res.status(403).json({ error: "Error while decoding JWT token" });
+			res.status(403).json({ error: "Error while decoding JWT token", topics });
 			return;
 		}
 		const userId: string = decodedPayload.id;
 
 		// Find user and attach to request
-		const user = await prisma.user.findUnique({	
+		const user = await prisma.user.findUnique({
 			where: {
 				id: userId,
 			},
@@ -32,7 +48,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 		next();
 	} catch (e) {
 		console.error(e);
-		return res.status(403).json({ error: "Error while user validation" });
+		return res.status(403).json({ error: "Error while user validation", topics });
 	}
 };
 
