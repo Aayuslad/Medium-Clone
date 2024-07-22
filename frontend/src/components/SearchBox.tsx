@@ -5,26 +5,12 @@ import useDebounce from "../hooks/useDebounce";
 import ProfileIcon from "./ProfileIcon";
 import defaultProfuleImg from "../assets/defaultProfile.jpg";
 import { useNavigate } from "react-router-dom";
-
-export type resultType = {
-	authors: {
-		id: string;
-		userName: string;
-		profileImg: string;
-	}[];
-	stories: {
-		id: string;
-		title: string;
-	}[];
-	topics: {
-		topic: string;
-	}[];
-};
+import { searchResultType } from "../stores/usersStore";
 
 const SearchBox = () => {
 	const usersStore = UsersStore();
 	const navigate = useNavigate();
-	const [result, setResult] = useState<resultType>();
+	const [result, setResult] = useState<searchResultType>();
 
 	const formik = useFormik({
 		initialValues: {

@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import defaultProfile from "../assets/defaultProfile.jpg";
+import AuthorMuteUnmuteButton from "../components/buttons/AuthorMuteUnmuteButton";
 import Header from "../components/Header";
+import RegularLeftContainerNavbar from "../components/navbars/RegularLeftContainerNavbar";
+import ProfileIcon from "../components/ProfileIcon";
+import RefineRecomendationsSkelitons from "../components/skelitons/RefineRecomendationsSkelitons";
+import TopicPriview from "../components/TopicPriview";
+import UserOrPeoplePreview from "../components/UserOrPeoplePreview";
 import LeftContainer from "../components/wrapperComponents/LeftContainer";
 import MainConntainer from "../components/wrapperComponents/MainContainer";
 import RightContainer from "../components/wrapperComponents/RightContainer";
-import RegularLeftContainerNavbar from "../components/navbars/RegularLeftContainerNavbar";
-import { useNavigate, useParams } from "react-router-dom";
 import { UsersStore } from "../stores/usersStore";
-import ProfileIcon from "../components/ProfileIcon";
-import defaultProfile from "../assets/defaultProfile.jpg";
-import BigFollowFollowingButton from "../components/buttons/BigFollowFollowingButton";
-import AuthorMuteUnmuteButton from "../components/buttons/AuthorMuteUnmuteButton";
-import TopicFollowUnfollowButton from "../components/buttons/TopicFollowUnfollowButton";
-import RefineRecomendationsSkelitons from "../components/skelitons/RefineRecomendationsSkelitons";
 
 const RefineRecommendations = () => {
 	const { nav } = useParams<{ nav: string }>();
@@ -116,43 +116,17 @@ const RefineRecommendations = () => {
 
 					{currentNav === "Following" && (
 						<div className="lg:mr-20">
-							{usersStore.refineReconmandations?.Following.map((author) => {
-								return (
-									<div key={author.id} className="flex pt-8 items-center gap-5">
-										<ProfileIcon
-											marginX={false}
-											profileImg={author.profileImg || defaultProfile}
-											onClick={() => navigate(`/user/${author.id}/Home`)}
-											heightWidth={10}
-										/>
-
-										<div className="flex-1">
-											<div className="flex items-center gap-2">
-												<h3 className="font-medium text-[17px]">
-													{author.userName || "MediumUser"}
-												</h3>
-												{" · "}
-												<span className="text-sm text-gray-700">
-													{author.followersCount} {"  "}Followers
-												</span>
-											</div>
-											<p className="text-sm text-gray-700 hidden sm:block">
-												{author.bio}
-											</p>
-										</div>
-
-										<BigFollowFollowingButton user={author} />
-									</div>
-								);
+							{usersStore.refineReconmandations?.Following.map((author, index) => {
+								return <UserOrPeoplePreview index={index} author={author} />;
 							})}
 						</div>
 					)}
 
 					{currentNav === "Muted" && (
 						<div className="lg:mr-20">
-							{usersStore.refineReconmandations?.Muted.map((author) => {
+							{usersStore.refineReconmandations?.Muted.map((author, index) => {
 								return (
-									<div key={author.id} className="flex pt-8 items-center gap-4">
+									<div key={index} className="flex pt-8 items-center gap-4">
 										<ProfileIcon
 											marginX={false}
 											profileImg={author.profileImg || defaultProfile}
@@ -184,82 +158,16 @@ const RefineRecommendations = () => {
 
 					{currentNav === "Discover Authors" && (
 						<div className="lg:mr-20">
-							{usersStore.refineReconmandations?.["Discover Authors"].map((author) => {
-								return (
-									<div key={author.id} className="flex pt-8 items-center gap-5">
-										<ProfileIcon
-											marginX={false}
-											profileImg={author.profileImg || defaultProfile}
-											onClick={() => navigate(`/user/${author.id}/Home`)}
-											heightWidth={10}
-										/>
-
-										<div className="flex-1">
-											<div className="flex items-center gap-2">
-												<h3 className="font-medium text-[17px]">
-													{author.userName || "MediumUser"}
-												</h3>
-												{" · "}
-												<span className="text-sm text-gray-700">
-													{author.followersCount} {"  "}Followers
-												</span>
-											</div>
-											<p className="text-sm text-gray-700  sm:block">{author.bio}</p>
-										</div>
-
-										<BigFollowFollowingButton user={author} />
-									</div>
-								);
+							{usersStore.refineReconmandations?.["Discover Authors"].map((author, index) => {
+								return <UserOrPeoplePreview index={index} author={author} />;
 							})}
 						</div>
 					)}
 
 					{currentNav === "Discover Topics" && (
 						<div className="lg:mr-20">
-							{usersStore.refineReconmandations?.["Discover Topics"].map((topic) => {
-								return (
-									<div key={topic.id} className="flex pt-5 items-center gap-5">
-										<div
-											className="logo w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer"
-											onClick={() => {
-												navigate(`/topic/${topic.topic}`);
-											}}
-										>
-											<svg
-												width="16"
-												height="16"
-												viewBox="0 0 16 16"
-												fill="none"
-												className="pd"
-											>
-												<path
-													d="M3 14V2h10v12H3zM2.75 1a.75.75 0 0 0-.75.75v12.5c0 .41.34.75.75.75h10.5c.41 0 .75-.34.75-.75V1.75a.75.75 0 0 0-.75-.75H2.75zM5 10.5a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1H5zM4.5 9c0-.28.22-.5.5-.5h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm1.25-2.5h4.5c.14 0 .25-.11.25-.25v-1.5a.25.25 0 0 0-.25-.25h-4.5a.25.25 0 0 0-.25.25v1.5c0 .14.11.25.25.25z"
-													fill="currentColor"
-												></path>
-											</svg>
-										</div>
-
-										<div className="flex-1 flex flex-col">
-											<h3
-												className="font-medium text-[17px] cursor-pointer"
-												onClick={() => {
-													navigate(`/topic/${topic.topic}`);
-												}}
-											>
-												{topic.topic}
-											</h3>
-											<p>
-												{topic.followersCount +
-													" Followers" +
-													" · " +
-													topic.storiesCount +
-													" Stories"}
-											</p>
-										</div>
-
-										<TopicFollowUnfollowButton id={topic.id} topic={topic.topic} />
-									</div>
-								);
+							{usersStore.refineReconmandations?.["Discover Topics"].map((topic, index) => {
+								return <TopicPriview index={index} topic={topic} />;
 							})}
 						</div>
 					)}

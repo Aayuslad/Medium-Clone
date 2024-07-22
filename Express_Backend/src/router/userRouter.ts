@@ -3,13 +3,16 @@ import {
 	followUser,
 	getRandomAuthors,
 	getRandomTopics,
+	getSerchResultPageAuthors,
+	getSerchResultPageStories,
+	getSerchResultPageTopics,
 	getUser,
 	getUserFollowingAuthors,
 	getUserMutedAuthors,
 	getUserProfile,
 	getUserRecomendations,
 	getUserStories,
-	globalSearch,
+	globalSearchBox,
 	muteAuthor,
 	signInUser,
 	signOutUser,
@@ -33,7 +36,10 @@ router.get("/getUserFollowingAuthors", authMiddleware, getUserFollowingAuthors);
 router.get("/getUserMutedAuthors", authMiddleware, getUserMutedAuthors);
 router.get("/getRandomAuthors", getRandomAuthors);
 router.get("/getRandomTopics", getRandomTopics);
-router.get("/search", globalSearch);
+router.get("/searchbox", globalSearchBox);
+router.get("/getSerchResultPageAuthors", getSerchResultPageAuthors);
+router.get("/getSerchResultPageStories", getSerchResultPageStories);
+router.get("/getSerchResultPageTopics", getSerchResultPageTopics);
 router.get("/getUserRecomendations", getUserRecomendations);
 router.post("/followUser", authMiddleware, followUser);
 router.post("/muteAuthor/:authorId", authMiddleware, muteAuthor);

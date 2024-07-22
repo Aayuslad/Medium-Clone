@@ -1,18 +1,17 @@
-import BlogsSkeliton from "./StorySkeleton"
+import BlogsSkeliton from "./StorySkeleton";
 
-const BlogsSkelitons = () => {
+const StorySkeletons = () => {
+	return (
+		<>
+			<BlogsSkeliton />
+			<BlogsSkeliton />
+			<BlogsSkeliton />
+			<BlogsSkeliton />
+			{/* <BlogsSkeliton /> */}
+			{/* <BlogsSkeliton /> */}
+			{/* <BlogsSkeliton /> */}
+		</>
+	);
+};
 
-    return (
-        <>
-            <BlogsSkeliton />
-            <BlogsSkeliton />
-            <BlogsSkeliton />
-            <BlogsSkeliton />
-            {/* <BlogsSkeliton /> */}
-            {/* <BlogsSkeliton /> */}
-            {/* <BlogsSkeliton /> */}
-        </>
-    )
-}
-
-export default BlogsSkelitons;
+export default StorySkeletons;

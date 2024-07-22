@@ -702,7 +702,7 @@ export const getRandomTopics = async (req: Request, res: Response) => {
 };
 
 // global search route
-export const globalSearch = async (req: Request, res: Response) => {
+export const globalSearchBox = async (req: Request, res: Response) => {
 	const query = req.query.query as string;
 
 	try {
@@ -827,6 +827,157 @@ export const globalSearch = async (req: Request, res: Response) => {
 			authors,
 			topics,
 		});
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error while getting search results" });
+	}
+};
+
+export const getSerchResultPageStories = async (req: Request, res: Response) => {
+	const query = req.query.query as string;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 8;
+
+	try {
+		const stories = await prisma.story.findMany({
+			take: pageSize,
+			skip: (page - 1) * pageSize,
+			where: {
+				OR: [
+					{
+						title: {
+							startsWith: query,
+							mode: "insensitive",
+						},
+					},
+					{
+						title: {
+							contains: query,
+							mode: "insensitive",
+						},
+					},
+				],
+				published: true,
+			},
+			orderBy: [
+				{
+					title: "asc",
+				},
+			],
+			select: {
+				id: true,
+				title: true,
+				description: true,
+				postedOn: true,
+				clapsCount: true,
+				responseCount: true,
+				topics: {
+					select: {
+						topic: true,
+					},
+				},
+				coverImg: true,
+				author: {
+					select: {
+						id: true,
+						userName: true,
+						profileImg: true,
+					},
+				},
+			},
+		});
+
+		// Map over stories to transform topics to an array of strings
+		const transformedStries = stories.map((story) => ({
+			...story,
+			topics: story.topics.map((topicObj) => topicObj.topic),
+		}));
+
+		return res.json(transformedStries);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error while getting search results" });
+	}
+};
+
+export const getSerchResultPageAuthors = async (req: Request, res: Response) => {
+	const query = req.query.query as string;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 8;
+
+	try {
+		const authors = await prisma.user.findMany({
+			take: pageSize,
+			skip: (page - 1) * pageSize,
+			where: {
+				OR: [
+					{
+						userName: {
+							startsWith: query,
+							mode: "insensitive",
+						},
+					},
+					{
+						userName: {
+							contains: query,
+							mode: "insensitive",
+						},
+					},
+				],
+			},
+			select: {
+				id: true,
+				bio: true,
+				userName: true,
+				profileImg: true,
+				followersCount: true,
+			},
+		});
+
+		return res.json(authors);
+	} catch (error) {
+		console.log(error);
+		res.status(400);
+		return res.json({ message: "Error while getting search results" });
+	}
+};
+
+export const getSerchResultPageTopics = async (req: Request, res: Response) => {
+	const query = req.query.query as string;
+	const page = parseInt(req.query.page as string) || 1;
+	const pageSize = parseInt(req.query.pageSize as string) || 8;
+
+	try {
+		const topics = await prisma.topics.findMany({
+			take: pageSize,
+			skip: (page - 1) * pageSize,
+			where: {
+				OR: [
+					{
+						topic: {
+							startsWith: query,
+							mode: "insensitive",
+						},
+					},
+					{
+						topic: {
+							contains: query,
+							mode: "insensitive",
+						},
+					},
+				],
+			},
+			select: {
+				id: true,
+				topic: true,
+				followersCount: true,
+				storiesCount: true,
+			},
+		});
+
+		return res.json(topics);
 	} catch (error) {
 		console.log(error);
 		res.status(400);

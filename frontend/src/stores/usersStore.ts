@@ -7,7 +7,21 @@ import {
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { create } from "zustand";
-import { resultType } from "../components/SearchBox";
+
+export type searchResultType = {
+	authors: {
+		id: string;
+		userName: string;
+		profileImg: string;
+	}[];
+	stories: {
+		id: string;
+		title: string;
+	}[];
+	topics: {
+		topic: string;
+	}[];
+};
 
 type authStoreType = {
 	skeletonLoading: boolean;
@@ -34,6 +48,11 @@ type authStoreType = {
 			author: string;
 			authorProfileImg: string;
 		}[];
+	};
+	searchResultPage: {
+		authors: userType[] | [];
+		stories: storyType[] | [];
+		topics: topicType[] | [];
 	};
 	getAnotherUser: (values: { id: string }) => Promise<userType>;
 	getUserStories: (values: {
@@ -77,7 +96,34 @@ type authStoreType = {
 			}>
 		>;
 	}) => void;
-	globalSearch: (values: { searchQuery: string }) => Promise<resultType>;
+	globalSearch: (values: { searchQuery: string }) => Promise<searchResultType>;
+	getSerchResultPageAuthors: (values: {
+		searchQuery: string;
+		currentPage: number;
+		setIsAllDataLoaded: React.Dispatch<
+			React.SetStateAction<{
+				[key: string]: Boolean;
+			}>
+		>;
+	}) => Promise<void>;
+	getSerchResultPageStories: (values: {
+		searchQuery: string;
+		currentPage: number;
+		setIsAllDataLoaded: React.Dispatch<
+			React.SetStateAction<{
+				[key: string]: Boolean;
+			}>
+		>;
+	}) => Promise<void>;
+	getSerchResultPageTopics: (values: {
+		searchQuery: string;
+		currentPage: number;
+		setIsAllDataLoaded: React.Dispatch<
+			React.SetStateAction<{
+				[key: string]: Boolean;
+			}>
+		>;
+	}) => Promise<void>;
 	getUserRecomendations: (values: { userId?: string }) => Promise<void>;
 };
 
@@ -89,6 +135,11 @@ export const UsersStore = create<authStoreType>((set) => ({
 		recommendedTopics: [],
 		whoToFollow: [],
 		recentlySaved: [],
+	},
+	searchResultPage: {
+		authors: [],
+		stories: [],
+		topics: [],
 	},
 
 	getAnotherUser: async function (values) {
@@ -262,11 +313,71 @@ export const UsersStore = create<authStoreType>((set) => ({
 
 	globalSearch: async (values) => {
 		try {
-			const res = await axios.get(`api/v1/user/search?query=${values.searchQuery}`);
+			const res = await axios.get(`api/v1/user/searchBox?query=${values.searchQuery}`);
 			return res.data;
 		} catch (error) {
 			toast.error("Error while searching!");
 		} finally {
+		}
+	},
+
+	getSerchResultPageAuthors: async (values) => {
+		try {
+			set({ skeletonLoading: true });
+			const res = await axios.get(
+				`api/v1/user/getSerchResultPageAuthors?query=${values.searchQuery}&page=${values.currentPage}`,
+			);
+			set((state) => ({
+				searchResultPage: {
+					...state.searchResultPage,
+					authors: [...state.searchResultPage.authors, ...(res.data || [])],
+				},
+			}));
+			if (res.data.length < 8) values.setIsAllDataLoaded((state) => ({ ...state, People: true }));
+		} catch (error) {
+			toast.error("Error while getting authors!");
+		} finally {
+			set({ skeletonLoading: false });
+		}
+	},
+
+	getSerchResultPageStories: async (values) => {
+		try {
+			set({ skeletonLoading: true });
+			const res = await axios.get(
+				`api/v1/user/getSerchResultPageStories?query=${values.searchQuery}&page=${values.currentPage}`,
+			);
+			set((state) => ({
+				searchResultPage: {
+					...state.searchResultPage,
+					stories: [...state.searchResultPage.stories, ...(res.data || [])],
+				},
+			}));
+			if (res.data.length < 8) values.setIsAllDataLoaded((state) => ({ ...state, Stories: true }));
+		} catch (error) {
+			toast.error("Error while getting stories!");
+		} finally {
+			set({ skeletonLoading: false });
+		}
+	},
+
+	getSerchResultPageTopics: async (values) => {
+		try {
+			set({ skeletonLoading: true });
+			const res = await axios.get(
+				`api/v1/user/getSerchResultPageTopics?query=${values.searchQuery}&page=${values.currentPage}`,
+			);
+			set((state) => ({
+				searchResultPage: {
+					...state.searchResultPage,
+					topics: [...state.searchResultPage.topics, ...(res.data || [])],
+				},
+			}));
+			if (res.data.length < 8) values.setIsAllDataLoaded((state) => ({ ...state, Topics: true }));
+		} catch (error) {
+			toast.error("Error while getting topics!");
+		} finally {
+			set({ skeletonLoading: false });
 		}
 	},
 

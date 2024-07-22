@@ -20,7 +20,10 @@ router.get("/getUserFollowingAuthors", authMiddleware_1.default, userController_
 router.get("/getUserMutedAuthors", authMiddleware_1.default, userController_1.getUserMutedAuthors);
 router.get("/getRandomAuthors", userController_1.getRandomAuthors);
 router.get("/getRandomTopics", userController_1.getRandomTopics);
-router.get("/search", userController_1.globalSearch);
+router.get("/searchbox", userController_1.globalSearchBox);
+router.get("/getSerchResultPageAuthors", userController_1.getSerchResultPageAuthors);
+router.get("/getSerchResultPageStories", userController_1.getSerchResultPageStories);
+router.get("/getSerchResultPageTopics", userController_1.getSerchResultPageTopics);
 router.get("/getUserRecomendations", userController_1.getUserRecomendations);
 router.post("/followUser", authMiddleware_1.default, userController_1.followUser);
 router.post("/muteAuthor/:authorId", authMiddleware_1.default, userController_1.muteAuthor);

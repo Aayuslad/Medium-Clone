@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserRecomendations = exports.globalSearch = exports.getRandomTopics = exports.getRandomAuthors = exports.getUserMutedAuthors = exports.getUserFollowingAuthors = exports.muteAuthor = exports.followUser = exports.updateUserAboutSection = exports.updateUser = exports.getUserStories = exports.getUserProfile = exports.getUser = exports.signOutUser = exports.signInUser = exports.signUpUser = void 0;
+exports.getUserRecomendations = exports.getSerchResultPageTopics = exports.getSerchResultPageAuthors = exports.getSerchResultPageStories = exports.globalSearchBox = exports.getRandomTopics = exports.getRandomAuthors = exports.getUserMutedAuthors = exports.getUserFollowingAuthors = exports.muteAuthor = exports.followUser = exports.updateUserAboutSection = exports.updateUser = exports.getUserStories = exports.getUserProfile = exports.getUser = exports.signOutUser = exports.signInUser = exports.signUpUser = void 0;
 const medium_clone_common_1 = require("@aayushlad/medium-clone-common");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -641,7 +641,7 @@ const getRandomTopics = (req, res) => __awaiter(void 0, void 0, void 0, function
 });
 exports.getRandomTopics = getRandomTopics;
 // global search route
-const globalSearch = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const globalSearchBox = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const query = req.query.query;
     try {
         const [storiesStartsWith, authorsStartsWith, topicsStartsWith] = yield prismaClient_1.prisma.$transaction([
@@ -763,7 +763,151 @@ const globalSearch = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         return res.json({ message: "Error while getting search results" });
     }
 });
-exports.globalSearch = globalSearch;
+exports.globalSearchBox = globalSearchBox;
+const getSerchResultPageStories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const query = req.query.query;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 8;
+    try {
+        const stories = yield prismaClient_1.prisma.story.findMany({
+            take: pageSize,
+            skip: (page - 1) * pageSize,
+            where: {
+                OR: [
+                    {
+                        title: {
+                            startsWith: query,
+                            mode: "insensitive",
+                        },
+                    },
+                    {
+                        title: {
+                            contains: query,
+                            mode: "insensitive",
+                        },
+                    },
+                ],
+                published: true,
+            },
+            orderBy: [
+                {
+                    title: "asc",
+                },
+            ],
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                postedOn: true,
+                clapsCount: true,
+                responseCount: true,
+                topics: {
+                    select: {
+                        topic: true,
+                    },
+                },
+                coverImg: true,
+                author: {
+                    select: {
+                        id: true,
+                        userName: true,
+                        profileImg: true,
+                    },
+                },
+            },
+        });
+        // Map over stories to transform topics to an array of strings
+        const transformedStries = stories.map((story) => (Object.assign(Object.assign({}, story), { topics: story.topics.map((topicObj) => topicObj.topic) })));
+        return res.json(transformedStries);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error while getting search results" });
+    }
+});
+exports.getSerchResultPageStories = getSerchResultPageStories;
+const getSerchResultPageAuthors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const query = req.query.query;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 8;
+    try {
+        const authors = yield prismaClient_1.prisma.user.findMany({
+            take: pageSize,
+            skip: (page - 1) * pageSize,
+            where: {
+                OR: [
+                    {
+                        userName: {
+                            startsWith: query,
+                            mode: "insensitive",
+                        },
+                    },
+                    {
+                        userName: {
+                            contains: query,
+                            mode: "insensitive",
+                        },
+                    },
+                ],
+            },
+            select: {
+                id: true,
+                bio: true,
+                userName: true,
+                profileImg: true,
+                followersCount: true,
+            },
+        });
+        return res.json(authors);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error while getting search results" });
+    }
+});
+exports.getSerchResultPageAuthors = getSerchResultPageAuthors;
+const getSerchResultPageTopics = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const query = req.query.query;
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 8;
+    try {
+        const topics = yield prismaClient_1.prisma.topics.findMany({
+            take: pageSize,
+            skip: (page - 1) * pageSize,
+            where: {
+                OR: [
+                    {
+                        topic: {
+                            startsWith: query,
+                            mode: "insensitive",
+                        },
+                    },
+                    {
+                        topic: {
+                            contains: query,
+                            mode: "insensitive",
+                        },
+                    },
+                ],
+            },
+            select: {
+                id: true,
+                topic: true,
+                followersCount: true,
+                storiesCount: true,
+            },
+        });
+        return res.json(topics);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(400);
+        return res.json({ message: "Error while getting search results" });
+    }
+});
+exports.getSerchResultPageTopics = getSerchResultPageTopics;
 // get right container data
 const getUserRecomendations = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.query.userId;
