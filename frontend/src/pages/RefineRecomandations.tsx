@@ -117,7 +117,7 @@ const RefineRecommendations = () => {
 					{currentNav === "Following" && (
 						<div className="lg:mr-20">
 							{usersStore.refineReconmandations?.Following.map((author, index) => {
-								return <UserOrPeoplePreview index={index} author={author} />;
+								return <UserOrPeoplePreview key={index} author={author} />;
 							})}
 						</div>
 					)}
@@ -159,7 +159,7 @@ const RefineRecommendations = () => {
 					{currentNav === "Discover Authors" && (
 						<div className="lg:mr-20">
 							{usersStore.refineReconmandations?.["Discover Authors"].map((author, index) => {
-								return <UserOrPeoplePreview index={index} author={author} />;
+								return <UserOrPeoplePreview key={index} author={author} />;
 							})}
 						</div>
 					)}
@@ -167,7 +167,7 @@ const RefineRecommendations = () => {
 					{currentNav === "Discover Topics" && (
 						<div className="lg:mr-20">
 							{usersStore.refineReconmandations?.["Discover Topics"].map((topic, index) => {
-								return <TopicPriview index={index} topic={topic} />;
+								return <TopicPriview key={index} topic={topic} />;
 							})}
 						</div>
 					)}
