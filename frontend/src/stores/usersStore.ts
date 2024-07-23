@@ -124,6 +124,7 @@ type authStoreType = {
 			}>
 		>;
 	}) => Promise<void>;
+	resetSearchResultPage: () => void;
 	getUserRecomendations: (values: { userId?: string }) => Promise<void>;
 };
 
@@ -379,6 +380,10 @@ export const UsersStore = create<authStoreType>((set) => ({
 		} finally {
 			set({ skeletonLoading: false });
 		}
+	},
+
+	resetSearchResultPage: () => {
+		set({ searchResultPage: { stories: [], authors: [], topics: [] } });
 	},
 
 	getUserRecomendations: async (values) => {

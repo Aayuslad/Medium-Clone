@@ -32,6 +32,26 @@ const SearchResultPage = () => {
 	}, [currentNav]);
 
 	useEffect(() => {
+		setPageNumbers(undefined);
+		const currentPage = pageNumbers?.[currentNav] || 1;
+		usersStore.resetSearchResultPage();
+		switch (currentNav) {
+			case "Stories":
+				if (searchQuery)
+					usersStore.getSerchResultPageStories({ searchQuery, currentPage, setIsAllDataLoaded });
+				break;
+			case "People":
+				if (searchQuery)
+					usersStore.getSerchResultPageAuthors({ searchQuery, currentPage, setIsAllDataLoaded });
+				break;
+			case "Topics":
+				if (searchQuery)
+					usersStore.getSerchResultPageTopics({ searchQuery, currentPage, setIsAllDataLoaded });
+				break;
+		}
+	}, [searchQuery]);
+
+	useEffect(() => {
 		const currentPage = pageNumbers?.[currentNav] || 1;
 
 		if (pageNumbers === undefined) return;
@@ -41,8 +61,9 @@ const SearchResultPage = () => {
 				if (usersStore.searchResultPage["stories"]?.length === currentPage * 8) {
 					return;
 				}
-				if (!isAllDataLoaded?.["Stories"] && searchQuery)
+				if (!isAllDataLoaded?.["Stories"] && searchQuery) {
 					usersStore.getSerchResultPageStories({ searchQuery, currentPage, setIsAllDataLoaded });
+				}
 				break;
 			case "People":
 				if (usersStore.searchResultPage["authors"]?.length === currentPage * 8) {
@@ -59,7 +80,7 @@ const SearchResultPage = () => {
 					usersStore.getSerchResultPageTopics({ searchQuery, currentPage, setIsAllDataLoaded });
 				break;
 		}
-	}, [pageNumbers]);
+	}, [pageNumbers, searchQuery]);
 
 	// pagination logic
 	const handleScroll = () => {
@@ -119,7 +140,7 @@ const SearchResultPage = () => {
 					{currentNav === "People" && (
 						<div>
 							{usersStore.searchResultPage["authors"]?.map((author, index) => (
-								<UserOrPeoplePreview author={author} index={index} />
+								<UserOrPeoplePreview author={author} key={index} />
 							))}
 						</div>
 					)}
@@ -127,7 +148,7 @@ const SearchResultPage = () => {
 					{currentNav === "Topics" && (
 						<div>
 							{usersStore.searchResultPage["topics"]?.map((topic, index) => (
-								<TopicPriview index={index} topic={topic} />
+								<TopicPriview key={index} topic={topic} />
 							))}
 						</div>
 					)}

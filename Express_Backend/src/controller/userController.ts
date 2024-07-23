@@ -861,11 +861,6 @@ export const getSerchResultPageStories = async (req: Request, res: Response) => 
 				],
 				published: true,
 			},
-			orderBy: [
-				{
-					title: "asc",
-				},
-			],
 			select: {
 				id: true,
 				title: true,

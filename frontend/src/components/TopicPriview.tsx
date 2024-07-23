@@ -2,11 +2,11 @@ import { useNavigate } from "react-router-dom";
 import TopicFollowUnfollowButton from "./buttons/TopicFollowUnfollowButton";
 import { topicType } from "@aayushlad/medium-clone-common";
 
-export default function TopicPriview({ index, topic }: { index: number; topic: topicType }) {
+export default function TopicPriview({ topic }: { topic: topicType }) {
 	const navigate = useNavigate();
 
 	return (
-		<div key={index} className="flex pt-5 items-center gap-5">
+		<div className="flex pt-5 items-center gap-5">
 			<div
 				className="logo w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer"
 				onClick={() => {

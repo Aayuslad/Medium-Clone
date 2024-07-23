@@ -4,11 +4,11 @@ import ProfileIcon from "./ProfileIcon";
 import defaultProfile from "../assets/defaultProfile.jpg";
 import { userType } from "@aayushlad/medium-clone-common";
 
-export default function UserOrPeoplePreview({ index, author }: { index: number; author: userType }) {
+export default function UserOrPeoplePreview({ author }: { author: userType }) {
 	const navigate = useNavigate();
 
 	return (
-		<div key={index} className="flex pt-8 items-center gap-5">
+		<div className="flex pt-8 items-center gap-5">
 			<ProfileIcon
 				marginX={false}
 				profileImg={author.profileImg || defaultProfile}

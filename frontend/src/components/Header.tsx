@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.svg";
 import useScrollDirection from "../hooks/useScrollDirection";
@@ -16,10 +16,24 @@ const Header = () => {
 	const authStore = AuthStore();
 	const navigate = useNavigate();
 	const scrollDirection = useScrollDirection();
+	const sidebarRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
 		setSideBarState(false);
 	}, [scrollDirection]);
+
+	useEffect(() => {
+		function handleClickOutside(event: MouseEvent) {
+			if (sidebarRef?.current && !sidebarRef.current.contains(event.target as Node)) {
+				setSideBarState(false);
+			}
+		}
+
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, [sidebarRef]);
 
 	return (
 		<div
@@ -65,11 +79,14 @@ const Header = () => {
 			{/* Notification button */}
 			{authStore.isLoggedIn && <NotificationButton />}
 
-			{/* Profile Icon */}
-			{authStore.isLoggedIn && <ProfileIcon onClick={() => setSideBarState((state) => !state)} />}
-
-			{/* side bar component*/}
-			{sideBarState && <SideBar />}
+			{authStore.isLoggedIn && (
+				<div ref={sidebarRef}>
+					{/* Profile Icon */}
+					<ProfileIcon onClick={() => setSideBarState((state) => !state)} />
+					{/* side bar component*/}
+					{sideBarState && <SideBar />}
+				</div>
+			)}
 		</div>
 	);
 };

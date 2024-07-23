@@ -790,11 +790,6 @@ const getSerchResultPageStories = (req, res) => __awaiter(void 0, void 0, void 0
                 ],
                 published: true,
             },
-            orderBy: [
-                {
-                    title: "asc",
-                },
-            ],
             select: {
                 id: true,
                 title: true,
