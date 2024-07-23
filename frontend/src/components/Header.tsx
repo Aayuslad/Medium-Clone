@@ -18,8 +18,8 @@ const Header = () => {
 	const scrollDirection = useScrollDirection();
 
 	useEffect(() => {
-		setSideBarState(false)
-	}, [scrollDirection])
+		setSideBarState(false);
+	}, [scrollDirection]);
 
 	return (
 		<div
@@ -33,7 +33,9 @@ const Header = () => {
 			</button>
 
 			{/* Search Box */}
-			<SearchBox />
+			<div className="hidden md:flex">
+				<SearchBox />
+			</div>
 
 			<div className="flex-1"></div>
 

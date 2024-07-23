@@ -30,10 +30,10 @@ const SearchBox = () => {
 		}
 
 		if (debouncedValues) fetchData();
-	}, [debouncedValues]);
+	}, [debouncedValues]);	
 
 	return (
-		<form className="searchBox items-center gap-2 relative hidden md:flex" onSubmit={formik.handleSubmit}>
+		<form className="searchBox items-center gap-2 relative w-full" onSubmit={formik.handleSubmit}>
 			<div className="icon absolute h-full flex items-center left-3">
 				<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
 					<path
@@ -48,7 +48,7 @@ const SearchBox = () => {
 				type="text"
 				placeholder="Search"
 				{...formik.getFieldProps("searchQuery")}
-				className="bg-stone-100 px-4 py-2 pl-12 rounded-full outline-none"
+				className="bg-stone-100 px-4 py-2 pl-12 w-full rounded-full outline-none"
 			/>
 
 			{result && (

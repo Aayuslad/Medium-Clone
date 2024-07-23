@@ -764,6 +764,7 @@ const globalSearchBox = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.globalSearchBox = globalSearchBox;
+// TODO: get the search results sorted, first the results apper for startswith and then for contains
 const getSerchResultPageStories = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const query = req.query.query;
     const page = parseInt(req.query.page) || 1;
@@ -827,6 +828,7 @@ const getSerchResultPageStories = (req, res) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.getSerchResultPageStories = getSerchResultPageStories;
+// TODO: get the search results sorted, first the results apper for startswith and then for contains
 const getSerchResultPageAuthors = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const query = req.query.query;
     const page = parseInt(req.query.page) || 1;
@@ -868,6 +870,7 @@ const getSerchResultPageAuthors = (req, res) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.getSerchResultPageAuthors = getSerchResultPageAuthors;
+// TODO: get the search results sorted, first the results apper for startswith and then for contains
 const getSerchResultPageTopics = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const query = req.query.query;
     const page = parseInt(req.query.page) || 1;

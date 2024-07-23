@@ -834,6 +834,7 @@ export const globalSearchBox = async (req: Request, res: Response) => {
 	}
 };
 
+// TODO: get the search results sorted, first the results apper for startswith and then for contains
 export const getSerchResultPageStories = async (req: Request, res: Response) => {
 	const query = req.query.query as string;
 	const page = parseInt(req.query.page as string) || 1;
@@ -902,6 +903,7 @@ export const getSerchResultPageStories = async (req: Request, res: Response) => 
 	}
 };
 
+// TODO: get the search results sorted, first the results apper for startswith and then for contains
 export const getSerchResultPageAuthors = async (req: Request, res: Response) => {
 	const query = req.query.query as string;
 	const page = parseInt(req.query.page as string) || 1;
@@ -944,6 +946,7 @@ export const getSerchResultPageAuthors = async (req: Request, res: Response) => 
 	}
 };
 
+// TODO: get the search results sorted, first the results apper for startswith and then for contains
 export const getSerchResultPageTopics = async (req: Request, res: Response) => {
 	const query = req.query.query as string;
 	const page = parseInt(req.query.page as string) || 1;

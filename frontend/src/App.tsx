@@ -15,6 +15,7 @@ import StoriesPage from "./pages/StoriesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ScrollToTop from "./components/scrollTop.";
 import SearchResultPage from "./pages/SearchResultPage";
+import MobileGlobalSearchPage from "./pages/MobileGlobalsearchPage";
 
 export default function App() {
 	const authStore = AuthStore();
@@ -29,6 +30,7 @@ export default function App() {
 			<Routes>
 				<Route path="/" element={authStore.loading ? <LoadingPage /> : <HomePage />} />
 				<Route path="/:nav" element={authStore.loading ? <LoadingPage /> : <HomePage />} />
+				<Route path="/search" element={<MobileGlobalSearchPage />} />
 				<Route path="/signup" element={<SignupPage />} />
 				<Route path="/signin" element={<SigninPage />} />
 				<Route

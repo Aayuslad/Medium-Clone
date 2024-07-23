@@ -1,7 +1,10 @@
+import { useNavigate } from "react-router-dom";
 
 const MobileSearchButton = () => {
+	const navigate = useNavigate();
+
 	return (
-		<div className="serch h-full w-fit mx-4 flex justify-center items-center md:hidden">
+		<button className="serch h-full w-fit mx-4 flex justify-center items-center md:hidden" onClick={() => navigate("/search/")}>
 			<div className="h-fit">
 				<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
 					<path
@@ -12,7 +15,7 @@ const MobileSearchButton = () => {
 					/>
 				</svg>
 			</div>
-		</div>
+		</button>
 	);
 };
 
