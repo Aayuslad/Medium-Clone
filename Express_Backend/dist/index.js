@@ -17,7 +17,12 @@ const limiter = (0, express_rate_limit_1.default)({
 });
 app.use(limiter);
 app.use((0, cors_1.default)({
-    origin: ["http://localhost:5173", "https://medium-clone-jz8b.vercel.app"],
+    origin: [
+        "http://localhost:5173",
+        "https://medium-clone-jz8b.vercel.app",
+        "http://192.168.56.1:5173",
+        "http://192.168.66.246:5173",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
 }));
@@ -32,4 +37,4 @@ app.get("/", (req, res) => {
 app.use("/api/v1/user", userRouter_1.default);
 app.use("/api/v1/story", storyRouter_1.default);
 const PORT = process.env.PORT || 80;
-app.listen(PORT, () => console.log("server started"));
+app.listen(Number(PORT), "192.168.66.246", () => console.log("server started"));

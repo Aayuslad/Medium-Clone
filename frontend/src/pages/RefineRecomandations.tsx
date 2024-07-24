@@ -73,7 +73,7 @@ const RefineRecommendations = () => {
 			const scrollPosition = window.pageYOffset + window.innerHeight;
 
 			if (
-				scrollPosition >= containerBottom - 1 &&
+				scrollPosition >= containerBottom - 100 &&
 				!usersStore.skeletonLoading &&
 				(isAllDataLoaded?.[currentNav] || true)
 			) {
