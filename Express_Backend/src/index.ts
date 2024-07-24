@@ -20,8 +20,7 @@ app.use(
 		origin: [
 			"http://localhost:5173",
 			"https://medium-clone-jz8b.vercel.app",
-			"http://192.168.56.1:5173",
-			"http://192.168.66.246:5173",
+			// "http://192.168.66.246:5173",
 		],
 		methods: ["GET", "POST", "PUT", "DELETE"],
 		credentials: true,
@@ -42,4 +41,5 @@ app.use("/api/v1/story", storyRouter);
 
 const PORT = process.env.PORT || 80;
 
-app.listen(Number(PORT), "192.168.66.246", () => console.log("server started"));
+// app.listen(Number(PORT), "192.168.66.246", () => console.log("server started"));
+app.listen(Number(PORT), () => console.log("server started"));
