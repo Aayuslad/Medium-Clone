@@ -13,6 +13,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { create } from "zustand";
 import { makeResponseSchemaType } from "../components/ResponseBox";
+import apiErrorHandler from "../helper/apiErrorHandler";
 
 type storyStoreType = {
 	cursorLoading: boolean;
@@ -82,18 +83,11 @@ type storyStoreType = {
 	getTopic: (topic: string) => Promise<void>;
 	followTopic: (values: { topicId: string }) => Promise<void>;
 	makeResponse: (values: makeResponseSchemaType) => Promise<responseType | undefined>;
-	getResponseByStoryId: (
-		values: { storyId: string },
-		page: number,
-		pageSize?: number,
-	) => Promise<responseType[] | undefined>;
+	getResponseByStoryId: (values: { storyId: string }, page: number, pageSize?: number) => Promise<responseType[] | undefined>;
 	editResponse: (values: editResponseSchemaType) => Promise<responseType | undefined>;
 	deleteResponse: (responseId: string) => Promise<boolean>;
 	makeReplyToResponse: (values: makeReplyToResponseSchemaType) => Promise<responseType | undefined>;
-	getReplyByResponseId: (
-		values: { responseId: string },
-		page: number,
-	) => Promise<responseType[] | undefined>;
+	getReplyByResponseId: (values: { responseId: string }, page: number) => Promise<responseType[] | undefined>;
 	editReply: (values: editReplySchemaType) => Promise<responseType | undefined>;
 	deleteReply: (responseId: string) => Promise<void>;
 	getUsersDrafts: (values: {
@@ -159,8 +153,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			const res = await axios.post("/api/v1/story", values);
 			id = res.data.id;
 		} catch (error) {
-			console.log(error);
-			toast.error("Error while creating Story!");
+			apiErrorHandler(error);
 		} finally {
 			set({ cursorLoading: false });
 			return id;
@@ -175,7 +168,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			await axios.put("/api/v1/story", values);
 			flag = true;
 		} catch (error) {
-			toast.error("Error while updating Story!");
+			apiErrorHandler(error);
 		} finally {
 			set({ putStoryLoading: false });
 			return flag;
@@ -188,7 +181,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			const res = await axios.get(`/api/v1/story/${values.id}`);
 			return res.data;
 		} catch (error) {
-			toast.error("Error while fetching Story!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -224,7 +217,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 				values.setIsAllStoriesLoaded({ "For you": true });
 			}
 		} catch (error) {
-			toast.error("Error while fetching Story!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -233,9 +226,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 	getStoriesByTopics: async (values) => {
 		try {
 			set({ skeletonLoading: true });
-			const res = await axios.get(
-				`/api/v1/story/getStoriesByTopics/${values.topics}?page=${values.currentPage}`,
-			);
+			const res = await axios.get(`/api/v1/story/getStoriesByTopics/${values.topics}?page=${values.currentPage}`);
 			set((state) => ({
 				feedStories: state.feedStories
 					.map((story) => {
@@ -263,8 +254,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 				values.setIsAllStoriesLoaded({ [res.data.topic]: true });
 			}
 		} catch (error) {
-			console.log(error);
-			toast.error("Error while fetching Story!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -301,7 +291,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 				values.setIsAllStoriesLoaded({ Following: true });
 			}
 		} catch (error) {
-			toast.error("Error while fetching Story!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -312,7 +302,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			await axios.delete(`/api/v1/story/${values.id}`);
 			toast.success("Story Deleted");
 		} catch (error) {
-			toast.error("Error while deleting Story!");
+			apiErrorHandler(error);
 		} finally {
 			return;
 		}
@@ -323,7 +313,6 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			set({ putStoryLoading: true });
 			await axios.post(`/api/v1/story/clap`, values);
 		} catch (error: any) {
-			console.log(error);
 			if (error.response.status == 401) {
 				toast.error("Signin To clap");
 			}
@@ -337,7 +326,6 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			set({ putStoryLoading: true });
 			await axios.post(`/api/v1/story/save`, values);
 		} catch (error: any) {
-			console.log(error);
 			if (error.response.status == 401) {
 				toast.error("Signin To save");
 			}
@@ -358,7 +346,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 				values.setIsAllStoriesLoaded((state) => ({ ...state, "Saved stories": true }));
 			}
 		} catch (error) {
-			toast.error("Error while fetching Story!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -376,7 +364,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 				values.setIsAllStoriesLoaded((state) => ({ ...state, "Reading History": true }));
 			}
 		} catch (error) {
-			toast.error("Error while fetching Story!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -401,7 +389,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			const res = await axios.get(`/api/v1/story/topic/${topic}`);
 			set({ topic: res.data });
 		} catch (error) {
-			toast.error("Error while fetching topic!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -412,7 +400,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			set({ buttonLoading: true });
 			await axios.post(`/api/v1/story/followTopic`, values);
 		} catch (error) {
-			toast.error("Error while following topic!");
+			apiErrorHandler(error);
 		} finally {
 			set({ buttonLoading: false });
 		}
@@ -424,7 +412,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			const res = await axios.post("/api/v1/story/makeResponse", values);
 			return res.data;
 		} catch (error) {
-			toast.error("Error while making response!");
+			apiErrorHandler(error);
 		} finally {
 			set({ buttonLoading: false });
 		}
@@ -433,12 +421,10 @@ export const StoryStore = create<storyStoreType>((set) => ({
 	getResponseByStoryId: async (values, page = 1, pageSize = 6) => {
 		try {
 			set({ skeletonLoading: true });
-			const res = await axios.get(
-				`/api/v1/story/responses/${values.storyId}?page=${page}&pageSize=${pageSize}`,
-			);
+			const res = await axios.get(`/api/v1/story/responses/${values.storyId}?page=${page}&pageSize=${pageSize}`);
 			return res.data;
 		} catch (error) {
-			toast.error("Error while fetching response!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -450,7 +436,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			const res = await axios.put("/api/v1/story/editResponse", values);
 			return res.data;
 		} catch (error) {
-			toast.error("Error while editing response!");
+			apiErrorHandler(error);
 		} finally {
 			set({ buttonLoading: false });
 		}
@@ -465,7 +451,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			toast.success("Response deleted");
 			flag = true;
 		} catch (error) {
-			toast.error("Error while deleting response!");
+			apiErrorHandler(error);
 		} finally {
 			set({ buttonLoading: false });
 			return flag;
@@ -478,7 +464,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			const res = await axios.post("/api/v1/story/makeReplyToResponse", values);
 			return res.data;
 		} catch (error) {
-			toast.error("Error while making reply!");
+			apiErrorHandler(error);
 		} finally {
 			set({ buttonLoading: false });
 		}
@@ -490,7 +476,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			const res = await axios.get(`/api/v1/story/replies/${values.responseId}?page=${page}`);
 			return res.data;
 		} catch (error) {
-			toast.error("Error while fetching replies!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -502,7 +488,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			const res = await axios.put("/api/v1/story/editResponse", values);
 			return res.data;
 		} catch (error) {
-			toast.error("Error while editing response!");
+			apiErrorHandler(error);
 		} finally {
 			set({ buttonLoading: false });
 		}
@@ -513,7 +499,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			set({ buttonLoading: true });
 			await axios.delete(`/api/v1/story/deleteResponse/${responseId}`);
 		} catch (error) {
-			toast.error("Error while deleting response!");
+			apiErrorHandler(error);
 		} finally {
 			set({ buttonLoading: false });
 		}
@@ -533,7 +519,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 				values.setIsAllDataLoaded((state) => ({ ...state, Drafts: true }));
 			}
 		} catch (error) {
-			toast.error("Error while fetching drafts!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -553,7 +539,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 				values.setIsAllDataLoaded((state) => ({ ...state, Responses: true }));
 			}
 		} catch (error) {
-			toast.error("Error while fetching drafts!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -573,7 +559,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 				values.setIsAllDataLoaded((state) => ({ ...state, Replies: true }));
 			}
 		} catch (error) {
-			toast.error("Error while fetching drafts!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -582,9 +568,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 	getUserStories: async function (values) {
 		try {
 			set({ skeletonLoading: true });
-			const res = await axios.get(
-				`/api/v1/user/userStories/${values.userId}?page=${values.currentPage}`,
-			);
+			const res = await axios.get(`/api/v1/user/userStories/${values.userId}?page=${values.currentPage}`);
 			set((state) => ({
 				yourStoriesPage: {
 					...state.yourStoriesPage,
@@ -595,7 +579,7 @@ export const StoryStore = create<storyStoreType>((set) => ({
 				values.setIsAllDataLoaded((state) => ({ ...state, Published: true }));
 			}
 		} catch (error) {
-			console.error(error);
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}

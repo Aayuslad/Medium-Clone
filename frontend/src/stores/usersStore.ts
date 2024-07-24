@@ -1,12 +1,8 @@
-import {
-	storyType,
-	topicType,
-	updateUserAboutSectionSchemaType,
-	userType,
-} from "@aayushlad/medium-clone-common";
+import { storyType, topicType, updateUserAboutSectionSchemaType, userType } from "@aayushlad/medium-clone-common";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { create } from "zustand";
+import apiErrorHandler from "../helper/apiErrorHandler";
 
 export type searchResultType = {
 	authors: {
@@ -54,6 +50,7 @@ type authStoreType = {
 		stories: storyType[] | [];
 		topics: topicType[] | [];
 	};
+
 	getAnotherUser: (values: { id: string }) => Promise<userType>;
 	getUserStories: (values: {
 		id: string;
@@ -149,7 +146,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			const response = await axios.get(`/api/v1/user/userProfile/${values.id}`);
 			return response.data;
 		} catch (error) {
-			console.error(error);
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -162,7 +159,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			if (response.data.length < 5) values.setAllStoriesLoaded(true);
 			return response.data;
 		} catch (error) {
-			console.error(error);
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -179,10 +176,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			toast.success("Updated!");
 			getUser();
 		} catch (error: any) {
-			if (toastId) {
-				toast.dismiss(toastId);
-			}
-			toast.error(error.response.data.error || "Error while updating!");
+			apiErrorHandler(error, toastId);
 		} finally {
 			set({ buttonLoading: false });
 			return;
@@ -200,10 +194,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			toast.success("Updated!");
 			return true;
 		} catch (error: any) {
-			if (toastId) {
-				toast.dismiss(toastId);
-			}
-			toast.error(error.response.data.error || "Error while updating!");
+			apiErrorHandler(error, toastId);
 			return false;
 		} finally {
 			set({ buttonLoading: false });
@@ -215,7 +206,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			set({ buttonLoading: true });
 			await axios.post("api/v1/user/followUser", values);
 		} catch (error) {
-			toast.error("Error while following user!");
+			apiErrorHandler(error);
 		} finally {
 			set({ buttonLoading: false });
 		}
@@ -226,7 +217,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			set({ buttonLoading: true });
 			await axios.post(`api/v1/user/muteAuthor/${values.authorId}`);
 		} catch (error) {
-			toast.error("Error while muting author!");
+			apiErrorHandler(error);
 		} finally {
 			set({ buttonLoading: false });
 		}
@@ -244,7 +235,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			}));
 			if (res.data.length < 12) values.setIsAllDataLoaded((state) => ({ ...state, Following: true }));
 		} catch (error) {
-			toast.error("Error while getting following authors!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -262,7 +253,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			}));
 			if (res.data.length < 12) values.setIsAllDataLoaded((state) => ({ ...state, Muted: true }));
 		} catch (error) {
-			toast.error("Error while getting muted authors!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -275,16 +266,12 @@ export const UsersStore = create<authStoreType>((set) => ({
 			set((state) => ({
 				refineReconmandations: {
 					...state.refineReconmandations,
-					"Discover Authors": [
-						...state.refineReconmandations["Discover Authors"],
-						...(res.data || []),
-					],
+					"Discover Authors": [...state.refineReconmandations["Discover Authors"], ...(res.data || [])],
 				},
 			}));
-			if (res.data.length < 12)
-				values.setIsAllDataLoaded((state) => ({ ...state, "Discover Authors": true }));
+			if (res.data.length < 12) values.setIsAllDataLoaded((state) => ({ ...state, "Discover Authors": true }));
 		} catch (error) {
-			toast.error("Error while getting random authors!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -297,16 +284,12 @@ export const UsersStore = create<authStoreType>((set) => ({
 			set((state) => ({
 				refineReconmandations: {
 					...state.refineReconmandations,
-					"Discover Topics": [
-						...state.refineReconmandations["Discover Topics"],
-						...(res.data || []),
-					],
+					"Discover Topics": [...state.refineReconmandations["Discover Topics"], ...(res.data || [])],
 				},
 			}));
-			if (res.data.length < 12)
-				values.setIsAllDataLoaded((state) => ({ ...state, "Discover Topics": true }));
+			if (res.data.length < 12) values.setIsAllDataLoaded((state) => ({ ...state, "Discover Topics": true }));
 		} catch (error) {
-			toast.error("Error while getting random topics!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -317,8 +300,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			const res = await axios.get(`api/v1/user/searchBox?query=${values.searchQuery}`);
 			return res.data;
 		} catch (error) {
-			toast.error("Error while searching!");
-		} finally {
+			apiErrorHandler(error);
 		}
 	},
 
@@ -336,7 +318,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			}));
 			if (res.data.length < 8) values.setIsAllDataLoaded((state) => ({ ...state, People: true }));
 		} catch (error) {
-			toast.error("Error while getting authors!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -356,7 +338,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			}));
 			if (res.data.length < 8) values.setIsAllDataLoaded((state) => ({ ...state, Stories: true }));
 		} catch (error) {
-			toast.error("Error while getting stories!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -376,7 +358,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			}));
 			if (res.data.length < 8) values.setIsAllDataLoaded((state) => ({ ...state, Topics: true }));
 		} catch (error) {
-			toast.error("Error while getting topics!");
+			apiErrorHandler(error);
 		} finally {
 			set({ skeletonLoading: false });
 		}
@@ -391,8 +373,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			const res = await axios.get(`api/v1/user/getUserRecomendations?userId=${values.userId}`);
 			set({ userRecomendations: res.data });
 		} catch (error) {
-			toast.error("Error while getting recomendations!");
-		} finally {
+			apiErrorHandler(error);
 		}
 	},
 }));

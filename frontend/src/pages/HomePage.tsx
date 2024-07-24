@@ -16,7 +16,7 @@ const HomePage = () => {
 	const mainContainerRef = useRef<HTMLDivElement | null>(null);
 	const { nav } = useParams<{ nav: string | undefined }>();
 	const [currentNav, setCurrentNav] = useState<string>(nav || "For you");
-	const [pageNumbers, setPageNumbers] = useState<{ [key: string]: number }>();
+	const [pageNumbers, setPageNumbers] = useState<{ [key: string]: number }>({});
 	const [isAllStoriesLoaded, setIsAllStoriesLoaded] = useState<{ [key: string]: Boolean }>({});
 
 	useEffect(() => {
@@ -38,10 +38,7 @@ const HomePage = () => {
 	useEffect(() => {
 		const currentPage = pageNumbers?.[currentNav] || 1;
 
-		if (
-			storyStore.feedStories.find((story) => story.topic === currentNav)?.stories.length ===
-			currentPage * 5
-		) {
+		if (storyStore.feedStories.find((story) => story.topic === currentNav)?.stories.length === currentPage * 5) {
 			return;
 		}
 
@@ -49,13 +46,11 @@ const HomePage = () => {
 
 		switch (currentNav) {
 			case "For you":
-				if (!isAllStoriesLoaded?.["For you"])
-					storyStore.getStories({ currentPage, setIsAllStoriesLoaded });
+				if (!isAllStoriesLoaded?.["For you"]) storyStore.getStories({ currentPage, setIsAllStoriesLoaded });
 				break;
 
 			case "Following":
-				if (!isAllStoriesLoaded?.["Following"])
-					storyStore.getStoriesByAuthor({ currentPage, setIsAllStoriesLoaded });
+				if (!isAllStoriesLoaded?.["Following"]) storyStore.getStoriesByAuthor({ currentPage, setIsAllStoriesLoaded });
 				break;
 
 			default:

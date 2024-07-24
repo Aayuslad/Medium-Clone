@@ -1,36 +1,31 @@
-import {
-	signUpUserSchemaType,
-	signinUserSchemaType,
-	topicType,
-	userType,
-} from "@aayushlad/medium-clone-common";
-import axios from "axios";
+import { signUpUserSchemaType, signinUserSchemaType, topicType, userType } from "@aayushlad/medium-clone-common";
+import axios, { AxiosError } from "axios";
 import { toast } from "react-hot-toast";
 import { NavigateFunction } from "react-router-dom";
 import { create } from "zustand";
+import apiErrorHandler, { ErrorResponse } from "../helper/apiErrorHandler";
 
-type authStoreType = {
+type AuthStoreType = {
 	loading: boolean;
 	isLoggedIn: boolean;
 	user: userType | undefined;
 	topics: topicType[] | [];
 	setUser: (user: userType) => void;
-	signup: (values: signUpUserSchemaType, navigate: NavigateFunction) => void;
-	signin: (values: signinUserSchemaType, navigate: NavigateFunction) => void;
-	signOut: () => void;
-	getUser: () => void;
+	signup: (values: signUpUserSchemaType, navigate: NavigateFunction) => Promise<void>;
+	signin: (values: signinUserSchemaType, navigate: NavigateFunction) => Promise<void>;
+	signOut: () => Promise<void>;
+	getUser: () => Promise<void>;
 };
 
-export const AuthStore = create<authStoreType>((set) => ({
+export const AuthStore = create<AuthStoreType>((set) => ({
 	loading: true,
 	isLoggedIn: false,
 	user: undefined,
 	topics: [],
-	setUser: (user: userType) => {
-		set({ user });
-	},
 
-	signup: async function (values, navigate) {
+	setUser: (user: userType) => set({ user }),
+
+	signup: async (values, navigate) => {
 		let toastId: string | undefined;
 		const { getUser } = AuthStore.getState();
 
@@ -40,17 +35,14 @@ export const AuthStore = create<authStoreType>((set) => ({
 			toast.dismiss(toastId);
 			toast.success("Signed up!");
 			set({ isLoggedIn: true });
-			getUser();
+			await getUser();
 			setTimeout(() => navigate("/"), 1000);
-		} catch (error: any) {
-			if (toastId) {
-				toast.dismiss(toastId);
-			}
-			toast.error(error.response.data.message || "Error while signing up!");
+		} catch (error) {
+			apiErrorHandler(error, toastId);
 		}
 	},
 
-	signin: async function (values, navigate) {
+	signin: async (values, navigate) => {
 		let toastId: string | undefined;
 		const { getUser } = AuthStore.getState();
 
@@ -60,39 +52,39 @@ export const AuthStore = create<authStoreType>((set) => ({
 			toast.dismiss(toastId);
 			toast.success("Signed in!");
 			set({ isLoggedIn: true });
-			getUser();
+			await getUser();
 			setTimeout(() => navigate("/"), 1000);
-		} catch (error: any) {
-			if (toastId) {
-				toast.dismiss(toastId);
-			}
-			toast.error(error.response.data.message || "Error while signing in!");
+		} catch (error) {
+			apiErrorHandler(error, toastId);
 		}
 	},
 
-	signOut: async function () {
+	signOut: async () => {
 		try {
 			await toast.promise(axios.post("/api/v1/user/signOut"), {
 				loading: "Signing out...",
 				success: "Signed out!",
 				error: "Error signing out!",
 			});
-			set({ user: undefined });
-			set({ isLoggedIn: false });
+			set({ user: undefined, isLoggedIn: false });
 		} catch (error) {
-			console.log("Error signing out");
+			console.error("Error signing out", error);
 		}
 	},
 
-	getUser: async function () {
+	getUser: async () => {
 		try {
 			set({ loading: true });
-			const response = await axios.get("/api/v1/user");
-			set({ user: response.data, isLoggedIn: true });
-		} catch (error: any) {
-			console.log(error.response.data);
-			set({ isLoggedIn: false });
-			set({ topics: error.response.data.topics });
+			const { data } = await axios.get("/api/v1/user");
+			set({ user: data, isLoggedIn: true });
+		} catch (error) {
+			apiErrorHandler(error);
+			const err = error as AxiosError<ErrorResponse>;
+			console.error(err.response?.data);
+			set({
+				isLoggedIn: false,
+				topics: err.response?.data.topics || [],
+			});
 		} finally {
 			set({ loading: false });
 		}
