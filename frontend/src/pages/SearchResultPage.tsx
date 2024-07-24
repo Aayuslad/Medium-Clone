@@ -21,6 +21,10 @@ const SearchResultPage = () => {
 	const usersStore = UsersStore();
 
 	useEffect(() => {
+		setCurrentNav(nav || "Stories");
+	}, [nav]);
+
+	useEffect(() => {
 		function updatepageNumbers() {
 			setPageNumbers((prevPageNumbers) => ({
 				...(prevPageNumbers || {}),

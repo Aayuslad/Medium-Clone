@@ -13,6 +13,7 @@ const NotificationsPage = () => {
 	useEffect(() => {
 		setCurrentNav(nav || "All");
 	}, [nav]);
+	
 
 	return (
 		<div className="RefineRecomendations">

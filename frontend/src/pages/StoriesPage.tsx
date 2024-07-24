@@ -24,6 +24,10 @@ const StoriesPage = () => {
 	const authStore = AuthStore();
 
 	useEffect(() => {
+		setCurrentNav(nav || "Drafts");
+	}, [nav]);
+
+	useEffect(() => {
 		function updatepageNumbers() {
 			setPageNumbers((prevPageNumbers) => ({
 				...(prevPageNumbers || {}),
@@ -38,7 +42,7 @@ const StoriesPage = () => {
 	useEffect(() => {
 		const currentPage = pageNumbers?.[currentNav] || 1;
 
-		//@ts-ignore
+		// @ts-ignore
 		if (storyStore.yourStoriesPage[currentNav]?.length === currentPage * 6) {
 			return;
 		}
@@ -156,9 +160,8 @@ const StoriesPage = () => {
 					{(currentNav === "Drafts" || currentNav === "Published") &&
 						storyStore.skeletonLoading && <StoryDraftPreviewSkeleton />}
 
-					{(currentNav === "Responses" || currentNav === "Replies") && storyStore.skeletonLoading && (
-						<ResponseAndReplyPreviewSkeleton />
-					)}
+					{(currentNav === "Responses" || currentNav === "Replies") &&
+						storyStore.skeletonLoading && <ResponseAndReplyPreviewSkeleton />}
 				</LeftContainer>
 				<RightContainer>right</RightContainer>
 			</MainConntainer>

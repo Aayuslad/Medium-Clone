@@ -23,6 +23,10 @@ const RefineRecommendations = () => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
+		setCurrentNav(nav || "following");
+	}, [nav]);
+
+	useEffect(() => {
 		function updatepageNumbers() {
 			setPageNumbers((prevPageNumbers) => ({
 				...(prevPageNumbers || {}),

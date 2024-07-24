@@ -46,7 +46,11 @@ const ProfilePage = () => {
 		},
 	});
 
-	// fetching user data
+	useEffect(() => {
+		setCurrentNav(nav || "Home");
+	}, [nav]);
+
+	// fetching user information
 	useEffect(() => {
 		(async () => {
 			if (id) {
@@ -54,13 +58,13 @@ const ProfilePage = () => {
 				formik.setValues({ about: user.about as string });
 				setUser(user);
 				setStories([]);
-				setAllStoriesLoaded(false)
+				setAllStoriesLoaded(false);
 				setPage(1);
 			}
 		})();
 	}, [id]);
 
-	//fetching user stories
+	// fetching user stories
 	useEffect(() => {
 		(async () => {
 			if (user && id && !allStoriesLoaded) {
@@ -89,11 +93,7 @@ const ProfilePage = () => {
 		}
 	}, [aboutFormState]);
 
-	// setting topics bar navigation
-	useEffect(() => {
-		setCurrentNav(nav || "Home");
-	}, []);
-
+	// pagination logic
 	const handleScroll = () => {
 		if (mainContainerRef.current) {
 			const mainContainer = mainContainerRef.current;

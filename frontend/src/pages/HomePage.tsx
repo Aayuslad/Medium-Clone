@@ -20,6 +20,10 @@ const HomePage = () => {
 	const [isAllStoriesLoaded, setIsAllStoriesLoaded] = useState<{ [key: string]: Boolean }>({});
 
 	useEffect(() => {
+		setCurrentNav(nav || "For you");
+	}, [nav]);
+
+	useEffect(() => {
 		function updatepageNumbers() {
 			setPageNumbers((prevPageNumbers) => ({
 				...(prevPageNumbers || {}),

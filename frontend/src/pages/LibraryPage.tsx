@@ -18,6 +18,10 @@ const LibraryPage = () => {
 	const [isAllStoriesLoded, setIsAllStoriesLoaded] = useState<{ [key: string]: Boolean }>({});
 
 	useEffect(() => {
+		setCurrentNav(nav || "Saved stories");
+	}, [nav]);
+
+	useEffect(() => {
 		function updatepageNumbers() {
 			setPageNumbers((prevPageNumbers) => ({
 				...(prevPageNumbers || {}),
@@ -27,6 +31,7 @@ const LibraryPage = () => {
 		updatepageNumbers();
 	}, [currentNav]);
 
+	// data fetching logic
 	useEffect(() => {
 		const currentPage = pageNumbers?.[currentNav] || 1;
 
