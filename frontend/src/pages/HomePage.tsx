@@ -16,12 +16,12 @@ const HomePage = () => {
 	const mainContainerRef = useRef<HTMLDivElement | null>(null);
 	const { nav } = useParams<{ nav: string | undefined }>();
 	const [currentNav, setCurrentNav] = useState<string>(nav || "For you");
-	const [pageNumbers, setPageNumbers] = useState<{ [key: string]: number }>({});
+	const [pageNumbers, setPageNumbers] = useState<{ [key: string]: number }>();
 	const [isAllStoriesLoaded, setIsAllStoriesLoaded] = useState<{ [key: string]: Boolean }>({});
 
-	useEffect(() => {
-		setCurrentNav(nav || "For you");
-	}, [nav]);
+	// useEffect(() => {
+	// 	setCurrentNav(nav || "For you");
+	// }, [nav]);
 
 	useEffect(() => {
 		function updatepageNumbers() {
