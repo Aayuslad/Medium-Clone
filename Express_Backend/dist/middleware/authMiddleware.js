@@ -36,14 +36,14 @@ const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         console.log("error fetching topics");
     }
     if (!token) {
-        res.status(401).json({ topics });
+        res.status(401).json({ message: "Sign in to get a better experience", topics });
         return;
     }
     try {
         // Verify JWT token
         const decodedPayload = jsonwebtoken_1.default.verify(token, JWT_SECRET || "");
         if (typeof decodedPayload === "string") {
-            res.status(403).json({ error: "Error while decoding JWT token", topics });
+            res.status(403).json({ message: "Authentication failed. Please log in again.", topics });
             return;
         }
         const userId = decodedPayload.id;
@@ -58,7 +58,7 @@ const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
     catch (e) {
         console.error(e);
-        return res.status(403).json({ error: "Error while user validation", topics });
+        return res.status(403).json({ message: "Authentication failed. Please log in again.", topics });
     }
 });
 exports.default = authMiddleware;

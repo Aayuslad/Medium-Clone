@@ -78,7 +78,11 @@ export const AuthStore = create<AuthStoreType>((set) => ({
 			const { data } = await axios.get("/api/v1/user");
 			set({ user: data, isLoggedIn: true });
 		} catch (error) {
-			apiErrorHandler(error);
+			// @ts-ignore
+			toast.error(error.response.data.message, {
+				position: "bottom-left",
+				duration: 5000,
+			});
 			const err = error as AxiosError<ErrorResponse>;
 			set({
 				isLoggedIn: false,
