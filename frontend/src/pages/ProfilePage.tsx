@@ -86,10 +86,7 @@ const ProfilePage = () => {
 	// on auto focus, cursor must be at the end of text.
 	useEffect(() => {
 		if (textareaRef.current) {
-			textareaRef.current.setSelectionRange(
-				textareaRef.current.value.length,
-				textareaRef.current.value.length,
-			);
+			textareaRef.current.setSelectionRange(textareaRef.current.value.length, textareaRef.current.value.length);
 		}
 	}, [aboutFormState]);
 
@@ -160,9 +157,7 @@ const ProfilePage = () => {
 						)}
 
 						{/* Username */}
-						<h2 className="username hidden lg:block text-5xl font-semibold py-12">
-							{user?.userName}
-						</h2>
+						<h2 className="username hidden lg:block text-5xl font-semibold py-12">{user?.userName}</h2>
 
 						{/* Navbar */}
 						<RegularLeftContainerNavbar
@@ -175,6 +170,12 @@ const ProfilePage = () => {
 						{/* User stories */}
 						{currentNav === "Home" && (
 							<div className="stories">
+								{!usersStore.skeletonLoading && stories?.length === 0 && (
+									<div className="text-center text-slate-600 text-lg pt-24">
+										{user?.userName} hasn't written any stories yet.
+									</div>
+								)}
+
 								{stories?.map((story, index) => (
 									<StoryPreview story={story} key={index} version="profile" />
 								))}
@@ -252,6 +253,13 @@ const ProfilePage = () => {
 								</pre>
 							</div>
 						)}
+
+						{currentNav === "About" && (
+							<div className="followfollowinv font-semibold mt-8 pl-2 text-green-600 cursor-pointer">
+								{user?.followersCount} Follower <span className="text-black"> • </span> {user?.followingCount}{" "}
+								Following
+							</div>
+						)}
 					</LeftContainer>
 
 					<RightContainer>
@@ -294,11 +302,11 @@ const ProfilePage = () => {
 						)}
 
 						{/* Top 5 following */}
-						{!(user?.id === authStore.user?.id) && (
+						{!(user?.id === authStore.user?.id) && user?.topFiveFollowing && user.topFiveFollowing.length > 0 && (
 							<div className="following mt-6 py-2">
 								<h3 className="font-semibold">Following</h3>
 								<div className="flex flex-col gap-2 mt-3">
-									{user?.topFiveFollowing?.map((profile) => {
+									{user.topFiveFollowing.map((profile) => {
 										return (
 											<div
 												className="profile flex items-center gap-3 cursor-pointer"
@@ -311,9 +319,7 @@ const ProfilePage = () => {
 														className="w-full aspect-square rounded-[50%]"
 													/>
 												</div>
-												<div className="userName hover:underline">
-													{profile.userName}
-												</div>
+												<div className="userName hover:underline">{profile.userName}</div>
 											</div>
 										);
 									})}

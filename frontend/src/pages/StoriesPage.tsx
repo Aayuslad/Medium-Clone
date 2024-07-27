@@ -140,6 +140,12 @@ const StoriesPage = () => {
 							{storyStore.storiesPage.Drafts.map((draft) => (
 								<StoryDraftPreview key={draft.id} draft={draft} />
 							))}
+
+							{!storyStore.skeletonLoading && storyStore.storiesPage.Drafts.length === 0 && (
+								<div className="flex justify-center items-center h-80 ">
+									<p className="text-center text-gray-600 text-[1.2rem]">No drafts yet!</p>
+								</div>
+							)}
 						</div>
 					)}
 
@@ -148,6 +154,14 @@ const StoriesPage = () => {
 							{storyStore.storiesPage.Published.map((draft) => (
 								<StoryDraftPreview key={draft.id} draft={draft} />
 							))}
+
+							{!storyStore.skeletonLoading && storyStore.storiesPage.Published.length === 0 && (
+								<div className="flex justify-center items-center h-80 ">
+									<p className="text-center text-gray-600 text-[1.2rem]">
+										You haven’t published any stories yet!
+									</p>
+								</div>
+							)}
 						</div>
 					)}
 
@@ -156,6 +170,14 @@ const StoriesPage = () => {
 							{storyStore.storiesPage.Responses.map((response) => (
 								<ResponseAndReplyPreview key={response.id} response={response} />
 							))}
+
+							{!storyStore.skeletonLoading && storyStore.storiesPage.Responses.length === 0 && (
+								<div className="flex justify-center items-center h-80 ">
+									<p className="text-center text-gray-600 text-[1.2rem]">
+										You haven’t responded to any stories yet!
+									</p>
+								</div>
+							)}
 						</div>
 					)}
 
@@ -164,6 +186,14 @@ const StoriesPage = () => {
 							{storyStore.storiesPage.Replies.map((reply) => (
 								<ResponseAndReplyPreview key={reply.id} reply={reply} />
 							))}
+
+							{!storyStore.skeletonLoading && storyStore.storiesPage.Replies.length === 0 && (
+								<div className="flex justify-center items-center h-80 ">
+									<p className="text-center text-gray-600 text-[1.2rem]">
+										You haven’t replied to any responses yet!
+									</p>
+								</div>
+							)}
 						</div>
 					)}
 

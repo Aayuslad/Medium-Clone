@@ -130,6 +130,12 @@ const RefineRecommendations = () => {
 							{usersStore.refineRecommendationsPage?.Following.map((author, index) => {
 								return <UserOrPeoplePreview key={index} author={author} />;
 							})}
+
+							{!usersStore.skeletonLoading && usersStore.refineRecommendationsPage.Following.length === 0 && (
+								<div className="flex justify-center items-center h-80 ">
+									<p className="text-center text-gray-600 text-[1.2rem]">You have't followed anyone Yet!</p>
+								</div>
+							)}
 						</div>
 					)}
 
@@ -160,6 +166,12 @@ const RefineRecommendations = () => {
 									</div>
 								);
 							})}
+
+							{!usersStore.skeletonLoading && usersStore.refineRecommendationsPage.Muted.length === 0 && (
+								<div className="flex justify-center items-center h-80 ">
+									<p className="text-center text-gray-600 text-[1.2rem]">You have't muted any author Yet!</p>
+								</div>
+							)}
 						</div>
 					)}
 

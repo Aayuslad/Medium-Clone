@@ -22,7 +22,7 @@ const SearchResultPage = () => {
 
 	useEffect(() => {
 		setCurrentNav(nav || "Stories");
-	}, [nav]);	
+	}, [nav]);
 
 	// update the page numbers of the stories
 	useEffect(() => {
@@ -120,7 +120,7 @@ const SearchResultPage = () => {
 		return () => {
 			window.removeEventListener("scroll", handleScroll);
 		};
-	}, [currentNav]);	
+	}, [currentNav]);
 
 	return (
 		<div className="SearchResultPage">
@@ -144,6 +144,16 @@ const SearchResultPage = () => {
 							{usersStore.searchResultPage.Stories?.map((story, index) => (
 								<StoryPreview story={story} key={index} />
 							))}
+
+							{!usersStore.skeletonLoading && usersStore.searchResultPage.Stories.length === 0 && (
+								<div className="flex justify-center items-center h-80 ">
+									<p className="text-center text-gray-600 text-[1.2rem]">
+										Hmm, no matches here. Could you try different keywords
+										<br />
+										or review your spelling?
+									</p>
+								</div>
+							)}
 						</div>
 					)}
 
@@ -154,6 +164,16 @@ const SearchResultPage = () => {
 							{usersStore.searchResultPage.People?.map((author, index) => (
 								<UserOrPeoplePreview author={author} key={index} />
 							))}
+
+							{!usersStore.skeletonLoading && usersStore.searchResultPage.People.length === 0 && (
+								<div className="flex justify-center items-center h-80 ">
+									<p className="text-center text-gray-600 text-[1.2rem]">
+										Hmm, no matches here. Could you try different keywords
+										<br />
+										or review your spelling?{" "}
+									</p>
+								</div>
+							)}
 						</div>
 					)}
 
@@ -162,6 +182,16 @@ const SearchResultPage = () => {
 							{usersStore.searchResultPage.Topics?.map((topic, index) => (
 								<TopicPriview key={index} topic={topic} />
 							))}
+
+							{!usersStore.skeletonLoading && usersStore.searchResultPage.Topics.length === 0 && (
+								<div className="flex justify-center items-center h-80 ">
+									<p className="text-center text-gray-600 text-[1.2rem]">
+										Hmm, no matches here. Could you try different keywords
+										<br />
+										or review your spelling?{" "}
+									</p>
+								</div>
+							)}
 						</div>
 					)}
 

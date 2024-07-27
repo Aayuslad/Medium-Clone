@@ -114,6 +114,13 @@ const LibraryPage = () => {
 							{storyStore.libraryPage.savedStories.map((story, index) => (
 								<StoryPreview story={story} key={index} version="profile" />
 							))}
+
+							{!storyStore.skeletonLoading && storyStore.libraryPage.savedStories.length === 0 && (
+								<div className="flex flex-col justify-center items-center h-80 w-full text-gray-600">
+									<h3 className="text-2xl font-semibold">Nothing Saved Yet!</h3>
+									<p>Save some stories and it will apper here.</p>
+								</div>
+							)}
 						</>
 					)}
 
@@ -122,6 +129,13 @@ const LibraryPage = () => {
 							{storyStore.libraryPage.readingHistory.map((story, index) => (
 								<StoryPreview story={story} key={index} version="profile" />
 							))}
+
+							{!storyStore.skeletonLoading && storyStore.libraryPage.readingHistory.length === 0 && (
+								<div className="flex flex-col justify-center items-center h-80 w-full text-gray-600">
+									<h3 className="text-2xl font-semibold">You haven't read any stories Yet!</h3>
+									<p>Stories you’ve read on Medium will appear here.</p>
+								</div>
+							)}
 						</>
 					)}
 
