@@ -22,65 +22,73 @@ const SearchResultPage = () => {
 
 	useEffect(() => {
 		setCurrentNav(nav || "Stories");
-	}, [nav]);
+	}, [nav]);	
 
+	// update the page numbers of the stories
 	useEffect(() => {
-		function updatepageNumbers() {
+		const contentItems = usersStore.searchResultPage[currentNav as keyof typeof usersStore.searchResultPage];
+		if (contentItems.length > 0) {
+			if (contentItems.length < 8) {
+				setIsAllDataLoaded((prevIsAllDataLoaded) => ({
+					...(prevIsAllDataLoaded || {}),
+					[currentNav]: true,
+				}));
+				return;
+			}
+			const pageNumber = contentItems.length / 8;
+			setPageNumbers((prevPageNumbers) => ({
+				...(prevPageNumbers || {}),
+				[currentNav]: pageNumber,
+			}));
+		} else {
 			setPageNumbers((prevPageNumbers) => ({
 				...(prevPageNumbers || {}),
 				[currentNav]: prevPageNumbers?.[currentNav] || 1,
 			}));
 		}
-
-		updatepageNumbers();
 	}, [currentNav]);
 
+	// reset results when search query changes after mount
 	useEffect(() => {
 		setPageNumbers(undefined);
 		const currentPage = pageNumbers?.[currentNav] || 1;
 		usersStore.resetSearchResultPage();
 		switch (currentNav) {
 			case "Stories":
-				if (searchQuery)
-					usersStore.getSerchResultPageStories({ searchQuery, currentPage, setIsAllDataLoaded });
+				if (searchQuery) usersStore.getSerchResultPageStories({ searchQuery, currentPage, setIsAllDataLoaded });
 				break;
 			case "People":
-				if (searchQuery)
-					usersStore.getSerchResultPageAuthors({ searchQuery, currentPage, setIsAllDataLoaded });
+				if (searchQuery) usersStore.getSerchResultPageAuthors({ searchQuery, currentPage, setIsAllDataLoaded });
 				break;
 			case "Topics":
-				if (searchQuery)
-					usersStore.getSerchResultPageTopics({ searchQuery, currentPage, setIsAllDataLoaded });
+				if (searchQuery) usersStore.getSerchResultPageTopics({ searchQuery, currentPage, setIsAllDataLoaded });
 				break;
 		}
 	}, [searchQuery]);
 
+	//  fetching serch results on mount
 	useEffect(() => {
 		const currentPage = pageNumbers?.[currentNav] || 1;
 
+		if (usersStore.searchResultPage[currentNav as keyof typeof usersStore.searchResultPage]?.length === currentPage * 8) {
+			return;
+		}
+
 		if (pageNumbers === undefined) return;
+
+		if (searchQuery === undefined) return;
 
 		switch (currentNav) {
 			case "Stories":
-				if (usersStore.searchResultPage["stories"]?.length === currentPage * 8) {
-					return;
-				}
-				if (!isAllDataLoaded?.["Stories"] && searchQuery) {
+				if (!isAllDataLoaded?.["Stories"])
 					usersStore.getSerchResultPageStories({ searchQuery, currentPage, setIsAllDataLoaded });
-				}
 				break;
 			case "People":
-				if (usersStore.searchResultPage["authors"]?.length === currentPage * 8) {
-					return;
-				}
-				if (!isAllDataLoaded?.["People"] && searchQuery)
+				if (!isAllDataLoaded?.["People"])
 					usersStore.getSerchResultPageAuthors({ searchQuery, currentPage, setIsAllDataLoaded });
 				break;
 			case "Topics":
-				if (usersStore.searchResultPage["topics"]?.length === currentPage * 8) {
-					return;
-				}
-				if (!isAllDataLoaded?.["Topics"] && searchQuery)
+				if (!isAllDataLoaded?.["Topics"])
 					usersStore.getSerchResultPageTopics({ searchQuery, currentPage, setIsAllDataLoaded });
 				break;
 		}
@@ -112,7 +120,7 @@ const SearchResultPage = () => {
 		return () => {
 			window.removeEventListener("scroll", handleScroll);
 		};
-	}, [currentNav]);
+	}, [currentNav]);	
 
 	return (
 		<div className="SearchResultPage">
@@ -133,7 +141,7 @@ const SearchResultPage = () => {
 
 					{currentNav === "Stories" && (
 						<div>
-							{usersStore.searchResultPage["stories"]?.map((story, index) => (
+							{usersStore.searchResultPage.Stories?.map((story, index) => (
 								<StoryPreview story={story} key={index} />
 							))}
 						</div>
@@ -143,7 +151,7 @@ const SearchResultPage = () => {
 
 					{currentNav === "People" && (
 						<div>
-							{usersStore.searchResultPage["authors"]?.map((author, index) => (
+							{usersStore.searchResultPage.People?.map((author, index) => (
 								<UserOrPeoplePreview author={author} key={index} />
 							))}
 						</div>
@@ -151,13 +159,13 @@ const SearchResultPage = () => {
 
 					{currentNav === "Topics" && (
 						<div>
-							{usersStore.searchResultPage["topics"]?.map((topic, index) => (
+							{usersStore.searchResultPage.Topics?.map((topic, index) => (
 								<TopicPriview key={index} topic={topic} />
 							))}
 						</div>
 					)}
 
-					{(currentNav === "People" || currentNav == "topics") && usersStore.skeletonLoading && (
+					{(currentNav === "People" || currentNav == "Topics") && usersStore.skeletonLoading && (
 						<RefineRecomendationsSkelitons />
 					)}
 				</LeftContainer>

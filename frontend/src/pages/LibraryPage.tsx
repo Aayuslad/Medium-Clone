@@ -21,12 +21,29 @@ const LibraryPage = () => {
 		setCurrentNav(nav || "Saved stories");
 	}, [nav]);
 
+	// update the page numbers of the stories
 	useEffect(() => {
 		function updatepageNumbers() {
-			setPageNumbers((prevPageNumbers) => ({
-				...(prevPageNumbers || {}),
-				[currentNav]: prevPageNumbers?.[currentNav] || 1,
-			}));
+			const stories = storyStore.libraryPage[currentNav as keyof typeof storyStore.libraryPage];
+			if (stories?.length > 0) {
+				if (stories.length < 5) {
+					setIsAllStoriesLoaded((prevIsAllStoriesLoaded) => ({
+						...(prevIsAllStoriesLoaded || {}),
+						[currentNav]: true,
+					}));
+					return;
+				}
+				const pageNumber = Math.ceil(stories?.length / 5);
+				setPageNumbers((prevPageNumbers) => ({
+					...(prevPageNumbers || {}),
+					[currentNav]: pageNumber,
+				}));
+			} else {
+				setPageNumbers((prevPageNumbers) => ({
+					...(prevPageNumbers || {}),
+					[currentNav]: prevPageNumbers?.[currentNav] || 1,
+				}));
+			}
 		}
 		updatepageNumbers();
 	}, [currentNav]);
@@ -39,13 +56,11 @@ const LibraryPage = () => {
 
 		switch (currentNav) {
 			case "Saved stories":
-				if (storyStore.savedStories.length === currentPage * 5 || isAllStoriesLoded[currentNav])
-					return;
+				if (storyStore.libraryPage.savedStories.length === currentPage * 5 || isAllStoriesLoded[currentNav]) return;
 				storyStore.getSavedStories({ currentPage, setIsAllStoriesLoaded });
 				break;
 			case "Reading History":
-				if (storyStore.readingHistory.length === currentPage * 5 || isAllStoriesLoded?.[currentNav])
-					return;
+				if (storyStore.libraryPage.readingHistory.length === currentPage * 5 || isAllStoriesLoded?.[currentNav]) return;
 				storyStore.getReadingHistory({ currentPage, setIsAllStoriesLoaded });
 				break;
 		}
@@ -96,7 +111,7 @@ const LibraryPage = () => {
 
 					{currentNav === "Saved stories" && (
 						<>
-							{storyStore.savedStories.map((story, index) => (
+							{storyStore.libraryPage.savedStories.map((story, index) => (
 								<StoryPreview story={story} key={index} version="profile" />
 							))}
 						</>
@@ -104,7 +119,7 @@ const LibraryPage = () => {
 
 					{currentNav === "Reading History" && (
 						<>
-							{storyStore.readingHistory.map((story, index) => (
+							{storyStore.libraryPage.readingHistory.map((story, index) => (
 								<StoryPreview story={story} key={index} version="profile" />
 							))}
 						</>
@@ -112,7 +127,7 @@ const LibraryPage = () => {
 
 					{storyStore.skeletonLoading && <BlogsSkelitons />}
 				</LeftContainer>
-				<RightContainer>right</RightContainer>
+				<RightContainer />
 			</MainConntainer>
 		</div>
 	);

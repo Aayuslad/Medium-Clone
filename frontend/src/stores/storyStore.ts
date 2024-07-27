@@ -20,17 +20,19 @@ type storyStoreType = {
 	skeletonLoading: boolean;
 	putStoryLoading: boolean | undefined;
 	buttonLoading: boolean;
+	topic: topicType | undefined;
 	feedStories: { topic: string; stories: storyType[] }[] | [];
-	savedStories: storyType[] | [];
-	readingHistory: storyType[] | [];
-	yourStoriesPage: {
+	libraryPage: {
+		savedStories: storyType[];
+		readingHistory: storyType[];
+	};
+	storiesPage: {
 		Drafts: draftType[];
 		Published: storyType[];
 		Responses: responseType[];
 		Replies: replyType[];
 		Spam: any[];
 	};
-	topic: topicType | undefined;
 	setTopic: (topic: topicType) => void;
 	postStory: (value: FormData) => Promise<string>;
 	putStory: (value: FormData) => Promise<boolean>;
@@ -130,14 +132,16 @@ export const StoryStore = create<storyStoreType>((set) => ({
 	skeletonLoading: false,
 	putStoryLoading: undefined,
 	buttonLoading: false,
-	feedStories: [],
-	savedStories: [],
-	readingHistory: [],
 	topic: undefined,
 	setTopic: (topic) => {
 		set({ topic });
 	},
-	yourStoriesPage: {
+	feedStories: [],
+	libraryPage: {
+		savedStories: [],
+		readingHistory: [],
+	},
+	storiesPage: {
 		Drafts: [],
 		Published: [],
 		Responses: [],
@@ -340,7 +344,10 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			const res = await axios.get(`/api/v1/story/savedStories?page=${values.currentPage}`);
 			set((state) => ({
 				...state,
-				savedStories: [...state.savedStories, ...res.data],
+				libraryPage: {
+					...state.libraryPage,
+					savedStories: [...state.libraryPage.savedStories, ...(res.data || [])],
+				},
 			}));
 			if (res.data.length < 5) {
 				values.setIsAllStoriesLoaded((state) => ({ ...state, "Saved stories": true }));
@@ -358,7 +365,10 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			const res = await axios.get(`/api/v1/story/readingHistory?page=${values.currentPage}`);
 			set((state) => ({
 				...state,
-				readingHistory: [...state.readingHistory, ...res.data],
+				libraryPage: {
+					...state.libraryPage,
+					readingHistory: [...state.libraryPage.readingHistory, ...(res.data || [])],
+				},
 			}));
 			if (res.data.length < 5) {
 				values.setIsAllStoriesLoaded((state) => ({ ...state, "Reading History": true }));
@@ -510,9 +520,9 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			set({ skeletonLoading: true });
 			const res = await axios.get(`/api/v1/story/getUsersDrafts?page=${values.currentPage}`);
 			set((state) => ({
-				yourStoriesPage: {
-					...state.yourStoriesPage,
-					Drafts: [...(state.yourStoriesPage?.Drafts || []), ...res.data],
+				storiesPage: {
+					...state.storiesPage,
+					Drafts: [...(state.storiesPage?.Drafts || []), ...res.data],
 				},
 			}));
 			if (res.data.length < 6) {
@@ -530,9 +540,9 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			set({ skeletonLoading: true });
 			const res = await axios.get(`/api/v1/story/getUserResponses?page=${values.currentPage}`);
 			set((state) => ({
-				yourStoriesPage: {
-					...state.yourStoriesPage,
-					Responses: [...(state.yourStoriesPage?.Responses || []), ...res.data],
+				storiesPage: {
+					...state.storiesPage,
+					Responses: [...(state.storiesPage?.Responses || []), ...res.data],
 				},
 			}));
 			if (res.data.length < 6) {
@@ -550,9 +560,9 @@ export const StoryStore = create<storyStoreType>((set) => ({
 			set({ skeletonLoading: true });
 			const res = await axios.get(`/api/v1/story/getUserReplies?page=${values.currentPage}`);
 			set((state) => ({
-				yourStoriesPage: {
-					...state.yourStoriesPage,
-					Replies: [...(state.yourStoriesPage?.Replies || []), ...res.data],
+				storiesPage: {
+					...state.storiesPage,
+					Replies: [...(state.storiesPage?.Replies || []), ...res.data],
 				},
 			}));
 			if (res.data.length < 6) {
@@ -568,11 +578,11 @@ export const StoryStore = create<storyStoreType>((set) => ({
 	getUserStories: async function (values) {
 		try {
 			set({ skeletonLoading: true });
-			const res = await axios.get(`/api/v1/user/userStories/${values.userId}?page=${values.currentPage}`);
+			const res = await axios.get(`/api/v1/user/userStories/${values.userId}?page=${values.currentPage}?pageSize=${6}`);
 			set((state) => ({
-				yourStoriesPage: {
-					...state.yourStoriesPage,
-					Published: [...(state.yourStoriesPage?.Published || []), ...res.data],
+				storiesPage: {
+					...state.storiesPage,
+					Published: [...(state.storiesPage?.Published || []), ...res.data],
 				},
 			}));
 			if (res.data.length < 6) {

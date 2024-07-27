@@ -27,12 +27,30 @@ const StoriesPage = () => {
 		setCurrentNav(nav || "Drafts");
 	}, [nav]);
 
+	// update the page numbers of the stories
 	useEffect(() => {
 		function updatepageNumbers() {
-			setPageNumbers((prevPageNumbers) => ({
-				...(prevPageNumbers || {}),
-				[currentNav]: prevPageNumbers?.[currentNav] || 1,
-			}));
+			const contentItems = storyStore.storiesPage[currentNav as keyof typeof storyStore.storiesPage];
+
+			if ((contentItems?.length ?? 0) > 0) {
+				if (contentItems.length < 6) {
+					setIsAllDataLoaded((prevIsAllDataLoaded) => ({
+						...(prevIsAllDataLoaded || {}),
+						[currentNav]: true,
+					}));
+					return;
+				}
+				const pageNumber = Math.ceil((contentItems?.length ?? 0) / 6);
+				setPageNumbers((prevPageNumbers) => ({
+					...(prevPageNumbers || {}),
+					[currentNav]: pageNumber,
+				}));
+			} else {
+				setPageNumbers((prevPageNumbers) => ({
+					...(prevPageNumbers || {}),
+					[currentNav]: 1,
+				}));
+			}
 		}
 
 		updatepageNumbers();
@@ -42,8 +60,7 @@ const StoriesPage = () => {
 	useEffect(() => {
 		const currentPage = pageNumbers?.[currentNav] || 1;
 
-		// @ts-ignore
-		if (storyStore.yourStoriesPage[currentNav]?.length === currentPage * 6) {
+		if (storyStore.storiesPage[currentNav as keyof typeof storyStore.storiesPage]?.length === currentPage * 6) {
 			return;
 		}
 
@@ -51,27 +68,20 @@ const StoriesPage = () => {
 
 		switch (currentNav) {
 			case "Drafts":
-				if (!isAllDataLoaded?.[currentNav])
-					storyStore.getUsersDrafts({ currentPage, setIsAllDataLoaded });
+				if (!isAllDataLoaded?.[currentNav]) storyStore.getUsersDrafts({ currentPage, setIsAllDataLoaded });
 				break;
 
 			case "Published":
 				if (!isAllDataLoaded?.[currentNav])
-					storyStore.getUserStories({
-						userId: authStore.user?.id as string,
-						currentPage,
-						setIsAllDataLoaded,
-					});
+					storyStore.getUserStories({ userId: authStore.user?.id as string, currentPage, setIsAllDataLoaded });
 				break;
 
 			case "Responses":
-				if (!isAllDataLoaded?.[currentNav])
-					storyStore.getUserResponses({ currentPage, setIsAllDataLoaded });
+				if (!isAllDataLoaded?.[currentNav]) storyStore.getUserResponses({ currentPage, setIsAllDataLoaded });
 				break;
 
 			case "Replies":
-				if (!isAllDataLoaded?.[currentNav])
-					storyStore.getUserReplies({ currentPage, setIsAllDataLoaded });
+				if (!isAllDataLoaded?.[currentNav]) storyStore.getUserReplies({ currentPage, setIsAllDataLoaded });
 				break;
 
 			case "Spam":
@@ -127,7 +137,7 @@ const StoriesPage = () => {
 
 					{currentNav === "Drafts" && (
 						<div className="lg:mr-20">
-							{storyStore.yourStoriesPage.Drafts.map((draft) => (
+							{storyStore.storiesPage.Drafts.map((draft) => (
 								<StoryDraftPreview key={draft.id} draft={draft} />
 							))}
 						</div>
@@ -135,7 +145,7 @@ const StoriesPage = () => {
 
 					{currentNav === "Published" && (
 						<div className="lg:mr-20">
-							{storyStore.yourStoriesPage.Published.map((draft) => (
+							{storyStore.storiesPage.Published.map((draft) => (
 								<StoryDraftPreview key={draft.id} draft={draft} />
 							))}
 						</div>
@@ -143,7 +153,7 @@ const StoriesPage = () => {
 
 					{currentNav === "Responses" && (
 						<div className="lg:mr-20">
-							{storyStore.yourStoriesPage.Responses.map((response) => (
+							{storyStore.storiesPage.Responses.map((response) => (
 								<ResponseAndReplyPreview key={response.id} response={response} />
 							))}
 						</div>
@@ -151,19 +161,21 @@ const StoriesPage = () => {
 
 					{currentNav === "Replies" && (
 						<div className="lg:mr-20">
-							{storyStore.yourStoriesPage.Replies.map((reply) => (
+							{storyStore.storiesPage.Replies.map((reply) => (
 								<ResponseAndReplyPreview key={reply.id} reply={reply} />
 							))}
 						</div>
 					)}
 
-					{(currentNav === "Drafts" || currentNav === "Published") &&
-						storyStore.skeletonLoading && <StoryDraftPreviewSkeleton />}
+					{(currentNav === "Drafts" || currentNav === "Published") && storyStore.skeletonLoading && (
+						<StoryDraftPreviewSkeleton />
+					)}
 
-					{(currentNav === "Responses" || currentNav === "Replies") &&
-						storyStore.skeletonLoading && <ResponseAndReplyPreviewSkeleton />}
+					{(currentNav === "Responses" || currentNav === "Replies") && storyStore.skeletonLoading && (
+						<ResponseAndReplyPreviewSkeleton />
+					)}
 				</LeftContainer>
-				<RightContainer>right</RightContainer>
+				<RightContainer />
 			</MainConntainer>
 		</div>
 	);

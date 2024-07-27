@@ -7,10 +7,12 @@ import ProfileIcon from "../ProfileIcon";
 import defaultProfileImg from "../../assets/defaultProfile.jpg";
 import BigFollowFollowingButton from "../buttons/BigFollowFollowingButton";
 import { userType } from "@aayushlad/medium-clone-common";
+import { useNavigate } from "react-router-dom";
 
 const RightContainer = ({ children }: { children?: ReactNode }) => {
 	const authStore = AuthStore();
 	const usersStore = UsersStore();
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		if (authStore.user) {
@@ -38,12 +40,7 @@ const RightContainer = ({ children }: { children?: ReactNode }) => {
 						<div className="py-3 text-lg">
 							<q>Explore a platform to create, share, and discover inspiring stories.</q>
 						</div>
-						<RegularButton
-							text="Start Writing"
-							color="black"
-							bgColor="white"
-							onClick={() => {}}
-						/>
+						<RegularButton text="Start Writing" color="black" bgColor="white" onClick={() => {}} />
 					</div>
 
 					<div className="whoToFollow">
@@ -60,13 +57,34 @@ const RightContainer = ({ children }: { children?: ReactNode }) => {
 										<div className="font-semibold">{author.userName}</div>
 										{author.bio && (
 											<div className="text-xs">
-												{author.bio.length > 50
-													? `${author.bio.slice(0, 50)}...`
-													: author.bio}
+												{author.bio.length > 50 ? `${author.bio.slice(0, 50)}...` : author.bio}
 											</div>
 										)}
 									</div>
 									<BigFollowFollowingButton user={author as userType} />
+								</div>
+							);
+						})}
+					</div>
+
+					<div className="recentlySaved">
+						<h3 className="font-semibold mb-4 text-lg">Recently Saved</h3>
+						{usersStore.userRecomendations.recentlySaved.map((story) => {
+							return (
+								<div
+									className="flex flex-col gap-3 items-start py-2 justify-between cursor-pointer"
+									key={story.id}
+									onClick={() => navigate(`/story/${story.id}`)}
+								>
+									<div className="author flex gap-3 items-center">
+										<ProfileIcon
+											profileImg={story.authorProfileImg || defaultProfileImg}
+											heightWidth={6}
+											marginX={false}
+										/>
+										<div className="font-semibold">{story.author}</div>
+									</div>
+									<div className="storybody font-bold ">{story.title}</div>
 								</div>
 							);
 						})}

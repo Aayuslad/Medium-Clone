@@ -24,7 +24,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 	}
 
 	if (!token) {
-		res.status(401).json({ message: "Sign in first", topics });
+		res.status(401).json({ topics });
 		return;
 	}
 

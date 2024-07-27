@@ -19,16 +19,33 @@ const HomePage = () => {
 	const [pageNumbers, setPageNumbers] = useState<{ [key: string]: number }>();
 	const [isAllStoriesLoaded, setIsAllStoriesLoaded] = useState<{ [key: string]: Boolean }>({});
 
-	// useEffect(() => {
-	// 	setCurrentNav(nav || "For you");
-	// }, [nav]);
+	useEffect(() => {
+		setCurrentNav(nav || "For you");
+	}, [nav]);
 
+	// update the page numbers of the stories
 	useEffect(() => {
 		function updatepageNumbers() {
-			setPageNumbers((prevPageNumbers) => ({
-				...(prevPageNumbers || {}),
-				[currentNav]: prevPageNumbers?.[currentNav] || 1,
-			}));
+			const stories = storyStore.feedStories.find((story) => story.topic === currentNav)?.stories;
+			if ((stories?.length ?? 0) > 0) {
+				if ((stories?.length ?? 0) < 5) {
+					setIsAllStoriesLoaded((prevIsAllStoriesLoaded) => ({
+						...(prevIsAllStoriesLoaded || {}),
+						[currentNav]: true,
+					}));
+					return;
+				}
+				const pageNumber = Math.ceil((stories?.length ?? 0) / 5);
+				setPageNumbers((prevPageNumbers) => ({
+					...(prevPageNumbers || {}),
+					[currentNav]: pageNumber,
+				}));
+			} else {
+				setPageNumbers((prevPageNumbers) => ({
+					...(prevPageNumbers || {}),
+					[currentNav]: 1,
+				}));
+			}
 		}
 
 		updatepageNumbers();
@@ -100,7 +117,7 @@ const HomePage = () => {
 					<div
 						className={`topics z-0 h-fit sticky ${
 							scrollDirection === "down" ? "top-0" : "top-14"
-						} duration-200 bg-white relative`}
+						} duration-200 bg-white relative md:flex md:items-center md:justify-center lg:block`}
 					>
 						<TopicsNavbar currentNav={currentNav} setCurrentNav={setCurrentNav} />
 					</div>

@@ -41,44 +41,40 @@ const TopicsNavbar = ({ currentNav, setCurrentNav }: Props) => {
 			>
 				<AddTopicButton />
 				{authStore.isLoggedIn &&
-					[
-						"For you",
-						"Following",
-						...(authStore.user?.followedTopics?.map((topic) => topic.topic) || []),
-					].map((nav, index) => (
-						<div
-							key={index}
-							onClick={() => {
-								navigate(`/${nav}`);
-								setCurrentNav(nav);
-							}}
-							className={`cursor-pointer text-nowrap py-4 text-[14px] border-black ${
-								currentNav === nav ? "border-b" : ""
-							}`}
-						>
-							{nav}
-						</div>
-					))}
+					["For you", "Following", ...(authStore.user?.followedTopics?.map((topic) => topic.topic) || [])].map(
+						(nav, index) => (
+							<div
+								key={index}
+								onClick={() => {
+									navigate(`/${nav}`);
+									setCurrentNav(nav);
+								}}
+								className={`cursor-pointer text-nowrap py-4 text-[14px] border-black ${
+									currentNav === nav ? "border-b" : ""
+								}`}
+							>
+								{nav}
+							</div>
+						),
+					)}
 
 				{!authStore.isLoggedIn &&
-					["For you", ...(authStore.topics?.map((topic) => topic.topic) || [])].map(
-						(nav, index) => {
-							return (
-								<div
-									key={index}
-									onClick={() => {
-										navigate(`/${nav}`);
-										setCurrentNav(nav);
-									}}
-									className={`cursor-pointer text-nowrap py-4 text-[14px] border-black ${
-										currentNav === nav ? "border-b" : ""
-									}`}
-								>
-									{nav}
-								</div>
-							);
-						},
-					)}
+					["For you", ...(authStore.topics?.map((topic) => topic.topic) || [])].map((nav, index) => {
+						return (
+							<div
+								key={index}
+								onClick={() => {
+									navigate(`/${nav}`);
+									setCurrentNav(nav);
+								}}
+								className={`cursor-pointer text-nowrap py-4 text-[14px] border-black ${
+									currentNav === nav ? "border-b" : ""
+								}`}
+							>
+								{nav}
+							</div>
+						);
+					})}
 			</div>
 			{!isAtStart && (
 				<button
@@ -90,10 +86,7 @@ const TopicsNavbar = ({ currentNav, setCurrentNav }: Props) => {
 					}}
 				>
 					<svg width="26px" height="26px" viewBox="0 0 19 19">
-						<path
-							d="M11.47 13.97L6.99 9.48 11.47 5l.55.5-3.99 3.98 4 4z"
-							fillRule="evenodd"
-						></path>
+						<path d="M11.47 13.97L6.99 9.48 11.47 5l.55.5-3.99 3.98 4 4z" fillRule="evenodd"></path>
 					</svg>
 				</button>
 			)}
@@ -106,16 +99,8 @@ const TopicsNavbar = ({ currentNav, setCurrentNav }: Props) => {
 						}
 					}}
 				>
-					<svg
-						width="26px"
-						height="26px"
-						viewBox="0 0 19 19"
-						style={{ transform: "rotate(180deg)" }}
-					>
-						<path
-							d="M11.47 13.97L6.99 9.48 11.47 5l.55.5-3.99 3.98 4 4z"
-							fillRule="evenodd"
-						></path>
+					<svg width="26px" height="26px" viewBox="0 0 19 19" style={{ transform: "rotate(180deg)" }}>
+						<path d="M11.47 13.97L6.99 9.48 11.47 5l.55.5-3.99 3.98 4 4z" fillRule="evenodd"></path>
 					</svg>{" "}
 				</button>
 			)}

@@ -22,7 +22,7 @@ export type searchResultType = {
 type authStoreType = {
 	skeletonLoading: boolean;
 	buttonLoading: boolean;
-	refineReconmandations: {
+	refineRecommendationsPage: {
 		Following: userType[];
 		Muted: userType[];
 		"Discover Authors": userType[];
@@ -46,9 +46,9 @@ type authStoreType = {
 		}[];
 	};
 	searchResultPage: {
-		authors: userType[] | [];
-		stories: storyType[] | [];
-		topics: topicType[] | [];
+		People: userType[] | [];
+		Stories: storyType[] | [];
+		Topics: topicType[] | [];
 	};
 
 	getAnotherUser: (values: { id: string }) => Promise<userType>;
@@ -128,16 +128,21 @@ type authStoreType = {
 export const UsersStore = create<authStoreType>((set) => ({
 	skeletonLoading: false,
 	buttonLoading: false,
-	refineReconmandations: { Following: [], Muted: [], "Discover Authors": [], "Discover Topics": [] },
+	refineRecommendationsPage: {
+		Following: [],
+		Muted: [],
+		"Discover Authors": [],
+		"Discover Topics": [],
+	},
 	userRecomendations: {
 		recommendedTopics: [],
 		whoToFollow: [],
 		recentlySaved: [],
 	},
 	searchResultPage: {
-		authors: [],
-		stories: [],
-		topics: [],
+		People: [],
+		Stories: [],
+		Topics: [],
 	},
 
 	getAnotherUser: async function (values) {
@@ -228,9 +233,9 @@ export const UsersStore = create<authStoreType>((set) => ({
 			set({ skeletonLoading: true });
 			const res = await axios.get(`api/v1/user/getUserFollowingAuthors?page=${values.currentPage}`);
 			set((state) => ({
-				refineReconmandations: {
-					...state.refineReconmandations,
-					Following: [...state.refineReconmandations.Following, ...(res.data || [])],
+				refineRecommendationsPage: {
+					...state.refineRecommendationsPage,
+					Following: [...state.refineRecommendationsPage.Following, ...(res.data || [])],
 				},
 			}));
 			if (res.data.length < 12) values.setIsAllDataLoaded((state) => ({ ...state, Following: true }));
@@ -246,9 +251,9 @@ export const UsersStore = create<authStoreType>((set) => ({
 			set({ skeletonLoading: true });
 			const res = await axios.get(`api/v1/user/getUserMutedAuthors?page=${values.currentPage}`);
 			set((state) => ({
-				refineReconmandations: {
-					...state.refineReconmandations,
-					Muted: [...state.refineReconmandations.Muted, ...(res.data || [])],
+				refineRecommendationsPage: {
+					...state.refineRecommendationsPage,
+					Muted: [...state.refineRecommendationsPage.Muted, ...(res.data || [])],
 				},
 			}));
 			if (res.data.length < 12) values.setIsAllDataLoaded((state) => ({ ...state, Muted: true }));
@@ -264,9 +269,9 @@ export const UsersStore = create<authStoreType>((set) => ({
 			set({ skeletonLoading: true });
 			const res = await axios.get(`api/v1/user/getRandomAuthors?page=${values.currentPage}`);
 			set((state) => ({
-				refineReconmandations: {
-					...state.refineReconmandations,
-					"Discover Authors": [...state.refineReconmandations["Discover Authors"], ...(res.data || [])],
+				refineRecommendationsPage: {
+					...state.refineRecommendationsPage,
+					"Discover Authors": [...state.refineRecommendationsPage["Discover Authors"], ...(res.data || [])],
 				},
 			}));
 			if (res.data.length < 12) values.setIsAllDataLoaded((state) => ({ ...state, "Discover Authors": true }));
@@ -282,9 +287,9 @@ export const UsersStore = create<authStoreType>((set) => ({
 			set({ skeletonLoading: true });
 			const res = await axios.get(`api/v1/user/getRandomTopics?page=${values.currentPage}`);
 			set((state) => ({
-				refineReconmandations: {
-					...state.refineReconmandations,
-					"Discover Topics": [...state.refineReconmandations["Discover Topics"], ...(res.data || [])],
+				refineRecommendationsPage: {
+					...state.refineRecommendationsPage,
+					"Discover Topics": [...state.refineRecommendationsPage["Discover Topics"], ...(res.data || [])],
 				},
 			}));
 			if (res.data.length < 12) values.setIsAllDataLoaded((state) => ({ ...state, "Discover Topics": true }));
@@ -313,7 +318,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			set((state) => ({
 				searchResultPage: {
 					...state.searchResultPage,
-					authors: [...state.searchResultPage.authors, ...(res.data || [])],
+					People: [...state.searchResultPage.People, ...(res.data || [])],
 				},
 			}));
 			if (res.data.length < 8) values.setIsAllDataLoaded((state) => ({ ...state, People: true }));
@@ -333,7 +338,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			set((state) => ({
 				searchResultPage: {
 					...state.searchResultPage,
-					stories: [...state.searchResultPage.stories, ...(res.data || [])],
+					Stories: [...state.searchResultPage.Stories, ...(res.data || [])],
 				},
 			}));
 			if (res.data.length < 8) values.setIsAllDataLoaded((state) => ({ ...state, Stories: true }));
@@ -353,7 +358,7 @@ export const UsersStore = create<authStoreType>((set) => ({
 			set((state) => ({
 				searchResultPage: {
 					...state.searchResultPage,
-					topics: [...state.searchResultPage.topics, ...(res.data || [])],
+					Topics: [...state.searchResultPage.Topics, ...(res.data || [])],
 				},
 			}));
 			if (res.data.length < 8) values.setIsAllDataLoaded((state) => ({ ...state, Topics: true }));
@@ -365,11 +370,13 @@ export const UsersStore = create<authStoreType>((set) => ({
 	},
 
 	resetSearchResultPage: () => {
-		set({ searchResultPage: { stories: [], authors: [], topics: [] } });
+		set({ searchResultPage: { Stories: [], People: [], Topics: [] } });
 	},
 
 	getUserRecomendations: async (values) => {
+		const { userRecomendations } = UsersStore.getState();
 		try {
+			if (userRecomendations.recommendedTopics.length > 0) return;
 			const res = await axios.get(`api/v1/user/getUserRecomendations?userId=${values.userId}`);
 			set({ userRecomendations: res.data });
 		} catch (error) {

@@ -10,7 +10,7 @@ import SigninPage from "./pages/SigninPage";
 import SignupPage from "./pages/SignupPage";
 import { AuthStore } from "./stores/authStore";
 import TopicPage from "./pages/TopicPage";
-import RefineRecommendations from "./pages/RefineRecomandations";
+import RefineRecommendations from "./pages/refineRecommendationsPage";
 import StoriesPage from "./pages/StoriesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ScrollToTop from "./components/scrollTop.";

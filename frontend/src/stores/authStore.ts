@@ -68,7 +68,7 @@ export const AuthStore = create<AuthStoreType>((set) => ({
 			});
 			set({ user: undefined, isLoggedIn: false });
 		} catch (error) {
-			console.error("Error signing out", error);
+			apiErrorHandler(error);
 		}
 	},
 
@@ -80,7 +80,6 @@ export const AuthStore = create<AuthStoreType>((set) => ({
 		} catch (error) {
 			apiErrorHandler(error);
 			const err = error as AxiosError<ErrorResponse>;
-			console.error(err.response?.data);
 			set({
 				isLoggedIn: false,
 				topics: err.response?.data.topics || [],

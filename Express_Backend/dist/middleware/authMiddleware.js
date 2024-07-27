@@ -36,7 +36,7 @@ const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         console.log("error fetching topics");
     }
     if (!token) {
-        res.status(401).json({ message: "Sign in first", topics });
+        res.status(401).json({ topics });
         return;
     }
     try {

@@ -15,7 +15,7 @@ import { UsersStore } from "../stores/usersStore";
 
 const RefineRecommendations = () => {
 	const { nav } = useParams<{ nav: string }>();
-	const [currentNav, setCurrentNav] = useState<string>(nav || "following");
+	const [currentNav, setCurrentNav] = useState<string>(nav || "Following");
 	const mainContainerRef = useRef<HTMLDivElement | null>(null);
 	const [pageNumbers, setPageNumbers] = useState<{ [key: string]: number }>();
 	const [isAllDataLoaded, setIsAllDataLoaded] = useState<{ [key: string]: Boolean }>({});
@@ -23,48 +23,58 @@ const RefineRecommendations = () => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		setCurrentNav(nav || "following");
+		setCurrentNav(nav || "Following");
 	}, [nav]);
 
+	// update the page numbers of the stories
 	useEffect(() => {
-		function updatepageNumbers() {
+		const contentItems =
+			usersStore.refineRecommendationsPage[currentNav as keyof typeof usersStore.refineRecommendationsPage];
+		if (contentItems.length > 0) {
+			if (contentItems.length < 12) {
+				setIsAllDataLoaded((prevIsAllDataLoaded) => ({
+					...(prevIsAllDataLoaded || {}),
+					[currentNav]: true,
+				}));
+				return;
+			}
+			const pageNumber = Math.ceil(contentItems.length / 12);
+			setPageNumbers((prevPageNumbers) => ({
+				...(prevPageNumbers || {}),
+				[currentNav]: pageNumber,
+			}));
+		} else {
 			setPageNumbers((prevPageNumbers) => ({
 				...(prevPageNumbers || {}),
 				[currentNav]: prevPageNumbers?.[currentNav] || 1,
 			}));
 		}
-
-		updatepageNumbers();
 	}, [currentNav]);
 
 	useEffect(() => {
 		const currentPage = pageNumbers?.[currentNav] || 1;
 
-		//@ts-ignore
-		if (usersStore.refineReconmandations[currentNav]?.length === currentPage * 12) {
+		if (
+			usersStore.refineRecommendationsPage[currentNav as keyof typeof usersStore.refineRecommendationsPage]?.length ===
+			currentPage * 12
+		) {
 			return;
 		}
 
 		if (pageNumbers === undefined) return;
 
-		console.log(isAllDataLoaded);
-
 		switch (currentNav) {
 			case "Following":
-				if (!isAllDataLoaded?.["Following"])
-					usersStore.getUserFollowingAuthors({ currentPage, setIsAllDataLoaded });
+				if (!isAllDataLoaded?.["Following"]) usersStore.getUserFollowingAuthors({ currentPage, setIsAllDataLoaded });
 				break;
 			case "Muted":
-				if (!isAllDataLoaded?.["Muted"])
-					usersStore.getUserMutedAuthors({ currentPage, setIsAllDataLoaded });
+				if (!isAllDataLoaded?.["Muted"]) usersStore.getUserMutedAuthors({ currentPage, setIsAllDataLoaded });
 				break;
 			case "Discover Authors":
-				if (!isAllDataLoaded?.["Discover Authors"])
-					usersStore.getRandomAuthors({ currentPage, setIsAllDataLoaded });
+				if (!isAllDataLoaded?.["Discover Authors"]) usersStore.getRandomAuthors({ currentPage, setIsAllDataLoaded });
 				break;
 			case "Discover Topics":
-				if (!isAllDataLoaded?.["Discover Topics"])
-					usersStore.getRandomTopics({ currentPage, setIsAllDataLoaded });
+				if (!isAllDataLoaded?.["Discover Topics"]) usersStore.getRandomTopics({ currentPage, setIsAllDataLoaded });
 				break;
 		}
 	}, [pageNumbers]);
@@ -103,12 +113,9 @@ const RefineRecommendations = () => {
 
 			<MainConntainer ref={mainContainerRef}>
 				<LeftContainer>
-					<h2 className=" text-[1.8rem]  sm:text-[2.5rem] font-semibold pt-12">
-						Refine recommendations
-					</h2>
+					<h2 className=" text-[1.8rem]  sm:text-[2.5rem] font-semibold pt-12">Refine recommendations</h2>
 					<div className=" text-xs sm:text-sm text-gray-800 pt-2 pb-6">
-						Adjust recommendations by updating what you’re following, your reading history, and
-						who you’ve muted.
+						Adjust recommendations by updating what you’re following, your reading history, and who you’ve muted.
 					</div>
 
 					<RegularLeftContainerNavbar
@@ -120,7 +127,7 @@ const RefineRecommendations = () => {
 
 					{currentNav === "Following" && (
 						<div className="lg:mr-20">
-							{usersStore.refineReconmandations?.Following.map((author, index) => {
+							{usersStore.refineRecommendationsPage?.Following.map((author, index) => {
 								return <UserOrPeoplePreview key={index} author={author} />;
 							})}
 						</div>
@@ -128,7 +135,7 @@ const RefineRecommendations = () => {
 
 					{currentNav === "Muted" && (
 						<div className="lg:mr-20">
-							{usersStore.refineReconmandations?.Muted.map((author, index) => {
+							{usersStore.refineRecommendationsPage?.Muted.map((author, index) => {
 								return (
 									<div key={index} className="flex pt-8 items-center gap-4">
 										<ProfileIcon
@@ -140,17 +147,13 @@ const RefineRecommendations = () => {
 
 										<div className="flex-1">
 											<div className="flex items-center gap-2">
-												<h3 className="font-medium text-[17px]">
-													{author.userName || "MediumUser"}
-												</h3>
+												<h3 className="font-medium text-[17px]">{author.userName || "MediumUser"}</h3>
 												<span className="text-sm ">
 													{" · "}
 													{author.followersCount} Followers
 												</span>
 											</div>
-											<p className="text-sm text-gray-700 hidden sm:block">
-												{author.bio}
-											</p>
+											<p className="text-sm text-gray-700 hidden sm:block">{author.bio}</p>
 										</div>
 
 										<AuthorMuteUnmuteButton authorId={author.id} buttonSize="lg" />
@@ -162,7 +165,7 @@ const RefineRecommendations = () => {
 
 					{currentNav === "Discover Authors" && (
 						<div className="lg:mr-20">
-							{usersStore.refineReconmandations?.["Discover Authors"].map((author, index) => {
+							{usersStore.refineRecommendationsPage?.["Discover Authors"].map((author, index) => {
 								return <UserOrPeoplePreview key={index} author={author} />;
 							})}
 						</div>
@@ -170,7 +173,7 @@ const RefineRecommendations = () => {
 
 					{currentNav === "Discover Topics" && (
 						<div className="lg:mr-20">
-							{usersStore.refineReconmandations?.["Discover Topics"].map((topic, index) => {
+							{usersStore.refineRecommendationsPage?.["Discover Topics"].map((topic, index) => {
 								return <TopicPriview key={index} topic={topic} />;
 							})}
 						</div>
@@ -178,7 +181,7 @@ const RefineRecommendations = () => {
 
 					{usersStore.skeletonLoading && <RefineRecomendationsSkelitons />}
 				</LeftContainer>
-				<RightContainer>right</RightContainer>
+				<RightContainer />
 			</MainConntainer>
 		</div>
 	);
