@@ -14,6 +14,7 @@ import TopicButton from "../components/buttons/TopicButton";
 import ReadStoryPageSkeleton from "../components/skelitons/ReadStoryPageSkeleton";
 import { formatDate } from "../helper/formatDate";
 import { StoryStore } from "../stores/storyStore";
+import defaultprofile from "../assets/defaultProfile.jpg";
 
 const ReadStoryPage = () => {
 	const { id } = useParams();
@@ -53,7 +54,7 @@ const ReadStoryPage = () => {
 
 					<div className="profile py-4 flex items-center text-sm">
 						<ProfileIcon
-							profileImg={story?.author.profileImg}
+							profileImg={story?.author.profileImg || defaultprofile}
 							onClick={() => navigate(`/user/${story?.author.id}/Home`)}
 						/>
 
@@ -67,22 +68,15 @@ const ReadStoryPage = () => {
 					</div>
 
 					<div className="button-bar border-y border-slate-300 flex items-center gap-4 py-1 px-4 my-4">
-						<ClapsButton
-							storyId={story?.id as string}
-							totalClaps={story?.clapsCount || 0}
-							setStory={setStory}
-						/>
+						<ClapsButton storyId={story?.id as string} totalClaps={story?.clapsCount || 0} setStory={setStory} />
 
-						<CommentsButton
-							onClick={() => setResponseBox((state) => !state)}
-							responseCount={responseCount}
-						/>
+						<CommentsButton onClick={() => setResponseBox((state) => !state)} responseCount={responseCount} />
 
 						<div className="flex-1"></div>
 
 						<SaveButton storyId={story?.id as string} />
 
-						<MoreOptions onClick={() => {}}/>
+						<MoreOptions onClick={() => {}} />
 					</div>
 
 					{story?.coverImg && (
@@ -103,11 +97,7 @@ const ReadStoryPage = () => {
 						</div>
 
 						<div className="button-bar flex items-center gap-4 py-1 px-4 my-4">
-							<ClapsButton
-								storyId={story?.id as string}
-								totalClaps={story?.clapsCount || 0}
-								setStory={setStory}
-							/>
+							<ClapsButton storyId={story?.id as string} totalClaps={story?.clapsCount || 0} setStory={setStory} />
 
 							<CommentsButton
 								onClick={() => setResponseBox((state) => !state)}
@@ -129,22 +119,18 @@ const ReadStoryPage = () => {
 					<div className="main-container w-full h-fit px-4 max-w-3xl mx-auto py-10">
 						<div className="flex items-center justify-between">
 							<ProfileIcon
-								profileImg={story?.author.profileImg}
+								profileImg={story?.author.profileImg || defaultprofile}
 								onClick={() => navigate(`/user/${story?.author.id}/Home`)}
 								heightWidth={20}
 							/>
 							<div className="block sm:hidden">
-								{author && (
-									<BigFollowFollowingButton user={author as userType} setUser={setAuthor} />
-								)}
+								{author && <BigFollowFollowingButton user={author as userType} setUser={setAuthor} />}
 							</div>
 						</div>
 
 						<div className="flex mt-4 ">
 							<div className="flex-1">
-								<h2 className="text-2xl font-semibold">
-									Written by {story?.author.userName}
-								</h2>
+								<h2 className="text-2xl font-semibold">Written by {story?.author.userName}</h2>
 								<div>
 									{author?.followersCount}
 									{author?.followersCount === 1 ? " Follower" : " Followers"}

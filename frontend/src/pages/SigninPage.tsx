@@ -71,17 +71,14 @@ function signin() {
 								field={formik.getFieldProps("emailOrName")}
 							/>
 
-							<Input
-								label="Password"
-								type="password"
-								required={true}
-								field={formik.getFieldProps("password")}
-							/>
+							<Input label="Password" type="password" required={true} field={formik.getFieldProps("password")} />
 
 							{/* <TurnstileWidget setToken={setToken} /> */}
 							<ReCAPTCHAWidget setToken={setToken} />
 
-							<BlackButton type={"submit"}>Sign in</BlackButton>
+							<BlackButton type={"submit"} disabled={!token}>
+								Sign in
+							</BlackButton>
 
 							<div className="text-center text-sm text-gray-500 font-semibold">
 								Don't have an account?{" "}
