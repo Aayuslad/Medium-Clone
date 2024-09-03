@@ -96,9 +96,6 @@ export const upadateStory = async (req: Request, res: Response) => {
 	const body: updateStorySchemaType = req.body;
 	const coverImg = req.file;
 
-	console.log("update: ", body);
-	console.log("coverImg: ", coverImg);
-
 	try {
 		body.published = JSON.parse(req.body.published as string);
 		body.topics = req.body.topics.split(",");
