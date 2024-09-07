@@ -54,14 +54,17 @@ Developed a clone of a official medium website, replicating all major functional
 - **Frontend**:
   - React
   - TypeScript
-  - Zustand
-  - Formik
+  - Tailwind CSS
+  - Zustand (state management)
 - **Backend**:
   - Express
   - PostgreSQL
   - Prisma
+  - Typescript
+  - Cloud (Cloudinary)
 - **Additional Tools**:
   - Cloudflare for DDoS protection
+  - Google ReCAPTCHA V2
   - Zod for common type implementations
 
 ## Installation
